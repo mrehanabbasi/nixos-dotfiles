@@ -5,6 +5,9 @@
     username = "rehan";
     homeDirectory = "/home/rehan";
     stateVersion = "25.11";
+    pointerCursor = {
+      size = 24;
+    };
   };
 
   xdg.enable = true;
@@ -101,67 +104,9 @@
     (import ./modules/cava.nix { inherit config; })
     (import ./modules/yazi.nix { })
     (import ./modules/rofi.nix { })
+    (import ./modules/hypridle.nix { })
+    (import ./modules/hyprpaper.nix { })
+    (import ./modules/kdeconnect.nix { })
+    (import ./modules/mime-apps.nix { })
   ];
-
-  services.kdeconnect = {
-    enable = true;
-    indicator = true; # optional: tray icon (needs a tray)
-  };
-
-  xdg.desktopEntries.neovimGhostty = {
-    name = "Neovim in Ghostty";
-    exec = "ghostty -e nvim %F";
-    terminal = false;
-    mimeType = [ "text/plain" ];
-    icon = "utilities-terminal";
-    comment = "Edit text files in Neovim using Ghostty";
-  };
-
-  xdg.mimeApps = {
-    enable = true;
-    defaultApplications = {
-      "text/plain" = [ "neovimGhostty.desktop" ];
-      "text/html" = [ "brave-browser.desktop" ];
-      "x-scheme-handler/http" = [ "brave-browser.desktop" ];
-      "x-scheme-handler/https" = [ "brave-browser.desktop" ];
-      "x-scheme-handler/about" = [ "brave-browser.desktop" ];
-      "x-scheme-handler/unknown" = [ "brave-browser.desktop" ];
-    };
-  };
-
-  services.hypridle = {
-    enable = true;
-    settings = {
-      general = {
-        lock_cmd = "pidof hyprlock || hyprlock";
-        before_sleep_cmd = "loginctl lock-session"; # lock before suspend
-        after_sleep_cmd = "hyprctl dispatch dpms one";
-      };
-      listener = [
-        {
-          timeout = 300;
-          on-timeout = "loginctl lock-session";
-        }
-        {
-          timeout = 600;
-          on-timeout = "hyprctl dispatch dpms off";
-          on-resume = "hyprctl dispatch dpmn on";
-        }
-        # {
-        #   timeout = 900;
-        #   on-timeout = "systemctl suspend";
-        # }
-      ];
-    };
-  };
-
-  services.hyprpaper = {
-    enable = true;
-    settings = {
-      preload = "${../wallpapers/one_liner.png}";
-      wallpaper = [
-        ",${../wallpapers/one_liner.png}"
-      ];
-    };
-  };
 }
