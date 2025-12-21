@@ -6,7 +6,9 @@
 
     settings = {
       # Monitors
-      monitor = ",highres,auto,1";
+      monitor = [
+        ",highres,auto,1"
+      ];
 
       # Programs
       "$terminal" = "ghostty";
