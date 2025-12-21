@@ -108,5 +108,6 @@
     (import ./modules/hyprpaper.nix { })
     (import ./modules/kdeconnect.nix { })
     (import ./modules/mime-apps.nix { })
+    (import ./modules/hyprland.nix { })
   ];
 }
