@@ -54,7 +54,7 @@ in
               style = "plain";
               background = "transparent";
               foreground = "p:grey";
-              template = " {{ .HEAD }}{{ if .Merge }}|MERGING{{ end }}{{ if .Rebase }}|REBASING{{ end }}{{ if .CherryPick }}|CHERRYPICKING{{ end }}{{ if .Revert }}|REVERTING{{ end }}{{ if or .Working.Modified }}*{{ end }}{{ if or .Staging.Changed .Staging.Modified }}+{{ end }}{{ if gt .Working.Untracked 0 }}%{{ end }} <cyan>{{ if gt .Behind 0 }}⇣{{ end }}{{ if gt .Ahead 0 }}⇡{{ end }}</>";
+              template = " {{ .HEAD }}{{ if .Merge }}|MERGING{{ end }}{{ if .Rebase }}|REBASING{{ end }}{{ if .CherryPick }}|CHERRYPICKING{{ end }}{{ if .Revert }}|REVERTING{{ end }}{{ if or .Working.Modified .Working.Deleted }}*{{ end }}{{ if or .Staging.Changed .Staging.Modified }}+{{ end }}{{ if gt .Working.Untracked 0 }}%{{ end }} <cyan>{{ if gt .Behind 0 }}⇣{{ end }}{{ if gt .Ahead 0 }}⇡{{ end }}</>";
               options = {
                 branch_icon = "";
                 commit_icon = "@";
