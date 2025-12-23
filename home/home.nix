@@ -75,6 +75,7 @@
     vlc
     webcord # Discord replacement
     bitwarden-desktop
+    notesnook
   ];
 
   # Enable Catppuccin theme in Qt applications like Dolphin
