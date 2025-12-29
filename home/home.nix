@@ -48,6 +48,7 @@
     mpc
     pamixer
     alsa-utils
+    kdePackages.kalk
 
     # Neovim-related
     zig

@@ -254,6 +254,9 @@
         "move 75% 10%, class:^brave-nngceckbapebfimnlniiiahkandclblb-Default$"
         "float, class:^xdg-desktop-portal-gtk$"
         "center, class:^xdg-desktop-portal-gtk$"
+        "float, class:^org.kde.kalk$"
+        "center, class:^org.kde.kalk$"
+        "size 50% 80%, class:^org.kde.kalk$"
       ];
     };
   };
