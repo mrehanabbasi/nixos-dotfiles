@@ -65,6 +65,7 @@
     tree
     networkmanager
     cmake
+    dnsutils
 
     # Terminal
     ghostty
