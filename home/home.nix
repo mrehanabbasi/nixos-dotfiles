@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, opencode, ... }:
 
 {
   home = {
@@ -70,7 +70,6 @@
     libsForQt5.qtstyleplugin-kvantum
     libsForQt5.qt5ct
 
-    opencode
     jq
     yq
     vlc
@@ -97,7 +96,7 @@
     (import ./modules/fzf.nix { })
     (import ./modules/oh-my-posh.nix { inherit pkgs; })
     (import ./modules/ghostty.nix { })
-    (import ./modules/opencode.nix { })
+    (import ./modules/opencode.nix { inherit pkgs opencode; })
     (import ./modules/hyprlock.nix { inherit config; })
     (import ./modules/zathura.nix { })
     (import ./modules/bat.nix { })

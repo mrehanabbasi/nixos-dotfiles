@@ -25,6 +25,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    opencode = {
+      url = "github:sst/opencode";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # pia = {
     #   url = "github:Fuwn/pia.nix";
     #   inputs.nixpkgs.follows = "nixpkgs";
@@ -32,13 +37,13 @@
   };
 
   outputs =
-    {
-      nixpkgs,
-      home-manager,
-      hyprshutdown,
-      catppuccin,
-      sops-nix,
-      # pia,
+    { nixpkgs
+    , home-manager
+    , hyprshutdown
+    , catppuccin
+    , sops-nix
+    , opencode
+    , # pia,
       ...
     }:
     let
@@ -47,7 +52,7 @@
     {
       nixosConfigurations.one-piece = nixpkgs.lib.nixosSystem {
         inherit system;
-        specialArgs = { inherit hyprshutdown system; };
+        specialArgs = { inherit hyprshutdown opencode system; };
         modules = [
           catppuccin.nixosModules.catppuccin
           # pia.nixosModules.${system}.default
@@ -61,6 +66,7 @@
             home-manager = {
               useGlobalPkgs = true;
               useUserPackages = true;
+              extraSpecialArgs = { inherit opencode; };
               users.rehan = {
                 imports = [
                   ./home/home.nix
