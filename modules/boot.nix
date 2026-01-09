@@ -1,5 +1,5 @@
 # Boot loader configuration
-{ ... }:
+{ pkgs, ... }:
 
 {
   # Use the systemd-boot EFI boot loader.
@@ -7,4 +7,7 @@
     systemd-boot.enable = true;
     efi.canTouchEfiVariables = true;
   };
+
+  # Use latest kernel for better WiFi 7 (WCN7850) support
+  boot.kernelPackages = pkgs.linuxPackages_latest;
 }

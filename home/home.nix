@@ -1,4 +1,9 @@
-{ config, pkgs, opencode, ... }:
+{
+  config,
+  pkgs,
+  opencode,
+  ...
+}:
 
 {
   home = {
@@ -76,6 +81,7 @@
     webcord # Discord replacement
     bitwarden-desktop
     notesnook
+    claude-code
   ];
 
   # Enable Catppuccin theme in Qt applications like Dolphin

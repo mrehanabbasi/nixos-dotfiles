@@ -11,6 +11,7 @@
       "input"
       "uinput"
       "network"
+      "networkmanager"
     ];
     shell = pkgs.zsh;
     packages = with pkgs; [

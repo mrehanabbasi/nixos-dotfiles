@@ -29,6 +29,9 @@
     # Device connectivity
     kdeconnect.enable = true;
 
+    # Localsend
+    localsend.enable = true;
+
     # AppImage support
     appimage = {
       enable = true;

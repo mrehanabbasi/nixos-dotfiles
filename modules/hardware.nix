@@ -42,6 +42,9 @@
       enable = true;
       enable32Bit = true;
     };
+
+    # For Qualcomm WiFi 7 card support
+    enableRedistributableFirmware = true;
   };
 
   # NVIDIA video driver
