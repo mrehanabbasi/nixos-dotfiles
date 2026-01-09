@@ -9,18 +9,24 @@
     # Configure network connections interactively with nmcli or nmtui.
     networkmanager = {
       enable = true;
-      wifi.backend = "iwd";
+      # Switched to wpa_supplicant for WiFi 7 MLO support with Qualcomm FastConnect 7800
+      wifi.backend = "wpa_supplicant";
+      # wifi.backend = "iwd";  # Previous backend
     };
 
-    wireless = {
-      iwd = {
-        enable = true;
-        settings = {
-          Settings = {
-            AutoConnect = true;
-          };
-        };
-      };
-    };
+    # iwd disabled in favor of wpa_supplicant for WiFi 7 MLO support
+    wireless.iwd.enable = false;
+
+    # Previous iwd configuration (commented out for rollback if needed)
+    # wireless = {
+    #   iwd = {
+    #     enable = true;
+    #     settings = {
+    #       Settings = {
+    #         AutoConnect = true;
+    #       };
+    #     };
+    #   };
+    # };
   };
 }
