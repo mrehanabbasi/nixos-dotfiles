@@ -1,0 +1,16 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "default_agent": "nixos-builder",
+  "permission": {
+    "*": "ask",
+    "edit": "allow",
+    "bash": "ask",
+    "skill": {
+      "commit-message": "allow",
+      "nixos-rebuild": "allow",
+      "flake-update": "allow",
+      // "hyprland-bindings": "allow",
+      "*": "deny"
+    }
+  }
+}
