@@ -13,7 +13,13 @@
     settings = {
       font-family = "JetBrainsMono Nerd Font";
       font-size = 14;
-      font-feature = "-liga"; # disable litigature
+
+      # disable litigatures
+      font-feature = [
+        "-dlig"
+        "-liga"
+        "-calt"
+      ];
 
       # Cursor style
       cursor-style = "block";
