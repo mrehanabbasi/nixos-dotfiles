@@ -26,7 +26,7 @@
     };
 
     opencode = {
-      url = "github:sst/opencode";
+      url = "github:anomalyco/opencode";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -37,14 +37,15 @@
   };
 
   outputs =
-    { nixpkgs
-    , home-manager
-    , hyprshutdown
-    , catppuccin
-    , sops-nix
-    , opencode
-    , pia
-    , ...
+    {
+      nixpkgs,
+      home-manager,
+      hyprshutdown,
+      catppuccin,
+      sops-nix,
+      opencode,
+      pia,
+      ...
     }:
     {
       nixosConfigurations.one-piece = nixpkgs.lib.nixosSystem {
