@@ -1,8 +1,7 @@
-{
-  config,
-  pkgs,
-  opencode,
-  ...
+{ config
+, pkgs
+, opencode
+, ...
 }:
 
 {

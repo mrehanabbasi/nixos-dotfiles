@@ -1,9 +1,7 @@
 # System programs configuration
-{
-  pkgs,
-  hyprshutdown,
-  system,
-  ...
+{ pkgs
+, hyprshutdown
+, ...
 }:
 
 {
@@ -79,7 +77,7 @@
     hyprpicker
     rofi
     hyprpanel
-    hyprshutdown.packages.${system}.hyprshutdown
+    hyprshutdown.packages.${pkgs.stdenv.hostPlatform.system}.hyprshutdown
 
     # HyprPanel dependencies
     ags # aylurs-gtk-shell-git

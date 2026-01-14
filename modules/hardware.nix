@@ -24,9 +24,16 @@
     # NVIDIA GPU configuration
     nvidia = {
       modesetting.enable = true;
-      open = true;
+      open = false;
       nvidiaSettings = true;
       package = config.boot.kernelPackages.nvidiaPackages.stable;
+
+      # Critical for suspend/resume stability with dynamic power management
+      powerManagement = {
+        enable = true;
+        finegrained = true; # GPU powers off completely when not in use for battery savings
+      };
+
       prime = {
         offload = {
           enable = true;

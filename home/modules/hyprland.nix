@@ -218,9 +218,9 @@
         "$mainMod, mouse:273, resizewindow"
       ];
 
-      # Lid switch
+      # Lid switch - lock before suspend for better stability
       bindl = [
-        ",switch:Lid Switch, exec, mpc -q pause && amixer set Master mute && systemctl suspend"
+        ",switch:Lid Switch, exec, loginctl lock-session && sleep 1 && systemctl suspend"
         ", XF86AudioNext, exec, playerctl next"
         ", XF86AudioPause, exec, playerctl play-pause"
         ", XF86AudioPlay, exec, playerctl play-pause"

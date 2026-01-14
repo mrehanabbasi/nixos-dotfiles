@@ -3,6 +3,9 @@
 {
   services.pia = {
     enable = true;
-    authUserPassFile = config.sops.secrets.pia.path;
+    credentials = {
+      credentialsFile = config.sops.secrets.pia.path;
+    };
+    protocol = "wireguard";
   };
 }
