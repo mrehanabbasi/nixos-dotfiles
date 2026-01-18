@@ -55,6 +55,7 @@
     kdePackages.kalk
 
     # Neovim-related
+    gnumake
     zig
     nil
     go
