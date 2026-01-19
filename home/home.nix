@@ -92,6 +92,18 @@
     style.name = "kvantum";
   };
 
+  # Set JetBrains Mono font for Qt applications (e.g., pinentry-qt, Dolphin)
+  xdg.configFile."qt5ct/qt5ct.conf".text = ''
+    [Fonts]
+    fixed="JetBrainsMono Nerd Font,10,-1,5,50,0,0,0,0,0"
+    general="JetBrainsMono Nerd Font,10,-1,5,50,0,0,0,0,0"
+  '';
+  xdg.configFile."qt6ct/qt6ct.conf".text = ''
+    [Fonts]
+    fixed="JetBrainsMono Nerd Font,10,-1,5,50,0,0,0,0,0"
+    general="JetBrainsMono Nerd Font,10,-1,5,50,0,0,0,0,0"
+  '';
+
   imports = [
     (import ./modules/tmux.nix { inherit pkgs; })
     (import ./modules/zsh.nix { inherit config pkgs; })
