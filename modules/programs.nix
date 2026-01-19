@@ -76,7 +76,6 @@
     hyprpaper
     hyprshot
     hyprpicker
-    rofi
     hyprpanel
     hyprshutdown.packages.${pkgs.stdenv.hostPlatform.system}.hyprshutdown
 

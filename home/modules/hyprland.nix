@@ -13,7 +13,7 @@
       # Programs
       "$terminal" = "ghostty";
       "$fileManager" = "$terminal -e yazi";
-      "$menu" = "$XDG_CONFIG_HOME/rofi/launchers/type-1/launcher.sh &";
+      "$menu" = "walker";
       "$webBrowser" = "brave --allowlisted-extension-id=clngdbkpkpeebahjckkjfobafhncgmne";
       "$cursorTheme" = "Catppuccin Mocha Blue";
       "$cursorSize" = "24";

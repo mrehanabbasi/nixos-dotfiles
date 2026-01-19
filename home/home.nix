@@ -122,7 +122,7 @@
     (import ./modules/btop.nix { })
     (import ./modules/cava.nix { inherit config; })
     (import ./modules/yazi.nix { })
-    (import ./modules/rofi.nix { })
+    (import ./modules/walker.nix { })
     (import ./modules/hypridle.nix { })
     (import ./modules/hyprpaper.nix { })
     (import ./modules/kdeconnect.nix { })

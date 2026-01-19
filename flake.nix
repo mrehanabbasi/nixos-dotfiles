@@ -34,18 +34,28 @@
       url = "github:mrehanabbasi/pia.nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    elephant = {
+      url = "github:abenz1267/elephant";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    walker = {
+      url = "github:abenz1267/walker";
+      inputs.elephant.follows = "elephant";
+    };
   };
 
   outputs =
-    {
-      nixpkgs,
-      home-manager,
-      hyprshutdown,
-      catppuccin,
-      sops-nix,
-      opencode,
-      pia,
-      ...
+    { nixpkgs
+    , home-manager
+    , hyprshutdown
+    , catppuccin
+    , sops-nix
+    , opencode
+    , pia
+    , walker
+    , ...
     }:
     {
       nixosConfigurations.one-piece = nixpkgs.lib.nixosSystem {
@@ -67,12 +77,13 @@
               useGlobalPkgs = true;
               useUserPackages = true;
               extraSpecialArgs = {
-                inherit opencode;
+                inherit opencode walker;
               };
               users.rehan = {
                 imports = [
                   ./home/home.nix
                   catppuccin.homeModules.catppuccin
+                  walker.homeManagerModules.default
                 ];
               };
               # sharedModules = [
