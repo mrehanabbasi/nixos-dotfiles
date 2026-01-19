@@ -21,8 +21,8 @@
     gnupg.agent = {
       enable = true;
       enableSSHSupport = true;
-      # Use GUI pinentry for GPG signing in non-TTY environments (e.g., Claude Code)
-      pinentryPackage = pkgs.pinentry-gnome3;
+      # Use Qt pinentry for Catppuccin theming via Kvantum (works in non-TTY environments)
+      pinentryPackage = pkgs.pinentry-qt;
     };
 
     # Device connectivity
