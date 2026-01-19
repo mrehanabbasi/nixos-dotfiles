@@ -21,7 +21,8 @@
     gnupg.agent = {
       enable = true;
       enableSSHSupport = true;
-      pinentryPackage = pkgs.pinentry-curses;
+      # Use GUI pinentry for GPG signing in non-TTY environments (e.g., Claude Code)
+      pinentryPackage = pkgs.pinentry-gnome3;
     };
 
     # Device connectivity

@@ -9,6 +9,9 @@
       ll = "eza -al --icons --color=always";
     };
     initContent = ''
+      # Set GPG_TTY for pinentry-tty to work in CLI tools (e.g., Claude Code commits)
+      export GPG_TTY=$(tty)
+
       bindkey -e
 
       # disable sort when completing `git checkout`
