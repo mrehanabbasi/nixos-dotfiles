@@ -1,7 +1,8 @@
-{ config
-, pkgs
-, opencode
-, ...
+{
+  config,
+  pkgs,
+  opencode,
+  ...
 }:
 
 {
@@ -126,6 +127,7 @@
     (import ./modules/hypridle.nix { })
     (import ./modules/hyprpaper.nix { })
     (import ./modules/kdeconnect.nix { })
+    (import ./modules/kdenlive.nix { inherit pkgs; })
     (import ./modules/mime-apps.nix { })
     (import ./modules/hyprland.nix { })
   ];
