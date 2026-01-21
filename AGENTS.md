@@ -1,5 +1,33 @@
 # Agent Guidelines for nixos-dotfiles
 
+## Agent Autonomy
+
+The agent is trusted to perform the following **without explicit confirmation**:
+
+### File Operations
+- Read any file in the repository
+- Write/edit configuration files (`*.nix`, `*.md`, config files, etc.)
+- Create new modules when needed for the requested feature
+
+### Git Operations
+- Stage changes related to user requests
+- Commit changes after completing user-requested modifications
+- Push to `main` branch after commits
+- Use Conventional Commits format (load `commit-message` skill)
+
+### Build Operations
+- Run `nixos-rebuild build --flake .#one-piece` to validate changes
+- Run `nixos-rebuild switch --flake .#one-piece` after successful build validation (when user requests a config change)
+- Run `nix flake check` for comprehensive validation
+
+### Restrictions (still require confirmation)
+- Destructive git operations (`git reset --hard`, `git push --force`, `git rebase`)
+- Deleting files or modules
+- Changes to `hardware-configuration.nix` or `stateVersion`
+- Operations involving secrets or credentials
+
+**Always explain what was done after completing actions.**
+
 ## Overview
 This is a NixOS system configuration using flakes, home-manager, and Hyprland for the host `one-piece`. The configuration is modular, with system-level configs in `modules/` and user-level configs in `home/modules/`.
 
