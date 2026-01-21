@@ -1,7 +1,8 @@
 # System programs configuration
-{ pkgs
-, hyprshutdown
-, ...
+{
+  pkgs,
+  hyprshutdown,
+  ...
 }:
 
 {
@@ -59,6 +60,7 @@
     wget
     git
     unzip
+    unrar
     net-tools
     btop
     procps
