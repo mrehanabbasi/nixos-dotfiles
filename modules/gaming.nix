@@ -22,5 +22,10 @@
     protonup-qt
     bottles
     heroic
+
+    # Wine and tools for running Windows apps (via Bottles/Lutris)
+    wineWowPackages.stable
+    winetricks
+    cabextract
   ];
 }

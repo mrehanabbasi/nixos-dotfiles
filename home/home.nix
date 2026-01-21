@@ -83,6 +83,8 @@
     bitwarden-desktop
     notesnook
     claude-code
+    blender
+    unityhub
   ];
 
   # Enable Catppuccin theme in Qt applications like Dolphin
