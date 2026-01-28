@@ -5,6 +5,10 @@
     "*": "ask",
     "edit": "allow",
     "bash": "ask",
+    "glob": "allow",
+    "grep": "allow",
+    "webfetch": "allow",
+    "websearch": "allow",
     "skill": {
       "commit-message": "allow",
       "nixos-rebuild": "allow",
