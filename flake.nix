@@ -1,21 +1,20 @@
 {
-  description = "Hyprland on NixOS";
+  description = "NixOS Dendritic Configuration";
 
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-25.11";
+    flake-parts.url = "github:hercules-ci/flake-parts";
+    import-tree.url = "github:vic/import-tree";
+
     home-manager = {
       url = "github:nix-community/home-manager/release-25.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    hyprshutdown = {
-      url = "github:hyprwm/hyprshutdown";
-      # Let hyprshutdown use its own nixpkgs (unstable) to avoid compatibility issues
-      # inputs.nixpkgs.follows = "nixpkgs";
-    };
+    # Let hyprshutdown use its own nixpkgs (unstable) to avoid compatibility issues
+    hyprshutdown.url = "github:hyprwm/hyprshutdown";
 
     catppuccin = {
-      # url = "github:catppuccin/nix/release-25.05";
       url = "github:catppuccin/nix"; # Supports eza
       inputs.nixpkgs.follows = "nixpkgs";
     };
@@ -46,52 +45,6 @@
     };
   };
 
-  outputs =
-    { nixpkgs
-    , home-manager
-    , hyprshutdown
-    , catppuccin
-    , sops-nix
-    , opencode
-    , pia
-    , walker
-    , ...
-    }:
-    {
-      nixosConfigurations.one-piece = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        specialArgs = {
-          inherit hyprshutdown opencode;
-        };
-        modules = [
-          catppuccin.nixosModules.catppuccin
-          pia.nixosModules.default
-          ./configuration.nix
-          sops-nix.nixosModules.sops
-          ./sops.nix
-          ./pia.nix
-
-          home-manager.nixosModules.home-manager
-          {
-            home-manager = {
-              useGlobalPkgs = true;
-              useUserPackages = true;
-              extraSpecialArgs = {
-                inherit opencode walker;
-              };
-              users.rehan = {
-                imports = [
-                  ./home/home.nix
-                  catppuccin.homeModules.catppuccin
-                  walker.homeManagerModules.default
-                ];
-              };
-              # sharedModules = [
-              #   sops-nix.homeManagerModules.sops
-              # ];
-            };
-          }
-        ];
-      };
-    };
+  outputs = inputs:
+    inputs.flake-parts.lib.mkFlake { inherit inputs; } (inputs.import-tree ./modules);
 }
