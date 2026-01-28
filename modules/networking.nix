@@ -28,5 +28,13 @@
     #     };
     #   };
     # };
+
+    # Firewall configuration
+    firewall = {
+      enable = true;
+      # VTube Studio phone app
+      allowedTCPPorts = [ 25565 ];
+      allowedUDPPorts = [ 25565 ];
+    };
   };
 }

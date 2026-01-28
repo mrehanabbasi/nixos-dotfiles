@@ -12,6 +12,7 @@
       "uinput"
       "network"
       "networkmanager"
+      "video" # Camera access for VTube Studio, OBS, etc.
     ];
     shell = pkgs.zsh;
     packages = with pkgs; [

@@ -38,8 +38,16 @@
       binfmt = true;
     };
 
-    # OBS Studio
-    obs-studio.enable = true;
+    # OBS Studio with Wayland capture support
+    obs-studio = {
+      enable = true;
+      enableVirtualCamera = true; # Useful for streaming to other apps
+      plugins = with pkgs.obs-studio-plugins; [
+        wlrobs # Display capture on wlroots compositors (Hyprland)
+        obs-vkcapture # Game capture for Vulkan/OpenGL apps
+        obs-composite-blur # Add composite blur filter
+      ];
+    };
 
     dconf.profiles.user.databases = [
       {
