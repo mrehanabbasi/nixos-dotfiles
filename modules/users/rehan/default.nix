@@ -23,6 +23,7 @@ in
     home-manager = {
       useGlobalPkgs = true;
       useUserPackages = true;
+      backupFileExtension = "backup";
       extraSpecialArgs = { inherit inputs; };
 
       users.${userName} = {
@@ -32,6 +33,7 @@ in
 
           # Theming
           inputs.self.modules.homeManager.catppuccin
+          inputs.self.modules.homeManager.gtk
 
           # Desktop
           inputs.self.modules.homeManager.hyprland
