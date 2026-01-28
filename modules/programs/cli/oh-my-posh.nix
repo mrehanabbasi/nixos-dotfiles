@@ -2,7 +2,8 @@
 { ... }:
 
 {
-  flake.modules.homeManager.oh-my-posh = { pkgs, ... }:
+  flake.modules.homeManager.oh-my-posh =
+    { pkgs, ... }:
     let
       # Get latest version of oh-my-posh since nixpkgs' version lags behind
       oh-my-posh = pkgs.stdenv.mkDerivation {
@@ -22,7 +23,9 @@
           chmod +x $out/bin/oh-my-posh
         '';
 
-        meta = { mainProgram = "oh-my-posh"; };
+        meta = {
+          mainProgram = "oh-my-posh";
+        };
       };
     in
     {
@@ -46,7 +49,9 @@
                   background = "transparent";
                   foreground = "blue";
                   template = "{{ .Path }}";
-                  options = { style = "full"; };
+                  options = {
+                    style = "full";
+                  };
                 }
                 {
                   type = "git";
@@ -66,29 +71,35 @@
               type = "rprompt";
               alignment = "right";
               overflow = "hidden";
-              segments = [{
-                type = "executiontime";
-                style = "plain";
-                background = "transparent";
-                foreground = "yellow";
-                template = "{{ .FormattedMs }}";
-                options = { threshold = 5000; };
-              }];
+              segments = [
+                {
+                  type = "executiontime";
+                  style = "plain";
+                  background = "transparent";
+                  foreground = "yellow";
+                  template = "{{ .FormattedMs }}";
+                  options = {
+                    threshold = 5000;
+                  };
+                }
+              ];
             }
             {
               type = "prompt";
               alignment = "left";
               newline = true;
-              segments = [{
-                type = "text";
-                style = "plain";
-                background = "transparent";
-                foreground_templates = [
-                  "{{if gt .Code 0}}red{{end}}"
-                  "{{if eq .Code 0}}magenta{{end}}"
-                ];
-                template = "❯";
-              }];
+              segments = [
+                {
+                  type = "text";
+                  style = "plain";
+                  background = "transparent";
+                  foreground_templates = [
+                    "{{if gt .Code 0}}red{{end}}"
+                    "{{if eq .Code 0}}magenta{{end}}"
+                  ];
+                  template = "❯";
+                }
+              ];
             }
           ];
           secondary_prompt = {
@@ -96,7 +107,9 @@
             foreground = "p:grey";
             template = "❯❯ ";
           };
-          palette = { grey = "#6c6c6c"; };
+          palette = {
+            grey = "#6c6c6c";
+          };
         };
       };
     };

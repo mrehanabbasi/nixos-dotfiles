@@ -2,7 +2,8 @@
 { ... }:
 
 {
-  flake.modules.homeManager.git = { pkgs, ... }:
+  flake.modules.homeManager.git =
+    { pkgs, ... }:
     let
       commitMsgHook = pkgs.writeShellScript "commit-msg" (builtins.readFile ./commit-msg);
     in

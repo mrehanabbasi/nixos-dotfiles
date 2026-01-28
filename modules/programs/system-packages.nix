@@ -2,83 +2,87 @@
 { ... }:
 
 {
-  flake.modules.nixos.system-packages = { pkgs, ... }: {
-    programs = {
-      localsend.enable = true;
+  flake.modules.nixos.system-packages =
+    { pkgs, ... }:
+    {
+      programs = {
+        localsend.enable = true;
 
-      appimage = {
-        enable = true;
-        binfmt = true;
-      };
+        appimage = {
+          enable = true;
+          binfmt = true;
+        };
 
-      obs-studio = {
-        enable = true;
-        enableVirtualCamera = true;
-        plugins = with pkgs.obs-studio-plugins; [
-          wlrobs
-          obs-vkcapture
-          obs-composite-blur
+        obs-studio = {
+          enable = true;
+          enableVirtualCamera = true;
+          plugins = with pkgs.obs-studio-plugins; [
+            wlrobs
+            obs-vkcapture
+            obs-composite-blur
+          ];
+        };
+
+        dconf.profiles.user.databases = [
+          {
+            settings."org/gnome/desktop/interface" = {
+              gtk-theme = "Catppuccin Mocha Blue";
+              icon-theme = "Catppuccin Mocha Blue";
+              font-name = "JetBrainsMono Nerd Font";
+              document-font-name = "JetBrainsMono Nerd Font";
+              monospace-font-name = "JetBrainsMono Nerd Font";
+            };
+          }
         ];
       };
 
-      dconf.profiles.user.databases = [{
-        settings."org/gnome/desktop/interface" = {
-          gtk-theme = "Catppuccin Mocha Blue";
-          icon-theme = "Catppuccin Mocha Blue";
-          font-name = "JetBrainsMono Nerd Font";
-          document-font-name = "JetBrainsMono Nerd Font";
-          monospace-font-name = "JetBrainsMono Nerd Font";
-        };
-      }];
+      environment.systemPackages = with pkgs; [
+        # Core utilities
+        wget
+        git
+        unzip
+        unrar
+        net-tools
+        btop
+        procps
+        psmisc
+        wl-clipboard
+        tree
+        networkmanager
+        cmake
+        dnsutils
+
+        # File managers
+        kdePackages.dolphin
+
+        # Filesystem support
+        ntfs3g
+        kdePackages.kio
+        kdePackages.kio-extras
+
+        # Theming
+        catppuccin-cursors.mochaBlue
+
+        # Media
+        mpv
+
+        # Office
+        onlyoffice-desktopeditors
+
+        # Container tools
+        dive
+        podman-tui
+        docker-compose
+
+        # Recovery tools
+        testdisk
+        testdisk-qt
+      ];
+
+      services = {
+        blueman.enable = true;
+        libinput.enable = true;
+        power-profiles-daemon.enable = true;
+      };
     };
-
-    environment.systemPackages = with pkgs; [
-      # Core utilities
-      wget
-      git
-      unzip
-      unrar
-      net-tools
-      btop
-      procps
-      psmisc
-      wl-clipboard
-      tree
-      networkmanager
-      cmake
-      dnsutils
-
-      # File managers
-      kdePackages.dolphin
-
-      # Filesystem support
-      ntfs3g
-      kdePackages.kio
-      kdePackages.kio-extras
-
-      # Theming
-      catppuccin-cursors.mochaBlue
-
-      # Media
-      mpv
-
-      # Office
-      onlyoffice-desktopeditors
-
-      # Container tools
-      dive
-      podman-tui
-      docker-compose
-
-      # Recovery tools
-      testdisk
-      testdisk-qt
-    ];
-
-    services = {
-      blueman.enable = true;
-      libinput.enable = true;
-      power-profiles-daemon.enable = true;
-    };
-  };
 }

@@ -2,14 +2,16 @@
 { ... }:
 
 {
-  flake.modules.homeManager.bat = { ... }: {
-    catppuccin.bat.enable = true;
+  flake.modules.homeManager.bat =
+    { ... }:
+    {
+      catppuccin.bat.enable = true;
 
-    programs.bat = {
-      enable = true;
-      config = {
-        paging = "never";
+      programs.bat = {
+        enable = true;
+        config = {
+          paging = "never";
+        };
       };
     };
-  };
 }

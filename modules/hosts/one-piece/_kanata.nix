@@ -5,7 +5,10 @@
 let
   # Devices to exclude from external keyboard detection (e.g., mouse receivers)
   excludeDevices = [
-    { vendor = "046d"; product = "c548"; } # Logitech USB Receiver
+    {
+      vendor = "046d";
+      product = "c548";
+    } # Logitech USB Receiver
   ];
 
   excludeConditions = builtins.concatStringsSep ", " (

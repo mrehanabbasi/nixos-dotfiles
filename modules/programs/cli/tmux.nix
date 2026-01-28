@@ -2,7 +2,8 @@
 { ... }:
 
 {
-  flake.modules.homeManager.tmux = { pkgs, ... }:
+  flake.modules.homeManager.tmux =
+    { pkgs, ... }:
     let
       tokyo-night = pkgs.tmuxPlugins.mkTmuxPlugin {
         pluginName = "tokyo-night";

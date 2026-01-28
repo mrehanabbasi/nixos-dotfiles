@@ -3,13 +3,15 @@
 { ... }:
 
 {
-  flake.modules.nixos.pia = { config, ... }: {
-    services.pia = {
-      enable = true;
-      credentials = {
-        credentialsFile = config.sops.secrets.pia.path;
+  flake.modules.nixos.pia =
+    { config, ... }:
+    {
+      services.pia = {
+        enable = true;
+        credentials = {
+          credentialsFile = config.sops.secrets.pia.path;
+        };
+        protocol = "wireguard";
       };
-      protocol = "wireguard";
     };
-  };
 }

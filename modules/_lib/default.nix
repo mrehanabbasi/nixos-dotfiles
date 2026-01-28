@@ -5,8 +5,9 @@
 {
   # Create a NixOS configuration from a list of modules
   mkNixos =
-    { system
-    , modules
+    {
+      system,
+      modules,
     }:
     inputs.nixpkgs.lib.nixosSystem {
       inherit system modules;

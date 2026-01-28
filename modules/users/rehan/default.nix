@@ -4,85 +4,87 @@ let
   userName = "rehan";
 in
 {
-  flake.modules.nixos.${userName} = { pkgs, ... }: {
-    users.users.${userName} = {
-      isNormalUser = true;
-      extraGroups = [
-        "wheel"
-        "podman"
-        "input"
-        "uinput"
-        "network"
-        "networkmanager"
-        "video"
-      ];
-      shell = pkgs.zsh;
-      packages = with pkgs; [ tree ];
-    };
-
-    home-manager = {
-      useGlobalPkgs = true;
-      useUserPackages = true;
-      backupFileExtension = "backup";
-      extraSpecialArgs = { inherit inputs; };
-
-      users.${userName} = {
-        imports = [
-          inputs.catppuccin.homeModules.catppuccin
-          inputs.walker.homeManagerModules.default
-
-          # Theming
-          inputs.self.modules.homeManager.catppuccin
-          inputs.self.modules.homeManager.gtk
-
-          # Desktop
-          inputs.self.modules.homeManager.hyprland
-          inputs.self.modules.homeManager.hyprlock
-          inputs.self.modules.homeManager.hypridle
-          inputs.self.modules.homeManager.hyprpaper
-          inputs.self.modules.homeManager.walker
-
-          # CLI tools
-          inputs.self.modules.homeManager.zsh
-          inputs.self.modules.homeManager.tmux
-          inputs.self.modules.homeManager.git
-          inputs.self.modules.homeManager.neovim
-          inputs.self.modules.homeManager.zoxide
-          inputs.self.modules.homeManager.fzf
-          inputs.self.modules.homeManager.bat
-          inputs.self.modules.homeManager.yazi
-          inputs.self.modules.homeManager.btop
-          inputs.self.modules.homeManager.fastfetch
-          inputs.self.modules.homeManager.oh-my-posh
-
-          # Terminal
-          inputs.self.modules.homeManager.ghostty
-
-          # Media
-          inputs.self.modules.homeManager.cava
-          inputs.self.modules.homeManager.zathura
-          inputs.self.modules.homeManager.kdenlive
-
-          # Productivity
-          inputs.self.modules.homeManager.kdeconnect
-
-          # Development
-          inputs.self.modules.homeManager.gpg
-          inputs.self.modules.homeManager.opencode
-
-          # Misc
-          inputs.self.modules.homeManager.mime-apps
-          inputs.self.modules.homeManager.packages
+  flake.modules.nixos.${userName} =
+    { pkgs, ... }:
+    {
+      users.users.${userName} = {
+        isNormalUser = true;
+        extraGroups = [
+          "wheel"
+          "podman"
+          "input"
+          "uinput"
+          "network"
+          "networkmanager"
+          "video"
         ];
+        shell = pkgs.zsh;
+        packages = with pkgs; [ tree ];
+      };
 
-        home = {
-          username = userName;
-          homeDirectory = "/home/${userName}";
-          stateVersion = "25.11";
+      home-manager = {
+        useGlobalPkgs = true;
+        useUserPackages = true;
+        backupFileExtension = "backup";
+        extraSpecialArgs = { inherit inputs; };
+
+        users.${userName} = {
+          imports = [
+            inputs.catppuccin.homeModules.catppuccin
+            inputs.walker.homeManagerModules.default
+
+            # Theming
+            inputs.self.modules.homeManager.catppuccin
+            inputs.self.modules.homeManager.gtk
+
+            # Desktop
+            inputs.self.modules.homeManager.hyprland
+            inputs.self.modules.homeManager.hyprlock
+            inputs.self.modules.homeManager.hypridle
+            inputs.self.modules.homeManager.hyprpaper
+            inputs.self.modules.homeManager.walker
+
+            # CLI tools
+            inputs.self.modules.homeManager.zsh
+            inputs.self.modules.homeManager.tmux
+            inputs.self.modules.homeManager.git
+            inputs.self.modules.homeManager.neovim
+            inputs.self.modules.homeManager.zoxide
+            inputs.self.modules.homeManager.fzf
+            inputs.self.modules.homeManager.bat
+            inputs.self.modules.homeManager.yazi
+            inputs.self.modules.homeManager.btop
+            inputs.self.modules.homeManager.fastfetch
+            inputs.self.modules.homeManager.oh-my-posh
+
+            # Terminal
+            inputs.self.modules.homeManager.ghostty
+
+            # Media
+            inputs.self.modules.homeManager.cava
+            inputs.self.modules.homeManager.zathura
+            inputs.self.modules.homeManager.kdenlive
+
+            # Productivity
+            inputs.self.modules.homeManager.kdeconnect
+
+            # Development
+            inputs.self.modules.homeManager.gpg
+            inputs.self.modules.homeManager.opencode
+
+            # Misc
+            inputs.self.modules.homeManager.mime-apps
+            inputs.self.modules.homeManager.packages
+          ];
+
+          home = {
+            username = userName;
+            homeDirectory = "/home/${userName}";
+            stateVersion = "25.11";
+          };
+
+          xdg.enable = true;
         };
-
-        xdg.enable = true;
       };
     };
-  };
 }

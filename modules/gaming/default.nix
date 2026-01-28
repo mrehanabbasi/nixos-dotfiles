@@ -2,22 +2,24 @@
 { ... }:
 
 {
-  flake.modules.nixos.gaming = { pkgs, ... }: {
-    programs = {
-      steam = {
-        enable = true;
-        remotePlay.openFirewall = true;
-        dedicatedServer.openFirewall = true;
+  flake.modules.nixos.gaming =
+    { pkgs, ... }:
+    {
+      programs = {
+        steam = {
+          enable = true;
+          remotePlay.openFirewall = true;
+          dedicatedServer.openFirewall = true;
+        };
+        gamemode.enable = true;
       };
-      gamemode.enable = true;
-    };
 
-    environment.systemPackages = with pkgs; [
-      lutris
-      heroic
-      wine
-      winetricks
-      protonup-qt
-    ];
-  };
+      environment.systemPackages = with pkgs; [
+        lutris
+        heroic
+        wine
+        winetricks
+        protonup-qt
+      ];
+    };
 }

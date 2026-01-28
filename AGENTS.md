@@ -22,8 +22,8 @@ sudo nixos-rebuild build --flake .#one-piece   # Validate (primary)
 sudo nixos-rebuild switch --flake .#one-piece  # Apply
 sudo nixos-rebuild test --flake .#one-piece    # Temporary (no bootloader)
 nix flake check                                 # Validate flake syntax
-nixpkgs-fmt <file.nix>                         # Format single file
-nixpkgs-fmt modules/programs/cli/              # Format directory
+nixfmt <file.nix>                              # Format single file
+nixfmt modules/programs/cli/                   # Format directory
 nix flake update                                # Update all inputs
 nix flake update <input-name>                  # Update single input
 ```

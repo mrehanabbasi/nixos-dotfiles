@@ -2,10 +2,12 @@
 { ... }:
 
 {
-  flake.modules.nixos.browsers = { pkgs, ... }: {
-    environment.systemPackages = with pkgs; [
-      brave
-      librewolf
-    ];
-  };
+  flake.modules.nixos.browsers =
+    { pkgs, ... }:
+    {
+      environment.systemPackages = with pkgs; [
+        brave
+        librewolf
+      ];
+    };
 }

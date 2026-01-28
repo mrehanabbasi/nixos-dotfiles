@@ -2,13 +2,15 @@
 { inputs, ... }:
 
 {
-  flake.modules.homeManager.opencode = { pkgs, ... }: {
-    programs.opencode = {
-      enable = true;
-      package = inputs.opencode.packages.${pkgs.system}.default;
-      settings = {
-        theme = "catppuccin";
+  flake.modules.homeManager.opencode =
+    { pkgs, ... }:
+    {
+      programs.opencode = {
+        enable = true;
+        package = inputs.opencode.packages.${pkgs.system}.default;
+        settings = {
+          theme = "catppuccin";
+        };
       };
     };
-  };
 }

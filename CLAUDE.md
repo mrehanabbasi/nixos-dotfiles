@@ -13,7 +13,7 @@ This is a NixOS configuration repository using the **Dendritic pattern** with fl
 - Test config (temporary): `sudo nixos-rebuild test --flake .#one-piece`
 - Check flake: `nix flake check`
 - Update inputs: `nix flake update`
-- Format Nix files: `nixpkgs-fmt <file.nix>`
+- Format Nix files: `nixfmt <file.nix>`
 
 ## Architecture
 
@@ -100,7 +100,7 @@ The repository uses **flake-parts** + **import-tree** for automatic module disco
 
 ### Formatting
 - **Language**: Nix expression language
-- **Formatting**: 2-space indentation, no tabs. Run `nixpkgs-fmt` before committing
+- **Formatting**: 2-space indentation, no tabs. Run `nixfmt` before committing
 - **Naming**: camelCase for variables, kebab-case for files/hostnames/aspects
 - **Comments**: Use `#` for comments. Document non-obvious choices
 - **Secrets**: Use sops-nix, never commit plaintext
