@@ -2,101 +2,64 @@
 
 ## Agent Autonomy
 
-The agent is trusted to perform the following **without explicit confirmation**:
+Perform **without confirmation**:
+- Read/write/edit config files (`*.nix`, `*.md`, etc.)
+- Create new modules for requested features
+- Stage, commit (Conventional Commits), and push to `main`
+- Run `nixos-rebuild build/switch --flake .#one-piece`
+- Run `nix flake check` for validation
 
-### File Operations
-- Read any file in the repository
-- Write/edit configuration files (`*.nix`, `*.md`, config files, etc.)
-- Create new modules when needed for the requested feature
+**Require confirmation**:
+- Destructive git ops (`reset --hard`, `push --force`, `rebase`)
+- Deleting files/modules
+- Changes to `_hardware.nix` or `stateVersion`
+- Operations involving secrets
 
-### Git Operations
-- Stage changes related to user requests
-- Commit changes after completing user-requested modifications
-- Push to `main` branch after commits
-- Use Conventional Commits format (load `commit-message` skill)
-
-### Build Operations
-- Run `nixos-rebuild build --flake .#one-piece` to validate changes
-- Run `nixos-rebuild switch --flake .#one-piece` after successful build validation (when user requests a config change)
-- Run `nix flake check` for comprehensive validation
-
-### Restrictions (still require confirmation)
-- Destructive git operations (`git reset --hard`, `git push --force`, `git rebase`)
-- Deleting files or modules
-- Changes to host hardware configs (`_hardware.nix`) or `stateVersion`
-- Operations involving secrets or credentials
-
-**Always explain what was done after completing actions.**
-
-## Build/Deploy Commands
+## Build/Lint Commands
 
 ```bash
-# Build (validate without applying)
-sudo nixos-rebuild build --flake .#one-piece
-
-# Apply configuration
-sudo nixos-rebuild switch --flake .#one-piece
-
-# Test (temporary, no bootloader update)
-sudo nixos-rebuild test --flake .#one-piece
-
-# Validate flake syntax
-nix flake check
-
-# Format Nix files
-nixpkgs-fmt <file.nix>
-
-# Update all flake inputs
-nix flake update
-
-# Update single input
-nix flake update <input-name>
+sudo nixos-rebuild build --flake .#one-piece   # Validate (primary)
+sudo nixos-rebuild switch --flake .#one-piece  # Apply
+sudo nixos-rebuild test --flake .#one-piece    # Temporary (no bootloader)
+nix flake check                                 # Validate flake syntax
+nixpkgs-fmt <file.nix>                         # Format single file
+nixpkgs-fmt modules/programs/cli/              # Format directory
+nix flake update                                # Update all inputs
+nix flake update <input-name>                  # Update single input
 ```
 
 ## Repository Structure (Dendritic Pattern)
 
-Uses flake-parts + import-tree for automatic module discovery.
+Uses **Dendritic pattern** with flake-parts + import-tree for automatic module discovery. Modules define reusable "aspects" that hosts compose.
 
 ```
-├── flake.nix                 # Minimal flake (imports modules/)
+├── flake.nix                 # Minimal entry (imports modules/)
 ├── modules/
-│   ├── flake/default.nix     # flake-parts configuration
+│   ├── flake/default.nix     # flake-parts config
 │   ├── _lib/default.nix      # Helper functions (mkNixos)
-│   ├── hosts/
-│   │   ├── one-piece/        # Host-specific config
-│   │   │   ├── default.nix   # Host composition (imports aspects)
-│   │   │   ├── _hardware.nix # Hardware config (auto-generated)
-│   │   │   ├── _gpu.nix      # NVIDIA settings
-│   │   │   ├── _network.nix  # Hostname, WiFi backend
-│   │   │   ├── _bluetooth.nix
-│   │   │   └── _kanata.nix   # Keyboard remapping
-│   │   └── _template/        # Template for new hosts
-│   ├── users/rehan/          # User definition + packages
+│   ├── hosts/one-piece/      # Host: default.nix + _hardware.nix, _gpu.nix, etc.
+│   ├── users/rehan/          # User + Home Manager integration
 │   ├── system/               # base, boot, networking, virtualisation
 │   ├── secrets/              # sops config + secrets.yaml
 │   ├── services/             # audio, tailscale, pia
-│   ├── desktop/              # hyprland, sddm, hyprlock, hypridle, hyprpaper, walker
-│   ├── programs/
-│   │   ├── cli/              # zsh, tmux, git, neovim, fzf, bat, etc.
-│   │   ├── terminal/         # ghostty
-│   │   ├── media/            # cava, zathura, kdenlive
-│   │   ├── development/      # gpg, opencode
-│   │   └── productivity/     # kdeconnect
+│   ├── desktop/              # hyprland, sddm, hyprlock, hypridle, walker
+│   ├── programs/             # cli/, terminal/, media/, development/
 │   ├── gaming/               # steam, gamemode, wine
 │   └── theming/              # catppuccin
 ```
 
-### Key Conventions
-- Files prefixed with `_` are ignored by import-tree (helpers, plain NixOS modules)
-- Each module defines `flake.modules.nixos.<name>` and/or `flake.modules.homeManager.<name>`
-- Host `default.nix` composes aspects via `inputs.self.modules.nixos.<name>`
+**Key conventions**:
+- `_` prefix = ignored by import-tree (helpers, plain NixOS modules)
+- Modules define `flake.modules.nixos.<name>` / `flake.modules.homeManager.<name>`
+- Hosts compose via `inputs.self.modules.nixos.<name>`
 
 ## Code Style
 
-### Dendritic Module Template
+### Module Template
 ```nix
-# Description comment
-{ ... }:
+# Description of module
+# Depends on: other-module (if applicable)
+{ inputs, ... }:  # Use { ... }: if inputs not needed
 {
   flake.modules.nixos.feature-name = { config, pkgs, lib, ... }: {
     # NixOS configuration
@@ -108,52 +71,78 @@ Uses flake-parts + import-tree for automatic module discovery.
 }
 ```
 
-### Formatting Rules
+### Module Arguments
+| Argument | When to Use |
+|----------|-------------|
+| `{ ... }:` | No external args needed |
+| `{ inputs, ... }:` | Needs flake inputs (external packages, modules) |
+| `{ config, ... }:` | Reads other config (e.g., `config.sops.secrets`) |
+| `{ pkgs, ... }:` | Needs packages |
+| `{ lib, ... }:` | Uses lib functions (`mkIf`, `mkOption`) |
+
+### Formatting
 - **Indentation**: 2 spaces, NO tabs
-- **Line length**: < 100 characters
+- **Line length**: < 100 chars
 - **Semicolons**: Required after each attribute
 - **Strings**: `"${var}"` for interpolation, `''heredoc''` for multi-line
+- **Lists**: One item per line for 3+ items
 
 ### Naming Conventions
 | Type | Convention | Example |
 |------|------------|---------|
 | Variables | camelCase | `enableBluetooth` |
 | Files | kebab-case.nix | `oh-my-posh.nix` |
-| Hostnames | kebab-case | `one-piece` |
-| Flake inputs | kebab-case | `home-manager` |
-| Aspect names | kebab-case | `system-packages` |
+| Hostnames/Inputs | kebab-case | `one-piece`, `home-manager` |
+
+### Conditional Configuration
+```nix
+services.foo = lib.mkIf config.programs.bar.enable { ... };
+
+environment.systemPackages = with pkgs; [ required ]
+  ++ lib.optionals config.hardware.nvidia.enable [ nvidia-tools ];
+
+option = lib.mkDefault "value";  # Can be overridden
+option = lib.mkForce "value";    # Cannot be overridden
+```
+
+### Error Handling
+```nix
+assertions = [{
+  assertion = config.services.foo.enable -> config.services.bar.enable;
+  message = "foo requires bar to be enabled";
+}];
+
+warnings = lib.optional (config.old-option != null)
+  "old-option is deprecated, use new-option instead";
+```
 
 ## Common Patterns
 
-### Adding a New Aspect (Feature)
+### Adding a New Aspect
 1. Create `modules/<category>/feature.nix`
 2. Define `flake.modules.nixos.feature` and/or `flake.modules.homeManager.feature`
 3. Add to host's `default.nix`: `inputs.self.modules.nixos.feature`
-4. Run `sudo nixos-rebuild build --flake .#one-piece` to validate
-
-### Adding a New Host
-1. Copy `modules/hosts/_template/` to `modules/hosts/<hostname>/`
-2. Update `_hardware.nix` with hardware-specific config
-3. Customize `default.nix` to select desired aspects
-4. Build with `nixos-rebuild build --flake .#<hostname>`
+4. Validate: `sudo nixos-rebuild build --flake .#one-piece`
 
 ### Secrets (sops-nix)
-- Secrets stored in `modules/secrets/secrets.yaml`
-- Age key: `/home/rehan/.config/sops/age/keys.txt`
-- Access: `config.sops.secrets.<name>.path`
+```nix
+{ config, ... }: {
+  services.foo.credentialsFile = config.sops.secrets.foo.path;
+}
+```
+Secrets: `modules/secrets/secrets.yaml` | Key: `/home/rehan/.config/sops/age/keys.txt`
 
-## Important Notes
+## Anti-patterns
 
-- **stateVersion**: NEVER change after initial install
-- **Host hardware files**: Prefixed with `_` to exclude from import-tree
-- **Host**: `one-piece` | **User**: `rehan`
+- **NEVER** change `stateVersion` after initial install
+- **NEVER** use tabs for indentation
+- **NEVER** hardcode paths—use `config.xdg.*` or `pkgs.writeText`
+- **AVOID** `with pkgs;` in large scopes—prefer explicit `pkgs.foo`
+- **AVOID** `rec { }` attribute sets—use `let ... in` instead
+- **DON'T** put hardware config in shared modules—keep in host's `_*.nix`
+
+## Context
+
+- **Host**: `one-piece` | **User**: `rehan` | **System**: `x86_64-linux`
 - **Theme**: Catppuccin Mocha Blue (system-wide)
-- **Rollback**: Select previous generation from GRUB if broken
-
-## Testing Workflow
-
-1. Edit module(s)
-2. `nixpkgs-fmt <file.nix>` — format
-3. `sudo nixos-rebuild build --flake .#one-piece` — validate
-4. `sudo nixos-rebuild switch --flake .#one-piece` — apply
-5. Verify functionality
+- **Rollback**: Select previous generation from GRUB if config breaks
