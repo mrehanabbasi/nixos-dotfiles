@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Overview
 
-This is a NixOS configuration repository using flakes for declarative system configuration. The system is named "one-piece" and uses Hyprland as the window manager with a modular configuration structure.
+This is a NixOS configuration repository using the **Dendritic pattern** with flake-parts and import-tree for declarative system configuration. The system is named "one-piece" and uses Hyprland as the window manager.
 
 ## Build/Deploy Commands
 
@@ -17,69 +17,97 @@ This is a NixOS configuration repository using flakes for declarative system con
 
 ## Architecture
 
-### Configuration Structure
+### Dendritic Pattern with flake-parts
 
-The repository follows a two-tier modular architecture:
+The repository uses **flake-parts** + **import-tree** for automatic module discovery. Each `.nix` file in `modules/` is a flake-parts module that defines aspects (features).
 
-**System-level configuration (root directory):**
-- `configuration.nix` - Main entry point that imports all system modules
-- `flake.nix` - Flake definition with inputs (nixpkgs, home-manager, hyprshutdown, catppuccin, sops-nix, opencode)
-- `hardware-configuration.nix` - Hardware-specific settings
-- `modules/` - System-wide configuration modules:
-  - `boot.nix` - Boot loader and kernel settings
-  - `networking.nix` - Network configuration
-  - `hardware.nix` - Hardware settings (audio, graphics, etc.)
-  - `desktop.nix` - Display manager (SDDM) and Hyprland system setup
-  - `programs.nix` - System-wide programs
-  - `services.nix` - System services
-  - `users.nix` - User account definitions
-  - `virtualisation.nix` - Docker, VMs, etc.
-  - `gaming.nix` - Gaming-related packages and settings
-  - `kanata.nix` - Keyboard remapping configuration
+**Key concepts:**
+- **Aspects**: Self-contained features defined as `flake.modules.nixos.<name>` or `flake.modules.homeManager.<name>`
+- **Host composition**: Hosts select which aspects to include via their `default.nix`
+- **Auto-import**: import-tree automatically imports all `.nix` files (except those prefixed with `_`)
 
-**User-level configuration (home/ directory):**
-- `home/home.nix` - Home Manager entry point for user "rehan"
-- `home/modules/` - User application configurations:
-  - Shell: `zsh.nix`, `tmux.nix`, `oh-my-posh.nix`
-  - Editor: `neovim.nix`
-  - Terminal: `ghostty.nix`
-  - File management: `yazi.nix`, `mime-apps.nix`
-  - Window manager: `hyprland.nix`, `hyprlock.nix`, `hypridle.nix`, `hyprpaper.nix`, `rofi.nix`
-  - Tools: `git.nix`, `gpg.nix`, `fzf.nix`, `zoxide.nix`, `bat.nix`, `fastfetch.nix`, `btop.nix`, `cava.nix`
-  - Applications: `zathura.nix`, `kdeconnect.nix`, `opencode.nix`
+### Directory Structure
+
+```
+├── flake.nix                 # Minimal flake entry point
+├── modules/
+│   ├── flake/default.nix     # flake-parts configuration
+│   ├── _lib/default.nix      # Helper functions (mkNixos) - ignored by import-tree
+│   ├── hosts/
+│   │   ├── one-piece/        # Host-specific configuration
+│   │   │   ├── default.nix   # Host composition (selects aspects)
+│   │   │   ├── _hardware.nix # Hardware config (plain NixOS module)
+│   │   │   ├── _gpu.nix      # NVIDIA Prime settings
+│   │   │   ├── _network.nix  # Hostname, WiFi backend
+│   │   │   ├── _bluetooth.nix
+│   │   │   └── _kanata.nix   # Keyboard remapping
+│   │   └── _template/        # Template for new hosts
+│   ├── users/rehan/          # User definition + Home Manager
+│   ├── system/               # base, boot, networking, virtualisation
+│   ├── secrets/              # sops-nix config + secrets.yaml
+│   ├── services/             # audio, tailscale, pia
+│   ├── desktop/              # hyprland, sddm, hyprlock, hypridle, hyprpaper, walker
+│   ├── programs/
+│   │   ├── cli/              # zsh, tmux, git, neovim, fzf, bat, yazi, etc.
+│   │   ├── terminal/         # ghostty
+│   │   ├── media/            # cava, zathura, kdenlive
+│   │   ├── development/      # gpg, opencode
+│   │   └── productivity/     # kdeconnect
+│   ├── gaming/               # steam, gamemode, wine
+│   └── theming/              # catppuccin
+```
 
 ### Key Architectural Patterns
 
-1. **Flake Inputs Management**: The flake pins nixpkgs to 25.11 stable. Most inputs use `inputs.nixpkgs.follows = "nixpkgs"` for consistency, except hyprshutdown which uses its own unstable nixpkgs to avoid compatibility issues.
+1. **Flake-parts modules**: Each file defines `flake.modules.nixos.<aspect>` and/or `flake.modules.homeManager.<aspect>`
 
-2. **Special Arguments**: System-level modules receive `{ hyprshutdown, opencode, system, ... }` via `specialArgs`. Home Manager modules receive `{ opencode, ... }` via `extraSpecialArgs`.
-
-3. **Home Manager Integration**: Home Manager is integrated at the NixOS level (not standalone). User configuration is in `home-manager.users.rehan` block in flake.nix.
-
-4. **Theming**: Catppuccin theme system is applied both at system level (SDDM) and user level (applications). Uses "mocha" flavor with "blue" accent. User home.nix sets `catppuccin.enable = false` at root to prevent automatic theming of all applications, enabling it selectively per-app instead.
-
-5. **Secrets Management**: Uses sops-nix with age encryption. Key file location: `/home/rehan/.config/sops/age/keys.txt`. Secrets stored in `secrets/secrets.yaml`.
-
-6. **Module Import Pattern**: Home Manager modules use explicit imports with argument passing:
+2. **Host composition**: Host's `default.nix` imports aspects:
    ```nix
-   (import ./modules/tmux.nix { inherit pkgs; })
+   modules = [
+     inputs.self.modules.nixos.base
+     inputs.self.modules.nixos.hyprland
+     # ... more aspects
+   ];
    ```
+
+3. **`_` prefix convention**: Files/dirs starting with `_` are ignored by import-tree:
+   - `_lib/` - Helper functions
+   - `_hardware.nix` - Plain NixOS modules (need `modulesPath`)
+   - `_template/` - Not auto-imported
+
+4. **Home Manager integration**: Integrated at NixOS level via the `rehan` user module
+
+5. **Theming**: Catppuccin "mocha" flavor with "blue" accent, applied system-wide
+
+6. **Secrets**: sops-nix with age encryption. Secrets in `modules/secrets/secrets.yaml`
 
 ## Code Style
 
-- **Language**: Nix expression language for declarative system configuration
-- **Formatting**: Use 2-space indentation, no tabs. Run `nixpkgs-fmt` before committing
-- **Imports**: Use `{ config, pkgs, ... }:` pattern. Import order: stdlib, custom modules, config
-- **Naming**: Use camelCase for variables, kebab-case for hostnames/files (e.g., `one-piece`)
-- **Structure**: Modular config split by concern (home/, configuration.nix, hardware-configuration.nix)
-- **Comments**: Use `#` for comments. Document non-obvious configuration choices
-- **Secrets**: Use sops-nix for secrets management. Never commit plaintext secrets
-- **Home Manager**: User configs go in home/ directory, system configs in root
-- **Flake inputs**: Pin to specific branches (e.g., nixos-25.11), use `follows` for consistency
+### Dendritic Module Template
+```nix
+# Description comment
+{ ... }:
+{
+  flake.modules.nixos.feature-name = { config, pkgs, lib, ... }: {
+    # NixOS configuration
+  };
+
+  flake.modules.homeManager.feature-name = { config, pkgs, ... }: {
+    # Home Manager configuration
+  };
+}
+```
+
+### Formatting
+- **Language**: Nix expression language
+- **Formatting**: 2-space indentation, no tabs. Run `nixpkgs-fmt` before committing
+- **Naming**: camelCase for variables, kebab-case for files/hostnames/aspects
+- **Comments**: Use `#` for comments. Document non-obvious choices
+- **Secrets**: Use sops-nix, never commit plaintext
 
 ## Important Configuration Details
 
-- **System state version**: 25.11 (Do NOT change this value)
+- **System state version**: 25.11 (Do NOT change)
 - **Hostname**: one-piece
 - **User**: rehan
 - **Time zone**: Asia/Karachi
@@ -87,18 +115,20 @@ The repository follows a two-tier modular architecture:
 - **Window Manager**: Hyprland (Wayland)
 - **Terminal**: Ghostty
 - **Shell**: Zsh with Oh My Posh
-- **Editor**: Neovim with LSPs (Go, TypeScript, Lua, YAML, JSON, Docker, Tailwind)
+- **Editor**: Neovim
 - **Display Manager**: SDDM with Catppuccin theme
-- **Garbage Collection**: Automatic weekly, keeps last 7 days
 
-## Hyprland Configuration
+## Adding New Features
 
-The Hyprland config in `home/modules/hyprland.nix` uses declarative Nix configuration (not hyprland.conf). Key details:
-
-- Main modifier: SUPER key
-- Terminal: Ghostty
-- File manager: Yazi (terminal) or Dolphin (GUI with SUPER+SHIFT+E)
-- Launcher: Rofi
-- Browser: Brave with specific extension allowlisting
-- Layout: Dwindle with vim-style navigation (H/J/K/L)
-- Autostart: hyprpanel, hyprpaper, hypridle, kdeconnect
+1. Create `modules/<category>/feature.nix`
+2. Define the aspect:
+   ```nix
+   { ... }:
+   {
+     flake.modules.nixos.feature = { pkgs, ... }: {
+       # config here
+     };
+   }
+   ```
+3. Add to host's `default.nix`: `inputs.self.modules.nixos.feature`
+4. Build and test: `sudo nixos-rebuild build --flake .#one-piece`
