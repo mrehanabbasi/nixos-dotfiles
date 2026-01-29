@@ -1,38 +1,18 @@
 # Oh-my-posh - shell prompt
-{ ... }:
+# Uses nixpkgs-unstable for latest version
+{ inputs, ... }:
 
 {
   flake.modules.homeManager.oh-my-posh =
     { pkgs, ... }:
     let
-      # Get latest version of oh-my-posh since nixpkgs' version lags behind
-      oh-my-posh = pkgs.stdenv.mkDerivation {
-        pname = "oh-my-posh";
-        version = "v28.3.1";
-
-        src = pkgs.fetchurl {
-          url = "https://github.com/JanDeDobbeleer/oh-my-posh/releases/download/v28.3.1/posh-linux-amd64";
-          sha256 = "0gjvawgg6sg3rz3vmq90bsgilprndfa8alihg5cvgj3ra5gkpcgg";
-        };
-
-        dontUnpack = true;
-
-        installPhase = ''
-          mkdir -p $out/bin
-          cp $src $out/bin/oh-my-posh
-          chmod +x $out/bin/oh-my-posh
-        '';
-
-        meta = {
-          mainProgram = "oh-my-posh";
-        };
-      };
+      pkgs-unstable = import inputs.nixpkgs-unstable { inherit (pkgs) system; };
     in
     {
       programs.oh-my-posh = {
         enable = true;
         enableZshIntegration = true;
-        package = oh-my-posh;
+        package = pkgs-unstable.oh-my-posh;
         settings = {
           version = 4;
           final_space = true;
