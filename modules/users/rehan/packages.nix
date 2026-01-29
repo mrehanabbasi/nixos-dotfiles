@@ -45,6 +45,7 @@
         tree-sitter
         lazygit
         nodejs
+        statix # nix linter
 
         libsForQt5.qtstyleplugin-kvantum
         libsForQt5.qt5ct
