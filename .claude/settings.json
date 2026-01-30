@@ -1,0 +1,24 @@
+{
+  "$schema": "https://code.claude.com/settings-schema.json",
+  "permissions": {
+    "allow": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "WebFetch",
+      "WebSearch",
+      "Read",
+      "Write",
+      "Skill(commit-message)",
+      "Skill(nixos-rebuild)",
+      "Skill(flake-update)",
+      "Skill(pre-commit-check)",
+      "Skill(diagnose)",
+      "Skill(emergency-rollback)"
+    ],
+    "ask": [
+      "Bash"
+    ],
+    "deny": []
+  }
+}

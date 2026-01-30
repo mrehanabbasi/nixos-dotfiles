@@ -1,0 +1,12 @@
+# Personal/local settings - not committed
+*.local.json
+*.local.md
+CLAUDE.local.md
+
+# Temporary files
+*.tmp
+*.bak
+.DS_Store
+
+# Node modules if any skill uses them
+node_modules/

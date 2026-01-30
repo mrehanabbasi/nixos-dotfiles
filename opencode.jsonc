@@ -3,6 +3,7 @@
   "default_agent": "nixos-builder",
   "permission": {
     "*": "ask",
+    "read": "allow",
     "edit": "allow",
     "bash": "ask",
     "glob": "allow",
@@ -13,6 +14,9 @@
       "commit-message": "allow",
       "nixos-rebuild": "allow",
       "flake-update": "allow",
+      "pre-commit-check": "allow",
+      "diagnose": "allow",
+      "emergency-rollback": "allow",
       // "hyprland-bindings": "allow",
       "*": "deny"
     }
