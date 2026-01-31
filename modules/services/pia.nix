@@ -1,6 +1,6 @@
 # PIA VPN service
 # Depends on: sops (for credentials)
-{ ... }:
+_:
 
 {
   flake.modules.nixos.pia =

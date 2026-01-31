@@ -1,9 +1,9 @@
 # SOPS secrets management
-{ ... }:
+_:
 
 {
   flake.modules.nixos.sops =
-    { ... }:
+    _:
     {
       sops = {
         defaultSopsFile = ./secrets.yaml;

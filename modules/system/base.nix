@@ -1,9 +1,9 @@
 # Base system configuration - Nix settings, locale, unfree packages
-{ ... }:
+_:
 
 {
   flake.modules.nixos.base =
-    { ... }:
+    _:
     {
       # Allow unfree packages (needed for NVIDIA drivers, etc.)
       nixpkgs.config.allowUnfree = true;

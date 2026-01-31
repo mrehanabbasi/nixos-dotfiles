@@ -42,7 +42,7 @@
 
   # Home Manager aspect
   flake.modules.homeManager.hyprland =
-    { ... }:
+    _:
     {
       wayland.windowManager.hyprland = {
         enable = true;

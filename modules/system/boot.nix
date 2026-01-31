@@ -1,9 +1,9 @@
 # Boot loader configuration
-{ ... }:
+_:
 
 {
   flake.modules.nixos.boot =
-    { ... }:
+    _:
     {
       # Use the systemd-boot EFI boot loader
       boot.loader = {

@@ -1,9 +1,9 @@
 # Btop - system monitor with Catppuccin theme
-{ ... }:
+_:
 
 {
   flake.modules.homeManager.btop =
-    { ... }:
+    _:
     {
       catppuccin.btop.enable = true;
 

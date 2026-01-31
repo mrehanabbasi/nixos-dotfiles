@@ -1,5 +1,5 @@
 # Kdenlive - Video editor with plugin dependencies
-{ ... }:
+_:
 
 {
   flake.modules.homeManager.kdenlive =

@@ -1,5 +1,5 @@
 # GPG configuration with public key
-{ ... }:
+_:
 
 {
   flake.modules.nixos.gpg =
@@ -13,7 +13,7 @@
     };
 
   flake.modules.homeManager.gpg =
-    { ... }:
+    _:
     {
       programs.gpg = {
         enable = true;

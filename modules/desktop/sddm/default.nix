@@ -1,5 +1,5 @@
 # SDDM display manager with Catppuccin theme
-{ ... }:
+_:
 
 {
   flake.modules.nixos.sddm =

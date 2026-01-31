@@ -1,10 +1,10 @@
 # Walker - Application Launcher with Catppuccin Mocha Blue theme
 # Theme based on: https://github.com/krymancer/walker
-{ ... }:
+_:
 
 {
   flake.modules.homeManager.walker =
-    { ... }:
+    _:
     {
       programs.walker = {
         enable = true;

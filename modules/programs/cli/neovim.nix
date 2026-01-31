@@ -1,9 +1,9 @@
 # Neovim editor - symlinks to external config
-{ ... }:
+_:
 
 {
   flake.modules.nixos.neovim =
-    { ... }:
+    _:
     {
       programs.neovim = {
         enable = true;

@@ -1,5 +1,5 @@
 # Tmux terminal multiplexer with Tokyo Night theme
-{ ... }:
+_:
 
 {
   flake.modules.homeManager.tmux =

@@ -1,10 +1,10 @@
 # Base network configuration (shared across hosts)
 # Host-specific settings (hostname, wifi backend) go in hosts/<name>/network.nix
-{ ... }:
+_:
 
 {
   flake.modules.nixos.networking =
-    { ... }:
+    _:
     {
       networking = {
         timeServers = [ "pool.ntp.org" ];

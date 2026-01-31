@@ -1,9 +1,9 @@
 # Zathura - PDF viewer with Catppuccin theme
-{ ... }:
+_:
 
 {
   flake.modules.homeManager.zathura =
-    { ... }:
+    _:
     {
       catppuccin.zathura.enable = true;
 

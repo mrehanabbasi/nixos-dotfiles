@@ -1,5 +1,5 @@
 # Core system packages
-{ ... }:
+_:
 
 {
   flake.modules.nixos.system-packages =

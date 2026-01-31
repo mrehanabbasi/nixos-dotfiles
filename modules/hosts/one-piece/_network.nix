@@ -1,6 +1,6 @@
 # Network configuration for one-piece
 # Host-specific: hostname, WiFi backend for Qualcomm FastConnect 7800
-{ ... }:
+_:
 
 {
   networking = {

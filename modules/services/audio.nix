@@ -1,9 +1,9 @@
 # Audio configuration with Pipewire
-{ ... }:
+_:
 
 {
   flake.modules.nixos.audio =
-    { ... }:
+    _:
     {
       services.pipewire = {
         enable = true;

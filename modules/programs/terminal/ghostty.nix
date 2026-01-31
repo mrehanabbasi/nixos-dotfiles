@@ -1,5 +1,5 @@
 # Ghostty terminal emulator with Catppuccin theme
-{ ... }:
+_:
 
 {
   flake.modules.nixos.ghostty =
@@ -9,7 +9,7 @@
     };
 
   flake.modules.homeManager.ghostty =
-    { ... }:
+    _:
     {
       catppuccin.ghostty.enable = true;
 

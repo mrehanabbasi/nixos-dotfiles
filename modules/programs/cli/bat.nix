@@ -1,9 +1,9 @@
 # Bat - better cat with Catppuccin theme
-{ ... }:
+_:
 
 {
   flake.modules.homeManager.bat =
-    { ... }:
+    _:
     {
       catppuccin.bat.enable = true;
 

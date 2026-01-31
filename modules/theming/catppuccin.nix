@@ -1,16 +1,16 @@
 # Catppuccin theming - NixOS and Home Manager
-{ ... }:
+_:
 
 {
   flake.modules.nixos.catppuccin =
-    { ... }:
+    _:
     {
       # NixOS-level catppuccin settings are applied via the catppuccin.nixosModules.catppuccin
       # which is imported in the host definition
     };
 
   flake.modules.homeManager.catppuccin =
-    { ... }:
+    _:
     {
       catppuccin = {
         accent = "blue";

@@ -1,9 +1,9 @@
 # Fastfetch - system information with custom layout
-{ ... }:
+_:
 
 {
   flake.modules.homeManager.fastfetch =
-    { ... }:
+    _:
     {
       programs.fastfetch = {
         enable = true;

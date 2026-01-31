@@ -1,5 +1,5 @@
 # Gaming - Steam, Lutris, and related tools
-{ ... }:
+_:
 
 {
   flake.modules.nixos.gaming =

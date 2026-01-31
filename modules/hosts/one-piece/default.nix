@@ -40,6 +40,7 @@ in
       inputs.self.modules.nixos.audio
       inputs.self.modules.nixos.tailscale
       inputs.self.modules.nixos.pia
+      inputs.self.modules.nixos.flatpak
 
       # ════════════════════════════════════════════════════════════════════
       # LAYER 6: Desktop & Programs

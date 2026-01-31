@@ -1,9 +1,9 @@
 # Zsh shell configuration
-{ ... }:
+_:
 
 {
   flake.modules.nixos.zsh =
-    { ... }:
+    _:
     {
       programs.zsh.enable = true;
     };

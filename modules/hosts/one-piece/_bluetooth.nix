@@ -1,5 +1,5 @@
 # Bluetooth configuration for one-piece
-{ ... }:
+_:
 
 {
   hardware.bluetooth = {

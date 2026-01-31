@@ -1,9 +1,9 @@
 # Yazi - terminal file manager with Catppuccin theme
-{ ... }:
+_:
 
 {
   flake.modules.homeManager.yazi =
-    { ... }:
+    _:
     {
       catppuccin.yazi.enable = true;
 

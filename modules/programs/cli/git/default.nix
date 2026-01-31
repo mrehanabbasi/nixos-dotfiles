@@ -1,5 +1,5 @@
 # Git configuration with GPG signing
-{ ... }:
+_:
 
 {
   flake.modules.homeManager.git =

@@ -1,9 +1,9 @@
 # Hypridle - idle daemon for Hyprland
-{ ... }:
+_:
 
 {
   flake.modules.homeManager.hypridle =
-    { ... }:
+    _:
     {
       services.hypridle = {
         enable = true;

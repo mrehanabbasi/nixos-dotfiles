@@ -1,9 +1,9 @@
 # Cava - audio visualizer with Catppuccin theme
-{ ... }:
+_:
 
 {
   flake.modules.homeManager.cava =
-    { ... }:
+    _:
     {
       catppuccin.cava.enable = true;
 

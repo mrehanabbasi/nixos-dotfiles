@@ -1,5 +1,5 @@
 # User-specific packages for rehan
-{ ... }:
+_:
 
 {
   flake.modules.homeManager.packages =

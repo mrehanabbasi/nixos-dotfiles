@@ -1,5 +1,5 @@
 # Web browsers
-{ ... }:
+_:
 
 {
   flake.modules.nixos.browsers =

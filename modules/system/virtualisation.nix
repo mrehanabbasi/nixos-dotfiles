@@ -1,9 +1,9 @@
 # Virtualisation and container configuration
-{ ... }:
+_:
 
 {
   flake.modules.nixos.virtualisation =
-    { ... }:
+    _:
     {
       virtualisation = {
         containers.enable = true;

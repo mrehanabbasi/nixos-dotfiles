@@ -1,5 +1,5 @@
 # Hyprlock screen locker with Catppuccin theme
-{ ... }:
+_:
 
 {
   flake.modules.homeManager.hyprlock =
