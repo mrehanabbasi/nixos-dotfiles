@@ -1,8 +1,88 @@
 # Autonomous Agents vs Skills
 
-This document explains when to use **autonomous agents** (via Task tool) vs **skills** for NixOS development.
+This document explains the distinction between **autonomous agents** and **procedural skills** in this Claude Code configuration.
 
-## Agent vs Skill Decision Criteria
+## Repository Context
+
+This is a **NixOS dotfiles repository** using the **Dendritic pattern** with flake-parts and import-tree for automatic module discovery.
+
+**Key directories:**
+- `modules/` - NixOS and Home Manager configuration modules
+- `.claude/agents/` - Autonomous agents for complex tasks
+- `.claude/skills/` - Procedural skills for known workflows
+- `.claude/commands/` - Slash commands for quick operations
+- `.claude/hooks/` - Git hooks for validation and formatting
+
+**Host**: `one-piece` | **User**: `rehan` | **System**: `x86_64-linux`
+
+See `/home/rehan/nixos-dotfiles/CLAUDE.md` for complete repository guidelines.
+
+---
+
+## Two Types of Components
+
+### Autonomous Agents (`.claude/agents/`)
+
+**Can research, iterate, and make decisions autonomously.**
+
+Located in `.claude/agents/`, these components can autonomously research, iterate, and make complex decisions:
+
+- **nixos-builder** - Research solutions, edit multiple files, iterate on build failures
+- **nixos-planner** - Explore options, analyze requirements, suggest alternatives
+- **audit-agent** - Explore codebase, identify patterns, infer best practices
+- **docs-assistant** - Understand context, research documentation standards
+- **hyprland-config** - Research Hyprland best practices, suggest fixes
+
+**Capabilities:**
+- ✅ Use webfetch to research solutions
+- ✅ Edit multiple files based on findings
+- ✅ Read and understand code contextually
+- ✅ Infer requirements and adapt
+- ✅ Handle unknown scenarios
+- ✅ Make complex multi-step decisions
+
+### Procedural Skills (`.claude/skills/`)
+
+**Follow known procedures and checklists.**
+
+Located in `.claude/skills/`, these components execute predefined workflows:
+
+- **pre-commit-check** - Runs checklist: audit → nixfmt → flake check → report
+- **diagnose** - Executes: journalctl → systemctl → dmesg → analyze
+- **emergency-rollback** - Follows: list generations → show commands → execute
+- **commit-message** - Provides conventional commit templates
+- **nixos-rebuild** - Explains rebuild commands and workflows
+- **flake-update** - Gives update guidance and compatibility notes
+
+**Characteristics:**
+- Execute predefined steps in sequence
+- Do not need to figure out solutions
+- Follow fixed procedures
+- More token-efficient for straightforward tasks
+
+---
+
+## When to Use Which
+
+**Use an Agent when:**
+- You don't know the solution path
+- Need research and exploration
+- Multiple approaches possible
+- Example: "Add GPU passthrough support" (requires research, testing, iteration)
+
+**Use a Skill when:**
+- Solution is known and procedural
+- Following a checklist
+- Running diagnostic commands
+- Example: "Run pre-commit validation" (known steps: audit, nixfmt, flake check)
+
+---
+
+## Built-in Claude Code Agents (via Task Tool)
+
+This section explains when to use built-in Claude Code agents vs the project's autonomous agents/skills.
+
+### Agent vs Skill Decision Criteria
 
 ### Use a Skill (with `context: fork`) When:
 - ✅ Task is focused and predictable
@@ -43,17 +123,21 @@ Total impact on main: ~700-1.5K tokens
 
 ---
 
-## Current Skills That Can Spawn Agents
+## Project Agents That May Spawn Built-in Agents
 
-These skills use the **Task tool** internally for complex work:
+These autonomous agents may use built-in Claude Code agents via the **Task tool** for complex work:
 
 ### audit-agent
-**Skill behavior**: Quick focused audits
-**Agent delegation**: For large codebase analysis, spawns `Explore` agent to search and analyze across many files
+**Primary capability**: Analyze codebase for style, patterns, and best practices
+**May delegate to**: `Explore` agent for thorough codebase scanning across many files
 
 ### nixos-planner
-**Skill behavior**: Plan simple changes
-**Agent delegation**: For complex features, could spawn `general-purpose` agent to research implementation approaches
+**Primary capability**: Plan configuration changes and feature additions
+**May delegate to**: `general-purpose` agent for researching implementation approaches
+
+### nixos-builder
+**Primary capability**: Execute NixOS rebuild with error handling and iteration
+**May delegate to**: Research solutions for build failures, dependency issues
 
 ---
 
@@ -179,7 +263,7 @@ You: "/pre-commit"
 Skill workflow:
 1. Run nixfmt on changed files
 2. Run nix flake check
-3. Invoke audit-agent skill
+3. May invoke audit-agent if needed
 4. Return validation results
 
 Result: "All checks passed" or list of issues
@@ -200,6 +284,42 @@ Result: Specific recommendations based on agent research
 
 ---
 
+## Common NixOS Patterns
+
+### Flatpak Management (nix-flatpak)
+
+This repository uses **nix-flatpak** for declarative Flatpak management, enabling reproducible application installation.
+
+**Adding new applications** (in `modules/services/flatpak.nix`):
+```nix
+services.flatpak.packages = [
+  "com.example.App"        # App ID from Flathub
+  "org.another.Application"
+];
+```
+
+**Configuration**:
+- Repository management: nix-flatpak automatically adds and manages Flathub
+- Auto-updates: Enabled daily via `services.flatpak.update.auto`
+- No manual systemd services needed for repository setup
+
+**Finding app IDs**: Search on [Flathub](https://flathub.org) or use:
+```bash
+flatpak search <app-name>
+flatpak list --app  # List installed apps
+```
+
+**Manual operations** (when needed):
+```bash
+flatpak update                    # Manually trigger updates
+flatpak uninstall --unused        # Clean up unused dependencies
+flatpak repair                    # Repair installation
+```
+
+**Module location**: `/home/rehan/nixos-dotfiles/modules/services/flatpak.nix`
+
+---
+
 ## When NOT to Use Agents
 
 **Avoid agents for**:
@@ -217,13 +337,14 @@ Result: Specific recommendations based on agent research
 | Task Type | Use | Example |
 |-----------|-----|---------|
 | Validate syntax | ✅ Skill (`pre-commit-check`) | `/pre-commit` |
-| Rebuild config | ✅ Skill (`nixos-builder`) | `/rebuild` |
+| Rebuild config | 🤖 Agent (`nixos-builder`) | `/rebuild` |
 | Quick diagnostics | ✅ Skill (`diagnose`) | `/diagnose` |
 | Find pattern in codebase | 🤖 Agent (`Explore`) | "Find all Hyprland keybindings" |
 | Research new feature | 🤖 Agent (`general-purpose`) | "How to add GPU passthrough?" |
-| Plan complex migration | 🤖 Agent (`Plan`) | "Plan NixOS 24.11 upgrade" |
+| Plan complex migration | 🤖 Agent (`Plan`) or (`nixos-planner`) | "Plan NixOS 24.11 upgrade" |
 | Debug complex issue | 🤖 Agent (`general-purpose`) | "Why does Hyprland crash?" |
 | Bulk refactoring | 🤖 Agent (`Explore` + `general-purpose`) | "Refactor all module imports" |
+| Audit codebase | 🤖 Agent (`audit-agent`) | `/review-audit` |
 
 ---
 
@@ -241,10 +362,10 @@ Result: Specific recommendations based on agent research
 → Explicitly spawns general-purpose agent
 ```
 
-**Via skills** (skills can spawn agents internally):
+**Via slash commands** (which invoke agents):
 ```
 /review-audit
-→ audit-agent skill may spawn Explore agent for large codebases
+→ Invokes audit-agent, which may spawn Explore agent for large codebases
 ```
 
 ---
@@ -252,24 +373,25 @@ Result: Specific recommendations based on agent research
 ## Recommendation for Your Workflow
 
 **Current setup is optimal for token efficiency**:
-- ✅ **Fork context skills handle 95% of tasks** (validate, build, diagnose, rollback, audit)
-- ✅ **Fork skills are 3-5x cheaper** than agent spawning for predictable workflows
-- ✅ **Only use agents for truly exploratory work** (research, unknown debugging)
+- ✅ **Fork context agents and skills handle 95% of tasks** (validate, build, diagnose, rollback, audit)
+- ✅ **Fork-context components are 3-5x cheaper** than built-in agent spawning
+- ✅ **Only use built-in agents for truly exploratory work** (research, unknown debugging)
 
 **Token optimization strategy**:
-1. **Default to fork skills** - Lower overhead, still isolated
-2. **Use agents sparingly** - Only when you need multi-step exploration
-3. **Agent overhead is ~500-1K tokens** - Reserve for complex unknowns
+1. **Default to project agents/skills** - Run in fork context with lower overhead
+2. **Use built-in agents sparingly** - Only when you need multi-step exploration
+3. **Built-in agent overhead is ~500-1K tokens** - Reserve for complex unknowns
 
 **When to actually use built-in agents**:
-- ❌ **NOT for validation** - Use `/pre-commit` (fork skill)
-- ❌ **NOT for diagnostics** - Use `/diagnose` (fork skill)
-- ❌ **NOT for audits** - Use `/review-audit` (fork skill)
+- ❌ **NOT for validation** - Use `/pre-commit` (invokes pre-commit-check skill)
+- ❌ **NOT for diagnostics** - Use `/diagnose` (invokes diagnose skill)
+- ❌ **NOT for audits** - Use `/review-audit` (invokes audit-agent)
+- ❌ **NOT for rebuilds** - Use `/rebuild` (invokes nixos-builder agent)
 - ✅ **YES for research** - "How does GPU passthrough work?"
 - ✅ **YES for exploration** - "Find all instances of X in unfamiliar codebase"
 - ✅ **YES for complex debugging** - "Why does this crash only on specific hardware?"
 
-**Your current 7 fork-context skills are the sweet spot** for token efficiency!
+**Note**: Project agents and skills run in forked contexts for token efficiency!
 
 ---
 
