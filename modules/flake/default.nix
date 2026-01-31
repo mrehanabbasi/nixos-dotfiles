@@ -8,6 +8,8 @@
 
   systems = [
     "x86_64-linux"
-    "aarch64-linux"
   ];
+
+  # Export modules as flakeModules to suppress warning
+  flake.flakeModules = inputs.self.modules or { };
 }
