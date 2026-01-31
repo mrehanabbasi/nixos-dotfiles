@@ -5,11 +5,11 @@
 Perform **without confirmation**:
 - Read/write/edit config files (`*.nix`, `*.md`, etc.)
 - Create new modules for requested features
-- Stage, commit (Conventional Commits), and push to `main`
 - Run `nixos-rebuild build/switch --flake .#one-piece`
 - Run `nix flake check` for validation
 
 **Require confirmation**:
+- Stage, commit (Conventional Commits), and push to `main`
 - Destructive git ops (`reset --hard`, `push --force`, `rebase`)
 - Deleting files/modules
 - Changes to `_hardware.nix` or `stateVersion`
