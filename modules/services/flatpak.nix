@@ -25,14 +25,6 @@
         };
       };
 
-      # Fix for NixOS-specific Flatpak issues
-      # Create /bin directory and /bin/sh symlink required by Flatpak's bwrap
-      # Using a simple activation script that runs after other binsh setup
-      system.activationScripts.flatpak-binsh = lib.mkAfter ''
-        mkdir -p /bin
-        ln -sfn ${pkgs.bash}/bin/sh /bin/sh
-      '';
-
       # Add Flatpak export directories to XDG_DATA_DIRS
       environment.sessionVariables.XDG_DATA_DIRS = lib.mkAfter [
         "/var/lib/flatpak/exports/share"
