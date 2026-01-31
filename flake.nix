@@ -16,7 +16,7 @@
     hyprshutdown.url = "github:hyprwm/hyprshutdown";
 
     catppuccin = {
-      url = "github:catppuccin/nix"; # Supports eza
+      url = "github:catppuccin/nix?ref=v25.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -26,7 +26,7 @@
     };
 
     opencode = {
-      url = "github:anomalyco/opencode";
+      url = "github:anomalyco/opencode?ref=latest";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -43,6 +43,11 @@
     walker = {
       url = "github:abenz1267/walker";
       inputs.elephant.follows = "elephant";
+    };
+
+    nix-flatpak = {
+      url = "github:gmodena/nix-flatpak";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 

@@ -37,15 +37,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1769432988,
-        "narHash": "sha256-q4arZjXnLiuMnLzO972lrXIGdzyGb4DGaIt69CcCYdE=",
+        "lastModified": 1767713453,
+        "narHash": "sha256-RgzwyuwKNk+byToNDYD5AcLtKBGTebbto3h1e5Tlph8=",
         "owner": "catppuccin",
         "repo": "nix",
-        "rev": "d7a8632c0d8d144478aac1a8c8d5083b770cbb03",
+        "rev": "c1dc9a10164c6ff987fb70570bd9ba58f192b8bf",
         "type": "github"
       },
       "original": {
         "owner": "catppuccin",
+        "ref": "v25.11",
         "repo": "nix",
         "type": "github"
       }
@@ -345,6 +346,21 @@
         "type": "github"
       }
     },
+    "nix-flatpak": {
+      "locked": {
+        "lastModified": 1768656715,
+        "narHash": "sha256-Sbh037scxKFm7xL0ahgSCw+X2/5ZKeOwI2clqrYr9j4=",
+        "owner": "gmodena",
+        "repo": "nix-flatpak",
+        "rev": "123fe29340a5b8671367055b75a6e7c320d6f89a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "gmodena",
+        "repo": "nix-flatpak",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1764950072,
@@ -429,15 +445,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1769756207,
-        "narHash": "sha256-xBnABTHuWXtlm+UT4k1ynWPZ9pMYH0VhrQUDc+0DkT0=",
+        "lastModified": 1767388146,
+        "narHash": "sha256-E4Zce3466wABErQl0wMm+09BbH06FFShUCdJGcSqmQk=",
         "owner": "anomalyco",
         "repo": "opencode",
-        "rev": "00637c0269312455e55e4977a7a8f55c728e93bd",
+        "rev": "0cf0294787322664c6d668fa5ab0a9ce26796f78",
         "type": "github"
       },
       "original": {
         "owner": "anomalyco",
+        "ref": "latest",
         "repo": "opencode",
         "type": "github"
       }
@@ -471,6 +488,7 @@
         "home-manager": "home-manager",
         "hyprshutdown": "hyprshutdown",
         "import-tree": "import-tree",
+        "nix-flatpak": "nix-flatpak",
         "nixpkgs": "nixpkgs_2",
         "nixpkgs-unstable": "nixpkgs-unstable",
         "opencode": "opencode",
