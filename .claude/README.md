@@ -6,20 +6,24 @@ This directory contains Claude Code compatible configuration, mirroring the open
 
 ```
 .claude/
-├── settings.json              # Permissions and tool access control
+├── settings.json              # Permissions, tool access, and hooks
 ├── README.md                  # This file
 ├── SKILLS_GUIDE.md            # Skill selection decision tree
 ├── AGENTS.md                  # Autonomous agents vs skills guide
-├── agents/                    # Legacy - not used by Claude Code
-├── skills/                    # Skills (agents + utilities)
-│   ├── nixos-builder/         # Primary builder skill
-│   ├── nixos-planner/         # Planning skill (isolated context)
-│   ├── docs-assistant/        # Documentation skill
-│   ├── audit-agent/           # Code audit skill
-│   ├── hyprland-config/       # Hyprland config skill
-│   ├── pre-commit-check/      # Pre-commit validation (NEW)
-│   ├── diagnose/              # System diagnostics (NEW)
-│   ├── emergency-rollback/    # Rollback failed builds (NEW)
+├── HOOKS.md                   # Hooks documentation and examples
+├── agents/                    # Autonomous agents (can research, iterate, decide)
+│   ├── nixos-builder/         # Primary builder agent
+│   ├── nixos-planner/         # Planning agent (isolated context)
+│   ├── audit-agent/           # Code audit agent
+│   ├── docs-assistant/        # Documentation agent
+│   └── hyprland-config/       # Hyprland config agent
+├── hooks/                     # Hook scripts
+│   ├── protect-files.sh       # Protect sensitive files (PreToolUse)
+│   └── auto-format-nix.sh     # Auto-format Nix files (PostToolUse)
+├── skills/                    # Procedural skills (follow checklists)
+│   ├── pre-commit-check/      # Pre-commit validation
+│   ├── diagnose/              # System diagnostics
+│   ├── emergency-rollback/    # Rollback failed builds
 │   ├── commit-message/        # Commit message guidelines
 │   ├── nixos-rebuild/         # NixOS rebuild commands
 │   └── flake-update/          # Flake update guidance
@@ -29,9 +33,9 @@ This directory contains Claude Code compatible configuration, mirroring the open
     ├── update.md              # /update - Update flake inputs
     ├── plan-changes.md        # /plan-changes - Plan config changes
     ├── review-audit.md        # /review-audit - Audit configuration
-    ├── pre-commit.md          # /pre-commit - Validate before build (NEW)
-    ├── diagnose.md            # /diagnose - System diagnostics (NEW)
-    └── rollback.md            # /rollback - Emergency rollback (NEW)
+    ├── pre-commit.md          # /pre-commit - Validate before build
+    ├── diagnose.md            # /diagnose - System diagnostics
+    └── rollback.md            # /rollback - Emergency rollback
 ```
 
 ## Compatibility with opencode
@@ -62,38 +66,50 @@ This setup maintains compatibility with opencode while providing Claude Code sup
 
 3. **Permissions**: Converted from opencode's simplified format to Claude Code's pattern-based format
 
-## Using Skills
+## Agents vs Skills
 
-### Invoke a skill:
+### Autonomous Agents (can research, iterate, make decisions)
+
+Located in `.claude/agents/` - these can use webfetch, edit files, read code, and figure out solutions:
+
+**Primary Execution:**
+- **nixos-builder**: Build and apply NixOS changes (can research, edit multiple files, iterate on failures)
+- **nixos-planner**: Plan complex changes (can explore options, analyze requirements, suggest alternatives)
+
+**Specialized Analysis:**
+- **audit-agent**: Audit config for best practices (can explore codebase, identify patterns)
+- **docs-assistant**: Improve documentation (can understand context, suggest improvements)
+- **hyprland-config**: Validate Hyprland config (can research best practices, suggest fixes)
+
+### Procedural Skills (follow checklists, execute known steps)
+
+Located in `.claude/skills/` - these run predefined procedures:
+
+**Validation & Diagnostics:**
+- **pre-commit-check**: Run validation checklist (audit → nixfmt → flake check → report)
+- **diagnose**: Execute diagnostic commands (journalctl → systemctl → dmesg → analyze)
+- **emergency-rollback**: Follow rollback procedure (list generations → show commands → execute)
+
+**Reference & Guidance:**
+- **commit-message**: Provide conventional commit templates
+- **nixos-rebuild**: Explain rebuild commands and workflows
+- **flake-update**: Give update guidance and compatibility notes
+
+### How to Use
+
+**Invoke an agent** (autonomous, can figure things out):
 ```bash
-# In Claude Code chat
-"Use the nixos-builder skill to add a new package"
+"Use nixos-builder to add GPU passthrough support"
+"Ask nixos-planner to design a migration plan"
 ```
 
-### Available skills:
+**Invoke a skill** (procedural, follows steps):
+```bash
+"Run pre-commit-check to validate my changes"
+"Use diagnose to check network issues"
+```
 
-**Execution & Building:**
-- **nixos-builder**: Build and apply NixOS changes (main context)
-- **nixos-rebuild**: Get rebuild commands and guidance (reference)
-
-**Planning & Analysis:**
-- **nixos-planner**: Plan changes without applying them (fork context)
-- **audit-agent**: Audit config for best practices (fork context)
-- **pre-commit-check**: Validate before commit/rebuild (fork context) 🆕
-
-**Troubleshooting:**
-- **diagnose**: System diagnostics for network/boot/hardware issues (fork context) 🆕
-- **emergency-rollback**: Safely rollback failed builds (fork context, manual-only) 🆕
-
-**Documentation & Config:**
-- **docs-assistant**: Improve documentation (fork context)
-- **hyprland-config**: Validate Hyprland config (fork context)
-
-**Git & Dependencies:**
-- **commit-message**: Generate conventional commits
-- **flake-update**: Update flake dependencies safely
-
-See `SKILLS_GUIDE.md` for detailed decision tree and workflow recommendations.
+See `SKILLS_GUIDE.md` for detailed decision tree and `AGENTS.md` for agent vs skill criteria.
 
 ## Using Slash Commands
 
@@ -157,6 +173,55 @@ For multi-step, exploratory tasks that require iteration and research, use **aut
 ```
 
 See `AGENTS.md` for detailed agent vs skill decision criteria and examples.
+
+## Hooks (Automated Workflow)
+
+Hooks are **shell scripts that run automatically** at specific lifecycle points to enforce rules and automate tasks.
+
+### Active Hooks
+
+**1. Protect Sensitive Files** (PreToolUse on Edit/Write)
+- **Script**: `.claude/hooks/protect-files.sh`
+- **Purpose**: Block modifications to sensitive files per CLAUDE.md guidelines
+- **Protected**: `_hardware.nix`, `secrets.yaml`, `stateVersion`, `.env` files
+- **Behavior**: Exits with error if protected file detected
+
+**2. Auto-Format Nix Files** (PostToolUse on Edit)
+- **Script**: `.claude/hooks/auto-format-nix.sh`
+- **Purpose**: Automatically run `nixfmt` after editing `.nix` files
+- **Benefit**: Consistent formatting without manual intervention
+
+### Benefits
+
+- ✅ **Enforces CLAUDE.md rules** automatically
+- ✅ **Saves tokens** - Formatting happens outside Claude's context
+- ✅ **Safety net** - Catches mistakes before they cause issues
+- ✅ **Consistent code style** - Auto-formatting on every edit
+
+### Configuration
+
+Hooks are configured in `.claude/settings.json`:
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit",
+        "hooks": [{"type": "command", "command": ".claude/hooks/protect-files.sh"}]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit",
+        "hooks": [{"type": "command", "command": ".claude/hooks/auto-format-nix.sh"}]
+      }
+    ]
+  }
+}
+```
+
+See `HOOKS.md` for complete documentation, examples, and how to add custom hooks.
 
 ## Maintaining Both Configurations
 
