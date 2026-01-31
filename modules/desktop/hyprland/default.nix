@@ -18,7 +18,7 @@
       security.pam.services.hyprlock = { };
 
       environment.systemPackages = with pkgs; [
-        inputs.hyprshutdown.packages.${pkgs.system}.hyprshutdown
+        inputs.hyprshutdown.packages.${pkgs.stdenv.hostPlatform.system}.hyprshutdown
         hyprpaper
         hyprshot
         hyprpicker

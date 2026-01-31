@@ -10,7 +10,9 @@
       modules,
     }:
     inputs.nixpkgs.lib.nixosSystem {
-      inherit system modules;
+      modules = modules ++ [
+        { nixpkgs.hostPlatform = system; }
+      ];
       specialArgs = { inherit inputs; };
     };
 }

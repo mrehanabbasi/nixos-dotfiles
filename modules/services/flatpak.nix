@@ -3,7 +3,7 @@
 
 {
   flake.modules.nixos.flatpak =
-    { pkgs, ... }:
+    { pkgs, lib, ... }:
     {
       # Enable nix-flatpak for declarative package management
       imports = [ inputs.nix-flatpak.nixosModules.nix-flatpak ];
@@ -24,5 +24,20 @@
           onCalendar = "daily"; # Run updates daily
         };
       };
+
+      # Fix for NixOS-specific Flatpak issues
+      # Create /bin/sh symlink required by Flatpak's bwrap
+      systemd.tmpfiles.rules = [
+        "L+ /bin/sh - - - - ${pkgs.bash}/bin/sh"
+      ];
+
+      # Add Flatpak export directories to XDG_DATA_DIRS
+      environment.sessionVariables.XDG_DATA_DIRS = lib.mkAfter [
+        "/var/lib/flatpak/exports/share"
+        "$HOME/.local/share/flatpak/exports/share"
+      ];
+
+      # Ensure XDG portal is enabled for Flatpak integration
+      xdg.portal.enable = true;
     };
 }
