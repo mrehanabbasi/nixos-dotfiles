@@ -33,21 +33,23 @@ Protected patterns: _hardware.nix, secrets.yaml, stateVersion, .env files
 
 ---
 
-### 2. Auto-Format Nix Files (PostToolUse)
+### 2. Auto-Format and Lint Nix Files (PostToolUse)
 
 **Script**: `.claude/hooks/auto-format-nix.sh`
 **Event**: PostToolUse
 **Tools**: Edit
-**Purpose**: Automatically format `.nix` files after editing
+**Purpose**: Automatically lint and format `.nix` files after editing
 
 **Behavior**:
-- Runs `nixfmt` on any edited `.nix` file
-- Silently succeeds if `nixfmt` not available
+- Runs `statix fix` to fix linter errors and anti-patterns
+- Runs `nixfmt` to format code style
+- Silently succeeds if tools not available
 - Runs outside Claude's context (saves tokens)
 
 **Example output**:
 ```
-✨ Auto-formatted: modules/system/base.nix
+🔧 Linted: modules/system/base.nix
+✨ Formatted: modules/system/base.nix
 ```
 
 ---
