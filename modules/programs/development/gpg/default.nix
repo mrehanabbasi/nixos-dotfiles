@@ -12,22 +12,20 @@ _:
       };
     };
 
-  flake.modules.homeManager.gpg =
-    _:
-    {
-      programs.gpg = {
-        enable = true;
-        publicKeys = [
-          {
-            source = ./public-key.asc;
-            trust = "ultimate";
-          }
-        ];
-      };
-
-      services.gpg-agent = {
-        enable = true;
-        enableZshIntegration = true;
-      };
+  flake.modules.homeManager.gpg = _: {
+    programs.gpg = {
+      enable = true;
+      publicKeys = [
+        {
+          source = ./public-key.asc;
+          trust = "ultimate";
+        }
+      ];
     };
+
+    services.gpg-agent = {
+      enable = true;
+      enableZshIntegration = true;
+    };
+  };
 }

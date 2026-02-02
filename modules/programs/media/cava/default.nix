@@ -2,89 +2,87 @@
 _:
 
 {
-  flake.modules.homeManager.cava =
-    _:
-    {
-      catppuccin.cava.enable = true;
+  flake.modules.homeManager.cava = _: {
+    catppuccin.cava.enable = true;
 
-      xdg.configFile."cava/shaders".source = ./shaders;
+    xdg.configFile."cava/shaders".source = ./shaders;
 
-      programs.cava = {
-        enable = true;
-        settings = {
-          general = {
-            mode = "normal";
-            framerate = 60;
-            autosens = 1;
-            overshoot = 20;
-            sensitivity = 100;
-            bars = 0;
-            bar_width = 2;
-            bar_spacing = 1;
-            bar_height = 32;
-            center_align = 1;
-            max_height = 100;
-            lower_cutoff_freq = 50;
-            higher_cutoff_freq = 10000;
-            sleep_timer = 0;
-          };
+    programs.cava = {
+      enable = true;
+      settings = {
+        general = {
+          mode = "normal";
+          framerate = 60;
+          autosens = 1;
+          overshoot = 20;
+          sensitivity = 100;
+          bars = 0;
+          bar_width = 2;
+          bar_spacing = 1;
+          bar_height = 32;
+          center_align = 1;
+          max_height = 100;
+          lower_cutoff_freq = 50;
+          higher_cutoff_freq = 10000;
+          sleep_timer = 0;
+        };
 
-          input = {
-            method = "pipewire";
-            source = "auto";
-            sample_rate = 44100;
-            sample_bits = 16;
-            channels = 2;
-            autoconnect = 2;
-            active = 0;
-            remix = 1;
-            virtual = 1;
-          };
+        input = {
+          method = "pipewire";
+          source = "auto";
+          sample_rate = 44100;
+          sample_bits = 16;
+          channels = 2;
+          autoconnect = 2;
+          active = 0;
+          remix = 1;
+          virtual = 1;
+        };
 
-          output = {
-            method = "noncurses";
-            orientation = "bottom";
-            channels = "stereo";
-            mono_option = "average";
-            reverse = 0;
-            raw_target = "/dev/stdout";
-            data_format = "binary";
-            bit_format = "16bit";
-            ascii_max_range = 1000;
-            bar_delimiter = 59;
-            frame_delimiter = 10;
-            sdl_width = 1024;
-            sdl_height = 512;
-            sdl_x = -1;
-            sdl_y = -1;
-            sdl_full_screen = 0;
-            xaxis = "none";
-            synchronized_sync = 0;
-            vertex_shader = "pass_through.vert";
-            fragment_shader = "bar_spectrum.frag";
-            continuous_rendering = 0;
-            disable_blanking = 0;
-            show_idle_bar_heads = 1;
-            waveform = 0;
-          };
+        output = {
+          method = "noncurses";
+          orientation = "bottom";
+          channels = "stereo";
+          mono_option = "average";
+          reverse = 0;
+          raw_target = "/dev/stdout";
+          data_format = "binary";
+          bit_format = "16bit";
+          ascii_max_range = 1000;
+          bar_delimiter = 59;
+          frame_delimiter = 10;
+          sdl_width = 1024;
+          sdl_height = 512;
+          sdl_x = -1;
+          sdl_y = -1;
+          sdl_full_screen = 0;
+          xaxis = "none";
+          synchronized_sync = 0;
+          vertex_shader = "pass_through.vert";
+          fragment_shader = "bar_spectrum.frag";
+          continuous_rendering = 0;
+          disable_blanking = 0;
+          show_idle_bar_heads = 1;
+          waveform = 0;
+        };
 
-          smoothing = {
-            integral = 77;
-            monstercat = 0;
-            waves = 0;
-            gravity = 100;
-            ignore = 0;
-            noise_reduction = 77;
-          };
+        smoothing = {
+          integral = 77;
+          monstercat = 0;
+          waves = 0;
+          gravity = 100;
+          ignore = 0;
+          noise_reduction = 77;
+        };
 
-          eq = {
-            "1" = 1;
-            "2" = 1;
-            "3" = 1;
-            "4" = 1;
-            "5" = 1;
-          };
+        eq = {
+          "1" = 1;
+          "2" = 1;
+          "3" = 1;
+          "4" = 1;
+          "5" = 1;
         };
       };
     };
+  };
 }

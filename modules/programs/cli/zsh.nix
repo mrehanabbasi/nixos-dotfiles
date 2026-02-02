@@ -2,11 +2,9 @@
 _:
 
 {
-  flake.modules.nixos.zsh =
-    _:
-    {
-      programs.zsh.enable = true;
-    };
+  flake.modules.nixos.zsh = _: {
+    programs.zsh.enable = true;
+  };
 
   flake.modules.homeManager.zsh =
     { config, pkgs, ... }:

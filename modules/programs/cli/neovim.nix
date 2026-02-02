@@ -2,14 +2,12 @@
 _:
 
 {
-  flake.modules.nixos.neovim =
-    _:
-    {
-      programs.neovim = {
-        enable = true;
-        defaultEditor = true;
-      };
+  flake.modules.nixos.neovim = _: {
+    programs.neovim = {
+      enable = true;
+      defaultEditor = true;
     };
+  };
 
   flake.modules.homeManager.neovim =
     { config, ... }:

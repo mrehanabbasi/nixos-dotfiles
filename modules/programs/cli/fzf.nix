@@ -2,15 +2,13 @@
 _:
 
 {
-  flake.modules.homeManager.fzf =
-    _:
-    {
-      catppuccin.fzf.enable = true;
+  flake.modules.homeManager.fzf = _: {
+    catppuccin.fzf.enable = true;
 
-      programs.fzf = {
-        enable = true;
-        enableZshIntegration = true;
-        tmux.enableShellIntegration = true;
-      };
+    programs.fzf = {
+      enable = true;
+      enableZshIntegration = true;
+      tmux.enableShellIntegration = true;
     };
+  };
 }

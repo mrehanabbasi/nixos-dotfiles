@@ -2,15 +2,18 @@
 _:
 
 {
-  flake.modules.nixos.catppuccin =
-    _:
-    {
-      # NixOS-level catppuccin settings are applied via the catppuccin.nixosModules.catppuccin
-      # which is imported in the host definition
-    };
+  flake.modules.nixos.catppuccin = _: {
+    # NixOS-level catppuccin settings are applied via the catppuccin.nixosModules.catppuccin
+    # which is imported in the host definition
+  };
 
   flake.modules.homeManager.catppuccin =
-    { config, pkgs, lib, ... }:
+    {
+      config,
+      pkgs,
+      lib,
+      ...
+    }:
     {
       catppuccin = {
         accent = "blue";

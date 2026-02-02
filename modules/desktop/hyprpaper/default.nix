@@ -2,15 +2,13 @@
 _:
 
 {
-  flake.modules.homeManager.hyprpaper =
-    _:
-    {
-      services.hyprpaper = {
-        enable = true;
-        settings = {
-          preload = "${./wallpaper.png}";
-          wallpaper = [ ",${./wallpaper.png}" ];
-        };
+  flake.modules.homeManager.hyprpaper = _: {
+    services.hyprpaper = {
+      enable = true;
+      settings = {
+        preload = "${./wallpaper.png}";
+        wallpaper = [ ",${./wallpaper.png}" ];
       };
     };
+  };
 }
