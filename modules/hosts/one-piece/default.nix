@@ -23,6 +23,7 @@ in
       inputs.self.modules.nixos.boot
       inputs.self.modules.nixos.networking
       inputs.self.modules.nixos.virtualisation
+      inputs.self.modules.nixos.fonts
 
       # ════════════════════════════════════════════════════════════════════
       # LAYER 3: Secrets (before services that use them)
