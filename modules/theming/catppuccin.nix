@@ -10,7 +10,7 @@ _:
     };
 
   flake.modules.homeManager.catppuccin =
-    _:
+    { config, pkgs, lib, ... }:
     {
       catppuccin = {
         accent = "blue";
@@ -24,5 +24,6 @@ _:
         lazygit.enable = true;
         eza.enable = true;
       };
+
     };
 }

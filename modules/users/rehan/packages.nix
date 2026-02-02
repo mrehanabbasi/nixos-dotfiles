@@ -78,6 +78,9 @@ _:
         general="JetBrainsMono Nerd Font,10,-1,5,50,0,0,0,0,0"
       '';
       xdg.configFile."qt6ct/qt6ct.conf".text = ''
+        [Appearance]
+        style=kvantum-dark
+
         [Fonts]
         fixed="JetBrainsMono Nerd Font,10,-1,5,50,0,0,0,0,0"
         general="JetBrainsMono Nerd Font,10,-1,5,50,0,0,0,0,0"

@@ -180,7 +180,7 @@
             "$mainMod, Q, killactive,"
             "$mainMod, M, exit,"
             "$mainMod, E, exec, $fileManager"
-            "$mainMod SHIFT, E, exec, dolphin"
+            "$mainMod SHIFT, E, exec, thunar"
             "$mainMod, V, togglefloating,"
             "$mainMod, Space, exec, $menu"
             "$mainMod, Print, exec, hyprshot -m region"

@@ -23,6 +23,14 @@ _:
           ];
         };
 
+        thunar = {
+          enable = true;
+          plugins = with pkgs.xfce; [
+            thunar-volman
+            thunar-archive-plugin
+          ];
+        };
+
         dconf.profiles.user.databases = [
           {
             settings."org/gnome/desktop/interface" = {
@@ -52,13 +60,9 @@ _:
         cmake
         dnsutils
 
-        # File managers
-        kdePackages.dolphin
-
         # Filesystem support
         ntfs3g
-        kdePackages.kio
-        kdePackages.kio-extras
+        gvfs # Virtual filesystem support for Thunar
 
         # Theming
         catppuccin-cursors.mochaBlue

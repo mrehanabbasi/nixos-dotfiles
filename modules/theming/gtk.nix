@@ -1,5 +1,4 @@
-# GTK theming - Tokyo Night with dark mode
-# Catppuccin GTK theme repo is archived
+# GTK theming - Tokyo Night Dark
 _:
 
 {
