@@ -17,6 +17,8 @@ in
           "network"
           "networkmanager"
           "video"
+          "libvirtd" # Manage VMs without sudo
+          "kvm" # Access KVM device
         ];
         shell = pkgs.zsh;
         packages = with pkgs; [ tree ];
