@@ -12,8 +12,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Let hyprshutdown use its own nixpkgs (unstable) to avoid compatibility issues
-    hyprshutdown.url = "github:hyprwm/hyprshutdown";
+    hyprshutdown = {
+      url = "github:hyprwm/hyprshutdown";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+    };
 
     catppuccin = {
       url = "github:catppuccin/nix?ref=v25.11";

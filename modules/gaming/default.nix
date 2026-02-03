@@ -20,6 +20,7 @@ _:
         wine
         winetricks
         protonup-qt
+        bottles
       ];
     };
 }

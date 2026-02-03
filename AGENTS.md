@@ -5,11 +5,11 @@
 Perform **without confirmation**:
 - Read/write/edit config files (`*.nix`, `*.md`, etc.)
 - Create new modules for requested features
-- Stage, commit (Conventional Commits), and push to `main`
 - Run `nixos-rebuild build/switch --flake .#one-piece`
 - Run `nix flake check` for validation
 
 **Require confirmation**:
+- Stage, commit (Conventional Commits), and push to `main`
 - Destructive git ops (`reset --hard`, `push --force`, `rebase`)
 - Deleting files/modules
 - Changes to `_hardware.nix` or `stateVersion`
@@ -41,7 +41,7 @@ Uses **Dendritic pattern** with flake-parts + import-tree for automatic module d
 │   ├── users/rehan/          # User + Home Manager integration
 │   ├── system/               # base, boot, networking, virtualisation
 │   ├── secrets/              # sops config + secrets.yaml
-│   ├── services/             # audio, tailscale, pia
+│   ├── services/             # audio, tailscale, pia, flatpak
 │   ├── desktop/              # hyprland, sddm, hyprlock, hypridle, walker
 │   ├── programs/             # cli/, terminal/, media/, development/
 │   ├── gaming/               # steam, gamemode, wine
@@ -131,6 +131,35 @@ warnings = lib.optional (config.old-option != null)
 }
 ```
 Secrets: `modules/secrets/secrets.yaml` | Key: `/home/rehan/.config/sops/age/keys.txt`
+
+### Flatpak (nix-flatpak)
+Declarative Flatpak management using nix-flatpak for reproducible application installation.
+
+**Adding new applications**:
+```nix
+services.flatpak.packages = [
+  "com.example.App"        # App ID from Flathub
+  "org.another.Application"
+];
+```
+
+**Configuration** (`modules/services/flatpak.nix`):
+- Repository management: nix-flatpak automatically adds and manages Flathub
+- Auto-updates: Enabled daily via `services.flatpak.update.auto`
+- No manual systemd services needed for repository setup
+
+**Finding app IDs**: Search on [Flathub](https://flathub.org) or use:
+```bash
+flatpak search <app-name>
+flatpak list --app  # List installed apps
+```
+
+**Manual operations** (when needed):
+```bash
+flatpak update                    # Manually trigger updates
+flatpak uninstall --unused        # Clean up unused dependencies
+flatpak repair                    # Repair installation
+```
 
 ## Anti-patterns
 
