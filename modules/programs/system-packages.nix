@@ -69,6 +69,8 @@ _:
 
         # Media
         mpv
+        qpwgraph # PipeWire graph manager/patchbay
+        pavucontrol # PulseAudio/PipeWire volume control
 
         # Office
         onlyoffice-desktopeditors

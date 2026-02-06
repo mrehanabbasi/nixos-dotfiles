@@ -3,23 +3,28 @@
 ## Agent Autonomy
 
 Perform **without confirmation**:
+
 - Read/write/edit config files (`*.nix`, `*.md`, etc.)
 - Create new modules for requested features
-- Run `nixos-rebuild build/switch --flake .#one-piece`
 - Run `nix flake check` for validation
 
 **Require confirmation**:
+
 - Stage, commit (Conventional Commits), and push to `main`
 - Destructive git ops (`reset --hard`, `push --force`, `rebase`)
 - Deleting files/modules
 - Changes to `_hardware.nix` or `stateVersion`
 - Operations involving secrets
 
+**Never do this**:
+
+- Run `nixos-rebuild build/switch --flake .#one-piece` with or without `sudo`
+
 ## Build/Lint Commands
 
 ```bash
 sudo nixos-rebuild build --flake .#one-piece   # Validate (primary)
-sudo nixos-rebuild switch --flake .#one-piece  # Apply
+sudo nixos-rebuild switch --flake .#one-piece  # Apply (Never run this yourself)
 sudo nixos-rebuild test --flake .#one-piece    # Temporary (no bootloader)
 nix flake check                                 # Validate flake syntax
 nixfmt <file.nix>                              # Format single file
@@ -49,6 +54,7 @@ Uses **Dendritic pattern** with flake-parts + import-tree for automatic module d
 ```
 
 **Key conventions**:
+
 - `_` prefix = ignored by import-tree (helpers, plain NixOS modules)
 - Modules define `flake.modules.nixos.<name>` / `flake.modules.homeManager.<name>`
 - Hosts compose via `inputs.self.modules.nixos.<name>`
@@ -56,6 +62,7 @@ Uses **Dendritic pattern** with flake-parts + import-tree for automatic module d
 ## Code Style
 
 ### Module Template
+
 ```nix
 # Description of module
 # Depends on: other-module (if applicable)
@@ -72,6 +79,7 @@ Uses **Dendritic pattern** with flake-parts + import-tree for automatic module d
 ```
 
 ### Module Arguments
+
 | Argument | When to Use |
 |----------|-------------|
 | `{ ... }:` | No external args needed |
@@ -81,6 +89,7 @@ Uses **Dendritic pattern** with flake-parts + import-tree for automatic module d
 | `{ lib, ... }:` | Uses lib functions (`mkIf`, `mkOption`) |
 
 ### Formatting
+
 - **Indentation**: 2 spaces, NO tabs
 - **Line length**: < 100 chars
 - **Semicolons**: Required after each attribute
@@ -88,6 +97,7 @@ Uses **Dendritic pattern** with flake-parts + import-tree for automatic module d
 - **Lists**: One item per line for 3+ items
 
 ### Naming Conventions
+
 | Type | Convention | Example |
 |------|------------|---------|
 | Variables | camelCase | `enableBluetooth` |
@@ -95,6 +105,7 @@ Uses **Dendritic pattern** with flake-parts + import-tree for automatic module d
 | Hostnames/Inputs | kebab-case | `one-piece`, `home-manager` |
 
 ### Conditional Configuration
+
 ```nix
 services.foo = lib.mkIf config.programs.bar.enable { ... };
 
@@ -106,6 +117,7 @@ option = lib.mkForce "value";    # Cannot be overridden
 ```
 
 ### Error Handling
+
 ```nix
 assertions = [{
   assertion = config.services.foo.enable -> config.services.bar.enable;
@@ -119,23 +131,28 @@ warnings = lib.optional (config.old-option != null)
 ## Common Patterns
 
 ### Adding a New Aspect
+
 1. Create `modules/<category>/feature.nix`
 2. Define `flake.modules.nixos.feature` and/or `flake.modules.homeManager.feature`
 3. Add to host's `default.nix`: `inputs.self.modules.nixos.feature`
 4. Validate: `sudo nixos-rebuild build --flake .#one-piece`
 
 ### Secrets (sops-nix)
+
 ```nix
 { config, ... }: {
   services.foo.credentialsFile = config.sops.secrets.foo.path;
 }
 ```
+
 Secrets: `modules/secrets/secrets.yaml` | Key: `/home/rehan/.config/sops/age/keys.txt`
 
 ### Flatpak (nix-flatpak)
+
 Declarative Flatpak management using nix-flatpak for reproducible application installation.
 
 **Adding new applications**:
+
 ```nix
 services.flatpak.packages = [
   "com.example.App"        # App ID from Flathub
@@ -144,17 +161,20 @@ services.flatpak.packages = [
 ```
 
 **Configuration** (`modules/services/flatpak.nix`):
+
 - Repository management: nix-flatpak automatically adds and manages Flathub
 - Auto-updates: Enabled daily via `services.flatpak.update.auto`
 - No manual systemd services needed for repository setup
 
 **Finding app IDs**: Search on [Flathub](https://flathub.org) or use:
+
 ```bash
 flatpak search <app-name>
 flatpak list --app  # List installed apps
 ```
 
 **Manual operations** (when needed):
+
 ```bash
 flatpak update                    # Manually trigger updates
 flatpak uninstall --unused        # Clean up unused dependencies
