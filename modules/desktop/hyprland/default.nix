@@ -47,7 +47,11 @@
 
       settings = {
         # Monitors - auto-detect
-        monitor = [ ",highres,auto,1" ];
+        monitor = [
+          "eDP-1,highres,0x0,1"
+          "HDMI-A-1,highres,-1920x0,1"
+          ",highres,auto,1"
+        ];
 
         # Programs
         "$terminal" = "ghostty";
