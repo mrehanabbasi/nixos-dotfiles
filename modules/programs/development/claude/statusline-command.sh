@@ -305,6 +305,17 @@ if [ "$session_usage" != "-1" ] && [ "$weekly_usage" != "-1" ]; then
     weekly_color=$(get_usage_color "$weekly_usage")
     weekly_time=$(format_reset_time "$weekly_resets_at" "weekly")
 
+    # Calculate absolute reset time for weekly (12-hour format) - same as session logic
+    weekly_absolute_time=""
+    if [ -n "$weekly_resets_at" ] && [ "$weekly_resets_at" != "null" ]; then
+        # Check if weekly reset is on the same day (same logic as format_reset_time)
+        today_weekly=$(date +%Y-%m-%d)
+        target_day_weekly=$(date -d "$weekly_resets_at" +%Y-%m-%d 2>/dev/null)
+        if [ "$today_weekly" = "$target_day_weekly" ]; then
+            weekly_absolute_time=$(date -d "$weekly_resets_at" +"%I:%M%P" 2>/dev/null | sed 's/^0//')
+        fi
+    fi
+
     # Build the output string with appropriate "resets in/on" prefix
     if [ -n "$session_time" ] && [ -n "$weekly_time" ]; then
         # Determine "in" vs "on" for weekly based on whether it's a date format
@@ -320,7 +331,13 @@ if [ "$session_usage" != "-1" ] && [ "$weekly_usage" != "-1" ]; then
             session_reset_text="resets in ${session_time} - ${session_absolute_time}"
         fi
 
-        usage_info="${SUBTEXT1}Session:${RESET} ${session_color}${session_pct}%${RESET} ${SUBTEXT0}(${session_reset_text})${RESET} ${SUBTEXT0}|${RESET} ${SUBTEXT1}Weekly:${RESET} ${weekly_color}${weekly_pct}%${RESET} ${SUBTEXT0}(resets ${weekly_prefix} ${weekly_time})${RESET}"
+        # Build weekly string with absolute time if available (same day only)
+        weekly_reset_text="resets ${weekly_prefix} ${weekly_time}"
+        if [ -n "$weekly_absolute_time" ]; then
+            weekly_reset_text="resets ${weekly_prefix} ${weekly_time} - ${weekly_absolute_time}"
+        fi
+
+        usage_info="${SUBTEXT1}Session:${RESET} ${session_color}${session_pct}%${RESET} ${SUBTEXT0}(${session_reset_text})${RESET} ${SUBTEXT0}|${RESET} ${SUBTEXT1}Weekly:${RESET} ${weekly_color}${weekly_pct}%${RESET} ${SUBTEXT0}(${weekly_reset_text})${RESET}"
     fi
 fi
 

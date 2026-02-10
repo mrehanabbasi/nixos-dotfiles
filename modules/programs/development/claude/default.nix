@@ -1,31 +1,107 @@
-# Claude Code - AI coding assistant configuration
-# Manages status line with real-time session information and XDG directory structure
-_:
+# Claude Code - AI coding assistant configuration with XDG compliance
+# Extends the upstream Home Manager claude-code module with custom defaults
+{ inputs, ... }:
 
 {
   flake.modules.homeManager.claude =
-    { pkgs, config, ... }:
+    {
+      pkgs,
+      config,
+      lib,
+      ...
+    }:
     let
+      # Status line script with Catppuccin colors and real-time session info
       statuslineScript = pkgs.writeShellScript "statusline-command" (
         builtins.readFile ./statusline-command.sh
       );
     in
     {
-      # Ensure jq dependency is available
-      home.packages = with pkgs; [
-        jq # Required by statusline script for JSON parsing
+      # Use upstream Home Manager claude-code module for package only
+      # Settings are managed via XDG to avoid conflicts with symlink structure
+      programs.claude-code = {
+        enable = lib.mkDefault true;
+        # DO NOT set settings here - it creates .claude/settings.json which conflicts
+        # with our .claude symlink. Settings are managed via xdg.configFile below.
+      };
+
+      # Ensure jq dependency is available (required by statusline script)
+      home.packages = lib.mkIf config.programs.claude-code.enable [
+        pkgs.jq
       ];
 
       # XDG directory structure with config, data, cache, and state
-      xdg = {
-        # Config: settings.json and symlinks to runtime data
+      xdg = lib.mkIf config.programs.claude-code.enable {
+        # Config: symlinks to runtime data in proper XDG locations
         configFile = {
+          # Settings file with custom configuration
           "claude/settings.json".text = builtins.toJSON {
+            "$schema" = "https://json.schemastore.org/claude-code-settings.json";
+
+            # Enable extended thinking mode
+            alwaysThinkingEnabled = true;
+
+            # Custom status line with Catppuccin colors
             statusLine = {
               type = "command";
               command = "bash ${statuslineScript}";
             };
-            alwaysThinkingEnabled = true;
+
+            # Pre/post tool execution hooks
+            hooks = {
+              PreToolUse = [
+                {
+                  matcher = "Edit";
+                  hooks = [
+                    {
+                      type = "command";
+                      command = ".claude/hooks/protect-files.sh";
+                    }
+                  ];
+                }
+                {
+                  matcher = "Write";
+                  hooks = [
+                    {
+                      type = "command";
+                      command = ".claude/hooks/protect-files.sh";
+                    }
+                  ];
+                }
+              ];
+              PostToolUse = [
+                {
+                  matcher = "Edit";
+                  hooks = [
+                    {
+                      type = "command";
+                      command = ".claude/hooks/auto-format-nix.sh";
+                    }
+                  ];
+                }
+              ];
+            };
+
+            # Tool permissions configuration
+            permissions = {
+              allow = [
+                "Edit"
+                "Glob"
+                "Grep"
+                "WebFetch"
+                "WebSearch"
+                "Read"
+                "Write"
+                "Skill(commit-message)"
+                "Skill(nixos-rebuild)"
+                "Skill(flake-update)"
+                "Skill(pre-commit-check)"
+                "Skill(diagnose)"
+                "Skill(emergency-rollback)"
+              ];
+              ask = [ "Bash" ];
+              deny = [ ];
+            };
           };
 
           # Symlinks from ~/.config/claude to XDG locations
@@ -45,6 +121,7 @@ _:
             config.lib.file.mkOutOfStoreSymlink "${config.xdg.cacheHome}/claude/statsig";
           "claude/todos".source = config.lib.file.mkOutOfStoreSymlink "${config.xdg.stateHome}/claude/todos";
           "claude/debug".source = config.lib.file.mkOutOfStoreSymlink "${config.xdg.stateHome}/claude/debug";
+
           # Credentials: MANUAL SETUP REQUIRED
           # Users must create: ~/.local/share/claude/secrets/credentials.json
           # This file contains OAuth tokens and should NOT be managed by Nix
@@ -75,7 +152,9 @@ _:
       };
 
       # Main symlink: ~/.claude -> ~/.config/claude
-      # This ensures Claude Code finds config even if it doesn't support XDG
-      home.file.".claude".source = config.lib.file.mkOutOfStoreSymlink "${config.xdg.configHome}/claude";
+      # This ensures Claude Code finds config even if it doesn't fully support XDG
+      home.file.".claude" = lib.mkIf config.programs.claude-code.enable {
+        source = config.lib.file.mkOutOfStoreSymlink "${config.xdg.configHome}/claude";
+      };
     };
 }

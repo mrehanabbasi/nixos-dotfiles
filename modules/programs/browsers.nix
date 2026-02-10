@@ -7,7 +7,7 @@ _:
     {
       environment.systemPackages = with pkgs; [
         brave
-        librewolf
+        # librewolf - managed via Home Manager with WebRTC configuration
       ];
     };
 }

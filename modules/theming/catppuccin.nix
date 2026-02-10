@@ -26,6 +26,7 @@ _:
         mpv.enable = true;
         lazygit.enable = true;
         eza.enable = true;
+        waybar.enable = true;
       };
 
     };

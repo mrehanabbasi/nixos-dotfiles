@@ -22,8 +22,8 @@
         hyprpaper
         hyprshot
         hyprpicker
-        hyprpanel
         wl-clipboard
+        hyprpanel
 
         # HyprPanel dependencies
         ags
@@ -32,6 +32,10 @@
         bluez-tools
         gtksourceview
         libsoup_3
+
+        # Waybar dependencies
+        pavucontrol
+        blueberry
       ];
 
       services = {
@@ -63,7 +67,7 @@
 
         # Autostart
         exec-once = [
-          "hyprpanel & hyprpaper & hypridle"
+          "hyprpaper & hypridle"
           "hyprctl setcursor $cursorTheme $cursorSize"
           "kdeconnectd & kdeconnect-indicator &"
         ];
@@ -193,8 +197,6 @@
           "$mainMod, B, exec, $webBrowser"
           "$mainMod, T, exec, $terminal --title='btop' -e btop"
           "$mainMod, SEMICOLON, exec, hyprlock"
-          "$mainMod, N, exec, hyprpanel toggleWindow notificationsmenu"
-          "$mainMod SHIFT, N, exec, hyprpanel clearNotifications"
 
           # Move focus with vim keys
           "$mainMod, H, movefocus, l"

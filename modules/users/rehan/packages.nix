@@ -60,6 +60,9 @@ _:
         claude-code
         blender
         unityhub
+
+        zoom-us
+        slack
       ];
 
       home.pointerCursor = {
