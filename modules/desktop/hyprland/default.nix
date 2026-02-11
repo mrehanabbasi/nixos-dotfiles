@@ -23,15 +23,6 @@
         hyprshot
         hyprpicker
         wl-clipboard
-        hyprpanel
-
-        # HyprPanel dependencies
-        ags
-        libgtop
-        bluez
-        bluez-tools
-        gtksourceview
-        libsoup_3
 
         # Waybar dependencies
         pavucontrol
@@ -60,7 +51,7 @@
         # Programs
         "$terminal" = "ghostty";
         "$fileManager" = "$terminal -e yazi";
-        "$menu" = "walker";
+        "$menu" = "rofi -show drun";
         "$webBrowser" = "brave --allowlisted-extension-id=clngdbkpkpeebahjckkjfobafhncgmne";
         "$cursorTheme" = "Catppuccin Mocha Blue";
         "$cursorSize" = "24";
@@ -73,7 +64,7 @@
         ];
 
         # Environment variables
-        env = [ "XCURSOR_SIZE,$cursorTheme" ];
+        env = [ "XCURSOR_SIZE,$cursorSize" ];
 
         # General
         general = {
@@ -198,6 +189,12 @@
           "$mainMod, T, exec, $terminal --title='btop' -e btop"
           "$mainMod, SEMICOLON, exec, hyprlock"
 
+          # Rofi modes
+          "$mainMod, Equal, exec, rofi -show calc -modi calc -no-show-match -no-sort"
+          "$mainMod SHIFT, V, exec, cliphist list | rofi -dmenu | cliphist decode | wl-copy"
+          "$mainMod, Period, exec, rofi -show emoji -modi emoji"
+          "$mainMod, slash, exec, rofi -show websearch -modi websearch:$HOME/.local/bin/rofi-websearch"
+
           # Move focus with vim keys
           "$mainMod, H, movefocus, l"
           "$mainMod, L, movefocus, r"
@@ -235,7 +232,7 @@
           "$mainMod SHIFT, J, swapwindow, d"
 
           # Special workspace (scratchpad)
-          "$mainMod, S, togglespecialworkspace, magic"
+          "$mainMod, W, togglespecialworkspace, magic"
           "$mainMod SHIFT, S, movetoworkspace, special:magic"
 
           # Scroll through workspaces

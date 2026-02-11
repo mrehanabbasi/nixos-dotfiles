@@ -33,7 +33,6 @@ in
         users.${userName} = {
           imports = [
             inputs.catppuccin.homeModules.catppuccin
-            inputs.walker.homeManagerModules.default
 
             # Theming
             inputs.self.modules.homeManager.catppuccin
@@ -44,7 +43,7 @@ in
             inputs.self.modules.homeManager.hyprlock
             inputs.self.modules.homeManager.hypridle
             inputs.self.modules.homeManager.hyprpaper
-            inputs.self.modules.homeManager.walker
+            inputs.self.modules.homeManager.waybar
 
             # CLI tools
             inputs.self.modules.homeManager.zsh
@@ -69,6 +68,7 @@ in
 
             # Productivity
             inputs.self.modules.homeManager.kdeconnect
+            inputs.self.modules.homeManager.rofi
 
             # Development
             inputs.self.modules.homeManager.gpg

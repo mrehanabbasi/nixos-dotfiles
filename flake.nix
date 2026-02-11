@@ -37,16 +37,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    elephant = {
-      url = "github:abenz1267/elephant";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    walker = {
-      url = "github:abenz1267/walker";
-      inputs.elephant.follows = "elephant";
-    };
-
     nix-flatpak.url = "github:gmodena/nix-flatpak";
   };
 

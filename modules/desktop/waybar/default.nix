@@ -6,56 +6,60 @@ _:
   flake.modules.homeManager.waybar =
     { pkgs, ... }:
     {
-      home.packages = with pkgs; [ cava ];
+      home = {
+        packages = with pkgs; [ cava ];
 
-      # Cava wrapper script that continuously monitors audio and hides when stopped
-      home.file.".config/waybar/scripts/cava-wrapper.sh" = {
-        text = ''
-          #!/usr/bin/env bash
+        file = {
+          # Cava wrapper script that continuously monitors audio and hides when stopped
+          ".config/waybar/scripts/cava-wrapper.sh" = {
+            text = ''
+              #!/usr/bin/env bash
 
-          # Function to check if audio is playing
-          is_playing() {
-            pactl list short sink-inputs 2>/dev/null | grep -q .
-          }
+              # Function to check if audio is playing
+              is_playing() {
+                pactl list short sink-inputs 2>/dev/null | grep -q .
+              }
 
-          # Start cava in the background and capture its output
-          cava -p ~/.config/cava/config_waybar 2>/dev/null | while IFS= read -r line; do
-            if is_playing; then
-              # Transform and output the visualization
-              echo "$line" | sed 's/;//g;s/0/▁/g;s/1/▂/g;s/2/▃/g;s/3/▄/g;s/4/▅/g;s/5/▆/g;s/6/▇/g;s/7/█/g;'
-            else
-              # No audio - output empty to hide module
-              echo ""
-            fi
-          done
-        '';
-        executable = true;
+              # Start cava in the background and capture its output
+              cava -p ~/.config/cava/config_waybar 2>/dev/null | while IFS= read -r line; do
+                if is_playing; then
+                  # Transform and output the visualization
+                  echo "$line" | sed 's/;//g;s/0/▁/g;s/1/▂/g;s/2/▃/g;s/3/▄/g;s/4/▅/g;s/5/▆/g;s/6/▇/g;s/7/█/g;'
+                else
+                  # No audio - output empty to hide module
+                  echo ""
+                fi
+              done
+            '';
+            executable = true;
+          };
+
+          # VPN status script using PIA CLI
+          ".config/waybar/scripts/vpn-status.sh" = {
+            text = ''
+              #!/usr/bin/env bash
+
+              while true; do
+                PIA_STATUS=$(pia status --short 2>/dev/null)
+
+                if echo "$PIA_STATUS" | grep -q "connected:wg"; then
+                  echo "PIA:wg"
+                elif echo "$PIA_STATUS" | grep -q "connected:ovpn"; then
+                  echo "PIA:ovpn"
+                else
+                  echo ""
+                fi
+
+                sleep 2
+              done
+            '';
+            executable = true;
+          };
+
+          # Power menu XML definition
+          ".config/waybar/power_menu.xml".source = ./power_menu.xml;
+        };
       };
-
-      # VPN status script using PIA CLI
-      home.file.".config/waybar/scripts/vpn-status.sh" = {
-        text = ''
-          #!/usr/bin/env bash
-
-          while true; do
-            PIA_STATUS=$(pia status --short 2>/dev/null)
-
-            if echo "$PIA_STATUS" | grep -q "connected:wg"; then
-              echo "PIA:wg"
-            elif echo "$PIA_STATUS" | grep -q "connected:ovpn"; then
-              echo "PIA:ovpn"
-            else
-              echo ""
-            fi
-
-            sleep 2
-          done
-        '';
-        executable = true;
-      };
-
-      # Power menu XML definition
-      home.file.".config/waybar/power_menu.xml".source = ./power_menu.xml;
 
       programs.waybar = {
         enable = true;
@@ -91,7 +95,7 @@ _:
             "custom/logo" = {
               format = "󱄅";
               tooltip = false;
-              on-click = "walker";
+              on-click = "rofi -show drun";
             };
 
             "hyprland/workspaces" = {

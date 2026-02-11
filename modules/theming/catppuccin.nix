@@ -27,6 +27,7 @@ _:
         lazygit.enable = true;
         eza.enable = true;
         waybar.enable = true;
+        rofi.enable = true;
       };
 
     };

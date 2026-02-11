@@ -3,15 +3,17 @@
 _:
 
 {
-  flake.modules.nixos.fonts = { pkgs, ... }: {
-    fonts.packages = with pkgs; [
-      nerd-fonts.jetbrains-mono
-    ];
+  flake.modules.nixos.fonts =
+    { pkgs, ... }:
+    {
+      fonts.packages = with pkgs; [
+        nerd-fonts.jetbrains-mono
+      ];
 
-    fonts.fontconfig = {
-      defaultFonts = {
-        monospace = [ "JetBrainsMono Nerd Font" ];
+      fonts.fontconfig = {
+        defaultFonts = {
+          monospace = [ "JetBrainsMono Nerd Font" ];
+        };
       };
     };
-  };
 }
