@@ -15,5 +15,9 @@ _:
       # Host-specific ports configured in host module
       firewall.enable = true;
     };
+
+    # Use systemd-resolved for DNS
+    # Provides proper split DNS support (Tailscale domains via MagicDNS, rest via normal DNS)
+    services.resolved.enable = true;
   };
 }
