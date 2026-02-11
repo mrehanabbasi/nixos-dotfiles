@@ -24,6 +24,7 @@ Add a modern notification system using SwayNC (Sway Notification Center) with Ca
 **File**: `modules/desktop/swaync/default.nix`
 
 Create a new Home Manager module that:
+
 - Enables `services.swaync`
 - Configures Catppuccin Mocha theming via `catppuccin.swaync.enable = true`
 - Sets notification center position (right, top)
@@ -35,6 +36,7 @@ Create a new Home Manager module that:
 **File**: `modules/desktop/waybar/default.nix` (lines 244-262)
 
 Change `format-icons` to use the requested icons:
+
 - `󰂚` for no notifications
 - `󱅫` for has notifications
 
@@ -44,7 +46,8 @@ Current uses red dot indicator (`<span foreground='red'><sup></sup></span>`), re
 
 **File**: `modules/users/rehan/default.nix`
 
-Add after waybar import (line 46):
+Add before waybar import (line 46):
+
 ```nix
 inputs.self.modules.homeManager.swaync
 ```
@@ -60,6 +63,7 @@ Add `"swaync"` to `exec-once` list.
 **File**: `modules/desktop/hyprland/default.nix`
 
 Add binding to toggle notification center:
+
 ```nix
 "$mainMod, N, exec, swaync-client -t -sw"
 ```
@@ -143,11 +147,13 @@ _:
 ## Verification
 
 1. Build validation:
+
    ```bash
    sudo nixos-rebuild build --flake .#one-piece
    ```
 
 2. After applying (user runs switch):
+
    ```bash
    # Test notification
    notify-send "Test" "Notification system working"

@@ -61,6 +61,7 @@
           "hyprpaper & hypridle"
           "hyprctl setcursor $cursorTheme $cursorSize"
           "kdeconnectd & kdeconnect-indicator &"
+          "swaync"
         ];
 
         # Environment variables
@@ -188,6 +189,8 @@
           "$mainMod, B, exec, $webBrowser"
           "$mainMod, T, exec, $terminal --title='btop' -e btop"
           "$mainMod, SEMICOLON, exec, hyprlock"
+          "$mainMod, N, exec, swaync-client -t -sw"
+          "$mainMod SHIFT, N, exec, swaync-client -C"
 
           # Rofi modes
           "$mainMod, Equal, exec, rofi -show calc -modi calc -no-show-match -no-sort"

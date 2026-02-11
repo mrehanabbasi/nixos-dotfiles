@@ -35,22 +35,38 @@
   },
   "permissions": {
     "allow": [
+      "Bash(cd:*)",
+      "Bash(echo:*)",
+      "Bash(git add:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git status:*)",
+      "Bash(nix eval:*)",
+      "Bash(nix flake check:*)",
+      "Bash(nix flake show:*)",
+      "Bash(nix flake update:*)",
+      "Bash(nix hash:*)",
+      "Bash(nix-instantiate:*)",
+      "Bash(nixos-rebuild build:*)",
       "Edit",
       "Glob",
       "Grep",
+      "Read",
+      "Skill(commit-message)",
+      "Skill(diagnose)",
+      "Skill(emergency-rollback)",
+      "Skill(flake-update)",
+      "Skill(nixos-rebuild)",
+      "Skill(pre-commit-check)",
       "WebFetch",
       "WebSearch",
-      "Read",
-      "Write",
-      "Skill(commit-message)",
-      "Skill(nixos-rebuild)",
-      "Skill(flake-update)",
-      "Skill(pre-commit-check)",
-      "Skill(diagnose)",
-      "Skill(emergency-rollback)"
+      "Write"
     ],
     "ask": [
-      "Bash"
+      "Bash(curl:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(wget:*)"
     ],
     "deny": []
   }

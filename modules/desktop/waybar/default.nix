@@ -244,19 +244,19 @@ _:
             "custom/notification" = {
               format = "{icon}";
               format-icons = {
-                notification = "<span foreground='red'><sup></sup></span>󰂚";
+                notification = "󱅫";
                 none = "󰂚";
-                dnd-notification = "<span foreground='red'><sup></sup></span>󰂛";
+                dnd-notification = "󱅫";
                 dnd-none = "󰂛";
-                inhibited-notification = "<span foreground='red'><sup></sup></span>󰂚";
+                inhibited-notification = "󱅫";
                 inhibited-none = "󰂚";
-                dnd-inhibited-notification = "<span foreground='red'><sup></sup></span>󰂛";
+                dnd-inhibited-notification = "󱅫";
                 dnd-inhibited-none = "󰂛";
               };
               return-type = "json";
               exec = "swaync-client -swb";
-              on-click = "sleep 0.1 && swaync-client -t -sw";
-              on-click-right = "sleep 0.1 && swaync-client -d -sw";
+              on-click = "swaync-client -t -sw";
+              on-click-right = "swaync-client -d -sw";
               escape = true;
               tooltip = false;
             };
