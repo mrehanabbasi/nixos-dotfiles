@@ -197,6 +197,7 @@
           "$mainMod SHIFT, V, exec, cliphist list | rofi -dmenu | cliphist decode | wl-copy"
           "$mainMod, Period, exec, rofi -show emoji -modi emoji"
           "$mainMod, slash, exec, rofi -show websearch -modi websearch:$HOME/.local/bin/rofi-websearch"
+          "$mainMod, Backslash, exec, rofi-rbw"
 
           # Move focus with vim keys
           "$mainMod, H, movefocus, l"

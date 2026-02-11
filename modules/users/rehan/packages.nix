@@ -17,7 +17,6 @@ _:
         nerd-fonts.iosevka
         icomoon-feather
         yazi
-        eza
         fastfetch
         cava
         imv

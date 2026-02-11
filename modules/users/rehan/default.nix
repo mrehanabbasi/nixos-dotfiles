@@ -50,10 +50,12 @@ in
             inputs.self.modules.homeManager.zsh
             inputs.self.modules.homeManager.tmux
             inputs.self.modules.homeManager.git
+            inputs.self.modules.homeManager.lazygit
             inputs.self.modules.homeManager.neovim
             inputs.self.modules.homeManager.zoxide
             inputs.self.modules.homeManager.fzf
             inputs.self.modules.homeManager.bat
+            inputs.self.modules.homeManager.eza
             inputs.self.modules.homeManager.yazi
             inputs.self.modules.homeManager.btop
             inputs.self.modules.homeManager.fastfetch
@@ -64,6 +66,7 @@ in
 
             # Media
             inputs.self.modules.homeManager.cava
+            inputs.self.modules.homeManager.mpv
             inputs.self.modules.homeManager.zathura
             inputs.self.modules.homeManager.kdenlive
 

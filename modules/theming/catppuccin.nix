@@ -7,28 +7,11 @@ _:
     # which is imported in the host definition
   };
 
-  flake.modules.homeManager.catppuccin =
-    {
-      config,
-      pkgs,
-      lib,
-      ...
-    }:
-    {
-      catppuccin = {
-        accent = "blue";
-        flavor = "mocha";
-        kvantum = {
-          enable = true;
-          apply = true;
-        };
-        cursors.enable = true;
-        mpv.enable = true;
-        lazygit.enable = true;
-        eza.enable = true;
-        waybar.enable = true;
-        rofi.enable = true;
-      };
-
+  flake.modules.homeManager.catppuccin = _: {
+    # Global catppuccin settings (app-specific settings are in each app's module)
+    catppuccin = {
+      accent = "blue";
+      flavor = "mocha";
     };
+  };
 }

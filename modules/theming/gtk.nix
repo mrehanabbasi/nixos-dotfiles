@@ -33,5 +33,14 @@ _:
           icon-theme = "Papirus-Dark";
         };
       };
+
+      # Kvantum Qt theme with Catppuccin
+      catppuccin.kvantum = {
+        enable = true;
+        apply = true;
+      };
+
+      # Catppuccin cursor theme
+      catppuccin.cursors.enable = true;
     };
 }
