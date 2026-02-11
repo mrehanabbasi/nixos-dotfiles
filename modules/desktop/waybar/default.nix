@@ -268,9 +268,9 @@ _:
               menu-file = "~/.config/waybar/power_menu.xml";
               menu-actions = {
                 suspend = "systemctl suspend";
-                logout = "bash -c 'pkill -TERM brave; hyprshutdown -t \"Logging out...\" --no-exit && hyprctl dispatch exit'";
-                reboot = "bash -c 'pkill -TERM brave; hyprshutdown -t \"Rebooting...\" --no-exit && systemctl reboot'";
-                shutdown = "bash -c 'pkill -TERM brave; hyprshutdown -t \"Shutting down...\" --no-exit && systemctl poweroff'";
+                logout = "pkill -TERM brave; hyprshutdown -t 'Logging out...' --no-exit && hyprctl dispatch exit";
+                reboot = "pkill -TERM brave; hyprshutdown -t 'Rebooting...' --no-exit && systemctl reboot";
+                shutdown = "pkill -TERM brave; hyprshutdown -t 'Shutting down...' --noexit && systemctl poweroff";
               };
             };
           };
