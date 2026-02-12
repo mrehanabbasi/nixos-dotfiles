@@ -35,21 +35,21 @@
   },
   "permissions": {
     "allow": [
-      "Bash(cd:*)",
-      "Bash(echo:*)",
-      "Bash(find:*)",
-      "Bash(git add:*)",
-      "Bash(git diff:*)",
-      "Bash(git log:*)",
-      "Bash(git status:*)",
-      "Bash(grep:*)",
-      "Bash(nix eval:*)",
-      "Bash(nix flake check:*)",
-      "Bash(nix flake show:*)",
-      "Bash(nix flake update:*)",
-      "Bash(nix hash:*)",
-      "Bash(nix-instantiate:*)",
-      "Bash(nixos-rebuild build:*)",
+      "Bash(cd *)",
+      "Bash(echo *)",
+      "Bash(find *)",
+      "Bash(git add *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git status *)",
+      "Bash(grep *)",
+      "Bash(nix eval *)",
+      "Bash(nix flake check *)",
+      "Bash(nix flake show *)",
+      "Bash(nix flake update *)",
+      "Bash(nix hash *)",
+      "Bash(nix-instantiate *)",
+      "Bash(nixos-rebuild build *)",
       "Edit",
       "Glob",
       "Grep",
@@ -65,11 +65,11 @@
       "Write"
     ],
     "ask": [
-      "Bash(curl:*)",
-      "Bash(git commit:*)",
-      "Bash(git push:*)",
-      "Bash(nixos-rebuild switch:*)",
-      "Bash(wget:*)"
+      "Bash(curl *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(nixos-rebuild switch *)",
+      "Bash(wget *)"
     ],
     "deny": []
   }
