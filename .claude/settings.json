@@ -68,10 +68,11 @@
     "ask": [
       "Bash(curl *)",
       "Bash(git commit *)",
-      "Bash(git push *)",
-      "Bash(nixos-rebuild switch *)",
       "Bash(wget *)"
     ],
-    "deny": []
+    "deny": [
+      "Bash(git push *)",
+      "Bash(nixos-rebuild switch *)"
+    ]
   }
 }
