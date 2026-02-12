@@ -10,7 +10,7 @@ Perform **without confirmation**:
 
 **Require confirmation**:
 
-- Stage, commit (Conventional Commits), and push to `main`
+- Commit (Conventional Commits), and push to `main`
 - Destructive git ops (`reset --hard`, `push --force`, `rebase`)
 - Deleting files/modules
 - Changes to `_hardware.nix` or `stateVersion`
