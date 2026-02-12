@@ -47,7 +47,8 @@
       "Bash(nix-instantiate *)",
       "Bash(nix-shell *)",
       "Bash(nixfmt *)",
-      "Bash(nixos-rebuild build *)"
+      "Bash(nixos-rebuild build *)",
+      "Bash(statix *)",
     ],
     "deny": [
       "Bash(nixos-rebuild switch *)",

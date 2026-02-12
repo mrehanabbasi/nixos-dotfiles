@@ -60,6 +60,7 @@ in
             inputs.self.modules.homeManager.btop
             inputs.self.modules.homeManager.fastfetch
             inputs.self.modules.homeManager.oh-my-posh
+            inputs.self.modules.homeManager.handlr-regex
 
             # Terminal
             inputs.self.modules.homeManager.ghostty

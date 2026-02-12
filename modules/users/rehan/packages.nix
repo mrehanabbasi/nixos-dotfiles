@@ -55,6 +55,7 @@ _:
         vlc
         webcord
         bitwarden-desktop
+        librewolf
         notesnook
         claude-code
         blender
