@@ -31,6 +31,11 @@ _:
         cursor-style = "block";
         background-opacity = 0.95;
         term = "xterm-256color";
+
+        # Keybindings
+        keybind = [
+          "ctrl+l=text:\\x0c" # Clear screen
+        ];
       };
     };
   };

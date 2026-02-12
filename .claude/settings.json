@@ -42,6 +42,7 @@
       "Bash(git diff *)",
       "Bash(git log *)",
       "Bash(git status *)",
+      "Bash(git -C * status)",
       "Bash(grep *)",
       "Bash(nix eval *)",
       "Bash(nix flake check *)",
