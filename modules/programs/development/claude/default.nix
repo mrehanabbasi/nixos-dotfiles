@@ -85,22 +85,115 @@
             # Tool permissions configuration
             permissions = {
               allow = [
+                # Core tools
                 "Edit"
                 "Glob"
                 "Grep"
+                "Read"
                 "WebFetch"
                 "WebSearch"
-                "Read"
                 "Write"
+
+                # Skills
                 "Skill(commit-message)"
-                "Skill(nixos-rebuild)"
-                "Skill(flake-update)"
-                "Skill(pre-commit-check)"
                 "Skill(diagnose)"
                 "Skill(emergency-rollback)"
+                "Skill(flake-update)"
+                "Skill(nixos-rebuild)"
+                "Skill(pre-commit-check)"
+
+                # Safe Bash commands - file info
+                "Bash(awk *)"
+                "Bash(base64 *)"
+                "Bash(basename *)"
+                "Bash(cat *)"
+                "Bash(cd *)"
+                "Bash(cut *)"
+                "Bash(date *)"
+                "Bash(diff *)"
+                "Bash(dirname *)"
+                "Bash(du *)"
+                "Bash(echo *)"
+                "Bash(env *)"
+                "Bash(file *)"
+                "Bash(find *)"
+                "Bash(head *)"
+                "Bash(hostname *)"
+                "Bash(id *)"
+                "Bash(jq *)"
+                "Bash(ls *)"
+                "Bash(md5sum *)"
+                "Bash(mkdir *)"
+                "Bash(printenv *)"
+                "Bash(pwd)"
+                "Bash(realpath *)"
+                "Bash(sed *)"
+                "Bash(sha256sum *)"
+                "Bash(sort *)"
+                "Bash(stat *)"
+                "Bash(tail *)"
+                "Bash(tee *)"
+                "Bash(tr *)"
+                "Bash(tree *)"
+                "Bash(uname *)"
+                "Bash(uniq *)"
+                "Bash(wc *)"
+                "Bash(whereis *)"
+                "Bash(which *)"
+                "Bash(whoami)"
+                "Bash(xargs *)"
+
+                # Git read operations
+                "Bash(git add *)"
+                "Bash(git branch)"
+                "Bash(git branch -a)"
+                "Bash(git branch -r)"
+                "Bash(git branch -v *)"
+                "Bash(git diff *)"
+                "Bash(git fetch *)"
+                "Bash(git log *)"
+                "Bash(git remote *)"
+                "Bash(git rev-parse *)"
+                "Bash(git show *)"
+                "Bash(git stash *)"
+                "Bash(git status)"
+                "Bash(git -C * status)"
               ];
-              ask = [ "Bash" ];
-              deny = [ ];
+              ask = [
+                # File operations
+                "Bash(cp *)"
+                "Bash(mv *)"
+                "Bash(rm *)"
+                "Bash(rmdir *)"
+                "Bash(touch *)"
+
+                # Network
+                "Bash(curl *)"
+                "Bash(wget *)"
+
+                # Git write operations
+                "Bash(git branch -D *)"
+                "Bash(git branch -d *)"
+                "Bash(git branch --delete *)"
+                "Bash(git checkout *)"
+                "Bash(git commit *)"
+                "Bash(git merge *)"
+                "Bash(git rebase *)"
+                "Bash(git reset *)"
+                "Bash(git tag *)"
+
+                # Process management
+                "Bash(kill *)"
+                "Bash(pkill *)"
+              ];
+              deny = [
+                # Dangerous operations
+                "Bash(chmod *)"
+                "Bash(chown *)"
+                "Bash(git clean *)"
+                "Bash(git push *)"
+                "Bash(sudo *)"
+              ];
             };
           };
 

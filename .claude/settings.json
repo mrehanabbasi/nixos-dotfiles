@@ -35,44 +35,24 @@
   },
   "permissions": {
     "allow": [
-      "Bash(cd *)",
-      "Bash(echo *)",
-      "Bash(find *)",
-      "Bash(git add *)",
-      "Bash(git diff *)",
-      "Bash(git log *)",
-      "Bash(git status)",
-      "Bash(git -C * status)",
-      "Bash(grep *)",
+      "Bash(nix build *)",
       "Bash(nix eval *)",
       "Bash(nix flake check *)",
       "Bash(nix flake show *)",
       "Bash(nix flake update *)",
       "Bash(nix hash *)",
+      "Bash(nix repl *)",
+      "Bash(nix search *)",
+      "Bash(nix-build *)",
       "Bash(nix-instantiate *)",
-      "Bash(nixos-rebuild build *)",
-      "Edit",
-      "Glob",
-      "Grep",
-      "Read",
-      "Skill(commit-message)",
-      "Skill(diagnose)",
-      "Skill(emergency-rollback)",
-      "Skill(flake-update)",
-      "Skill(nixos-rebuild)",
-      "Skill(pre-commit-check)",
-      "WebFetch",
-      "WebSearch",
-      "Write"
-    ],
-    "ask": [
-      "Bash(curl *)",
-      "Bash(git commit *)",
-      "Bash(wget *)"
+      "Bash(nix-shell *)",
+      "Bash(nixfmt *)",
+      "Bash(nixos-rebuild build *)"
     ],
     "deny": [
-      "Bash(git push *)",
-      "Bash(nixos-rebuild switch *)"
+      "Bash(nixos-rebuild switch *)",
+      "Bash(sudo nixos-rebuild build *)",
+      "Bash(sudo nixos-rebuild switch *)"
     ]
   }
 }
