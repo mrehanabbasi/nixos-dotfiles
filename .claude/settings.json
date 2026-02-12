@@ -37,10 +37,12 @@
     "allow": [
       "Bash(cd:*)",
       "Bash(echo:*)",
+      "Bash(find:*)",
       "Bash(git add:*)",
       "Bash(git diff:*)",
       "Bash(git log:*)",
       "Bash(git status:*)",
+      "Bash(grep:*)",
       "Bash(nix eval:*)",
       "Bash(nix flake check:*)",
       "Bash(nix flake show:*)",
@@ -66,6 +68,7 @@
       "Bash(curl:*)",
       "Bash(git commit:*)",
       "Bash(git push:*)",
+      "Bash(nixos-rebuild switch:*)",
       "Bash(wget:*)"
     ],
     "deny": []
