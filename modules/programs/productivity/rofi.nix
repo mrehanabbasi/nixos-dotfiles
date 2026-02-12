@@ -17,7 +17,7 @@ _:
         enable = true;
         settings = {
           email = "mrehanabbasi@proton.me";
-          pinentry = pkgs.pinentry-gnome3;
+          pinentry = pkgs.pinentry-qt;
           base_url = "https://vaultwarden.mrehanabbasi.com";
         };
       };
