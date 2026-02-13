@@ -1,4 +1,8 @@
-# Agent Guidelines for nixos-dotfiles
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Agent Guidelines for nixos-dotfiles
 
 ## Agent Autonomy
 
@@ -20,6 +24,10 @@ Perform **without confirmation**:
 
 - Run `nixos-rebuild build/switch --flake .#one-piece` with or without `sudo`
 
+**Agent workflow**:
+
+- Use `.claude/plans/` for plan files, name them descriptively (not random names)
+
 ## Build/Lint Commands
 
 ```bash
@@ -33,31 +41,84 @@ nix flake update                                # Update all inputs
 nix flake update <input-name>                  # Update single input
 ```
 
-## Repository Structure (Dendritic Pattern)
+## Architecture
 
-Uses **Dendritic pattern** with flake-parts + import-tree for automatic module discovery. Modules define reusable "aspects" that hosts compose.
+### Dendritic Pattern Overview
 
-```
-├── flake.nix                 # Minimal entry (imports modules/)
-├── modules/
-│   ├── flake/default.nix     # flake-parts config
-│   ├── _lib/default.nix      # Helper functions (mkNixos)
-│   ├── hosts/one-piece/      # Host: default.nix + _hardware.nix, _gpu.nix, etc.
-│   ├── users/rehan/          # User + Home Manager integration
-│   ├── system/               # base, boot, networking, virtualisation
-│   ├── secrets/              # sops config + secrets.yaml
-│   ├── services/             # audio, tailscale, pia, flatpak
-│   ├── desktop/              # hyprland, sddm, hyprlock, hypridle, walker
-│   ├── programs/             # cli/, terminal/, media/, development/
-│   ├── gaming/               # steam, gamemode, wine
-│   └── theming/              # catppuccin
-```
+Uses **flake-parts + import-tree** for automatic module discovery. The `flake.nix` is minimal—it just imports `./modules` which auto-discovers all `.nix` files (except `_` prefixed ones).
 
 **Key conventions**:
 
-- `_` prefix = ignored by import-tree (helpers, plain NixOS modules)
-- Modules define `flake.modules.nixos.<name>` / `flake.modules.homeManager.<name>`
-- Hosts compose via `inputs.self.modules.nixos.<name>`
+- `_` prefix = ignored by import-tree (helpers, plain NixOS modules, hardware configs)
+- Modules export via `flake.modules.nixos.<name>` and/or `flake.modules.homeManager.<name>`
+- Hosts compose modules via `inputs.self.modules.nixos.<name>`
+- Users compose Home Manager modules via `inputs.self.modules.homeManager.<name>`
+- Hardware config stays in host's `_*.nix` files, never in shared modules
+
+### Module Composition Flow
+
+```
+flake.nix
+    └── modules/ (auto-imported by import-tree)
+            ├── hosts/one-piece/default.nix  ──┐
+            │   Composes NixOS modules:        │
+            │   └── inputs.self.modules.nixos.* ◄── Defined in modules/**/*.nix
+            │                                   │
+            └── users/rehan/default.nix ───────┤
+                Composes HM modules:            │
+                └── inputs.self.modules.homeManager.* ◄─┘
+```
+
+### Host Layer Ordering
+
+Hosts (`modules/hosts/*/default.nix`) compose modules in **strict layer order**:
+
+1. **External flake modules** - Third-party options (catppuccin, sops-nix, home-manager)
+2. **Base system** - Core NixOS (base, boot, networking, virtualisation, fonts)
+3. **Secrets** - sops config (before services that use them)
+4. **Theming** - catppuccin (before modules that read theme options)
+5. **Services** - audio, tailscale, pia, flatpak
+6. **Desktop & Programs** - hyprland, sddm, browsers, CLI tools
+7. **Optional features** - gaming
+8. **Host-specific hardware** - Plain NixOS modules (`_hardware.nix`, `_gpu.nix`, etc.)
+9. **User** - Composes Home Manager modules
+
+### Dual-Module Pattern
+
+Most modules define **both** NixOS and Home Manager aspects in one file:
+
+```nix
+# modules/desktop/hyprland/default.nix
+{ inputs, ... }:
+{
+  flake.modules.nixos.hyprland = { pkgs, ... }: {
+    # System-level: enable service, install packages
+    programs.hyprland.enable = true;
+  };
+
+  flake.modules.homeManager.hyprland = _: {
+    # User-level: configure dotfiles, settings
+    wayland.windowManager.hyprland.settings = { ... };
+  };
+}
+```
+
+### Directory Structure
+
+```
+modules/
+├── flake/          # flake-parts config
+├── _lib/           # Helper functions (mkNixos) - NOT auto-imported
+├── hosts/          # Host compositions (one-piece)
+├── users/          # User compositions (rehan)
+├── system/         # base, boot, networking, virtualisation, fonts
+├── secrets/        # sops config + secrets.yaml
+├── services/       # audio, tailscale, pia, flatpak
+├── desktop/        # hyprland, sddm, hyprlock, hypridle, waybar, swaync
+├── programs/       # cli/, terminal/, media/, development/, productivity/
+├── gaming/         # steam, gamemode, wine
+└── theming/        # catppuccin, gtk
+```
 
 ## Code Style
 
@@ -134,8 +195,9 @@ warnings = lib.optional (config.old-option != null)
 
 1. Create `modules/<category>/feature.nix`
 2. Define `flake.modules.nixos.feature` and/or `flake.modules.homeManager.feature`
-3. Add to host's `default.nix`: `inputs.self.modules.nixos.feature`
-4. Validate: `sudo nixos-rebuild build --flake .#one-piece`
+3. Add NixOS module to host's `default.nix`: `inputs.self.modules.nixos.feature`
+4. Add Home Manager module to user's `default.nix`: `inputs.self.modules.homeManager.feature`
+5. Validate: `sudo nixos-rebuild build --flake .#one-piece`
 
 ### Secrets (sops-nix)
 
@@ -181,14 +243,12 @@ flatpak uninstall --unused        # Clean up unused dependencies
 flatpak repair                    # Repair installation
 ```
 
-## Anti-patterns
+## Nix Anti-patterns
 
 - **NEVER** change `stateVersion` after initial install
-- **NEVER** use tabs for indentation
 - **NEVER** hardcode paths—use `config.xdg.*` or `pkgs.writeText`
 - **AVOID** `with pkgs;` in large scopes—prefer explicit `pkgs.foo`
 - **AVOID** `rec { }` attribute sets—use `let ... in` instead
-- **DON'T** put hardware config in shared modules—keep in host's `_*.nix`
 
 ## Context
 
