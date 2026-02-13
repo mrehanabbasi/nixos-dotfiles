@@ -283,7 +283,7 @@ _:
                 suspend = "systemctl suspend";
                 logout = "pkill -TERM brave; hyprshutdown -t 'Logging out...' --no-exit && hyprctl dispatch exit";
                 reboot = "pkill -TERM brave; hyprshutdown -t 'Rebooting...' --no-exit && systemctl reboot";
-                shutdown = "pkill -TERM brave; hyprshutdown -t 'Shutting down...' --noexit && systemctl poweroff";
+                shutdown = "pkill -TERM brave; hyprshutdown -t 'Shutting down...' --no-exit && systemctl poweroff";
               };
             };
           };
