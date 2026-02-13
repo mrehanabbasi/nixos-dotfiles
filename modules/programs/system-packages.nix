@@ -50,6 +50,10 @@ _:
         git
         unzip
         unrar
+        p7zip # 7zip support
+
+        # Archive manager (backend for thunar-archive-plugin)
+        xarchiver
         net-tools
         btop
         procps

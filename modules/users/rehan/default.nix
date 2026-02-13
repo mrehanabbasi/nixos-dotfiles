@@ -42,6 +42,7 @@ in
             inputs.self.modules.homeManager.hyprland
             inputs.self.modules.homeManager.hyprlock
             inputs.self.modules.homeManager.hypridle
+            inputs.self.modules.homeManager.idle-inhibit-media
             inputs.self.modules.homeManager.hyprpaper
             inputs.self.modules.homeManager.swaync
             inputs.self.modules.homeManager.waybar

@@ -22,6 +22,16 @@ _:
         "x-scheme-handler/about" = [ "brave-browser.desktop" ];
         "x-scheme-handler/unknown" = [ "brave-browser.desktop" ];
         "inode/directory" = [ "thunar.desktop" ];
+
+        # Archives
+        "application/zip" = [ "xarchiver.desktop" ];
+        "application/x-7z-compressed" = [ "xarchiver.desktop" ];
+        "application/x-tar" = [ "xarchiver.desktop" ];
+        "application/gzip" = [ "xarchiver.desktop" ];
+        "application/x-bzip2" = [ "xarchiver.desktop" ];
+        "application/x-xz" = [ "xarchiver.desktop" ];
+        "application/x-rar" = [ "xarchiver.desktop" ];
+        "application/x-compressed-tar" = [ "xarchiver.desktop" ];
       };
     };
   };

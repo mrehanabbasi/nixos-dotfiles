@@ -82,6 +82,7 @@ _:
             ];
             modules-center = [ "clock" ];
             modules-right = [
+              "idle_inhibitor"
               "tray"
               "custom/cava"
               "memory"
@@ -223,6 +224,16 @@ _:
               tooltip-format = "{timeTo}, {capacity}%";
             };
 
+            "idle_inhibitor" = {
+              format = "{icon}";
+              format-icons = {
+                activated = "󰅶";
+                deactivated = "󰾪";
+              };
+              tooltip-format-activated = "Idle inhibited (presentation mode)";
+              tooltip-format-deactivated = "Idle enabled";
+            };
+
             tray = {
               icon-size = 18;
               spacing = 8;
@@ -345,6 +356,19 @@ _:
             margin: 2px 2px;
             border-radius: 8px;
             font-weight: 500;
+          }
+
+          /* Idle inhibitor */
+          #idle_inhibitor {
+            background-color: @mantle;
+            color: @teal;
+            padding: 0 12px;
+            margin: 2px 2px;
+            border-radius: 8px;
+          }
+
+          #idle_inhibitor.activated {
+            color: @peach;
           }
 
           /* System tray */

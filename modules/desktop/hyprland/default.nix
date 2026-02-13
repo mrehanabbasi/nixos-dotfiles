@@ -58,7 +58,7 @@
 
         # Autostart
         exec-once = [
-          "hyprpaper & hypridle"
+          "hyprpaper"
           "hyprctl setcursor $cursorTheme $cursorSize"
           "kdeconnectd & kdeconnect-indicator &"
           "swaync"
@@ -280,6 +280,18 @@
         ];
 
         # Window rules
+        windowrulev2 = [
+          # Idle inhibit for video conferencing apps
+          "idleinhibit focus, class:^(zoom|Zoom)$"
+          "idleinhibit focus, class:^(WebCord)$"
+          "idleinhibit focus, class:^(discord|Discord)$"
+          "idleinhibit focus, class:^(Slack|slack)$"
+          "idleinhibit focus, class:^(teams-for-linux|Microsoft Teams)$"
+          "idleinhibit focus, title:(Google Meet)"
+          "idleinhibit focus, title:(Microsoft Teams)"
+          "idleinhibit focus, title:(Zoom Meeting)"
+        ];
+
         windowrule = [
           "suppressevent maximize, class:.*"
           "nofocus,class:^$,title:^$,xwayland:1,floating:1,fullscreen:0,pinned:0"
