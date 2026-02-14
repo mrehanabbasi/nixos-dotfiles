@@ -156,11 +156,16 @@ _:
             };
 
             bluetooth = {
-              format = "󰂯 {status}";
-              format-on = "󰂯 On";
-              format-off = "󰂯 Off";
-              format-connected = "󰂯 Connected ({num_connections})";
-              # format-connected-battery = "󰂯 {device_alias} ({device_battery_percentage}%)";
+              format = "{icon} {status}";
+              format-on = "{icon} On";
+              format-off = "{icon} Off";
+              format-connected = "{icon} Connected ({num_connections})";
+              format-icons = {
+                on = "󰂯";
+                off = "󰂲";
+                connected = "󰂯";
+                default = "󰂯";
+              };
               on-click = "blueberry";
               tooltip-format-connected = "{device_enumerate}";
               tooltip-format-enumerate-connected = "{device_alias}";

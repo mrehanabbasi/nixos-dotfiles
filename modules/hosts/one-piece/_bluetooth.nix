@@ -12,6 +12,7 @@ _:
       };
       Policy = {
         AutoEnable = true; # Enable all controllers when found
+        AutoConnect = true; # Auto-connect to paired devices
       };
     };
   };

@@ -45,6 +45,7 @@ _: {
         };
 
         Service = {
+          Environment = [ "PULSE_SINK=scream_sink" ];
           ExecStart = "${pkgs.scream}/bin/scream -i virbr0 -o pulse";
           Restart = "on-failure";
           RestartSec = 3;
