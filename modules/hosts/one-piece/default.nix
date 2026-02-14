@@ -39,6 +39,7 @@ in
       # LAYER 5: Services (may depend on secrets/theming)
       # ════════════════════════════════════════════════════════════════════
       inputs.self.modules.nixos.audio
+      inputs.self.modules.nixos.vm-audio
       inputs.self.modules.nixos.tailscale
       inputs.self.modules.nixos.pia
       inputs.self.modules.nixos.flatpak
