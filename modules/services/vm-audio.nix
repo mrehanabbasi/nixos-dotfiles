@@ -24,8 +24,11 @@ _: {
           Type = "oneshot";
           RemainAfterExit = true;
           ExecStart = pkgs.writeShellScript "scream-sink-setup" ''
-            ${pkgs.pulseaudio}/bin/pactl load-module module-null-sink sink_name=scream_sink sink_properties=device.description=Scream_VM
-            ${pkgs.pulseaudio}/bin/pactl load-module module-loopback source=scream_sink.monitor latency_msec=20
+            # Only create sink if it doesn't already exist
+            if ! ${pkgs.pulseaudio}/bin/pactl list sinks short | grep -q scream_sink; then
+              ${pkgs.pulseaudio}/bin/pactl load-module module-null-sink sink_name=scream_sink sink_properties=device.description=Scream_VM
+              ${pkgs.pulseaudio}/bin/pactl load-module module-loopback source=scream_sink.monitor latency_msec=20
+            fi
           '';
         };
 
