@@ -77,6 +77,9 @@ in
             inputs.self.modules.homeManager.kdeconnect
             inputs.self.modules.homeManager.rofi
 
+            # Browsers
+            inputs.self.modules.homeManager.librewolf
+
             # Development
             inputs.self.modules.homeManager.gpg
             inputs.self.modules.homeManager.opencode
