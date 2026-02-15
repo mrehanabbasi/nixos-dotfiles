@@ -160,13 +160,15 @@ _:
               format-on = "{icon} On";
               format-off = "{icon} Off";
               format-connected = "{icon} Connected ({num_connections})";
+              format-disabled = "{icon} Off";
               format-icons = {
                 on = "󰂯";
                 off = "󰂲";
                 connected = "󰂯";
+                disabled = "󰂲";
                 default = "󰂯";
               };
-              on-click = "blueberry";
+              on-click = "blueman-manager";
               tooltip-format-connected = "{device_enumerate}";
               tooltip-format-enumerate-connected = "{device_alias}";
               tooltip-format-enumerate-connected-battery = "{device_alias} ({device_battery_percentage}%)";

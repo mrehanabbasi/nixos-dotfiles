@@ -26,7 +26,6 @@
 
         # Waybar dependencies
         pavucontrol
-        blueberry
       ];
 
       services = {
@@ -60,8 +59,10 @@
         exec-once = [
           "hyprpaper"
           "hyprctl setcursor $cursorTheme $cursorSize"
-          "kdeconnectd & kdeconnect-indicator &"
+          "kdeconnectd"
+          "kdeconnect-indicator"
           "swaync"
+          "blueman-applet"
         ];
 
         # Environment variables
@@ -162,12 +163,6 @@
 
         # Gestures
         gesture = "3, horizontal, workspace";
-
-        # Per-device config
-        device = {
-          name = "epic-mouse-v1";
-          sensitivity = -0.5;
-        };
 
         # Main modifier
         "$mainMod" = "SUPER";

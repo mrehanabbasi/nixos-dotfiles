@@ -1,4 +1,5 @@
 # Bluetooth configuration for one-piece
+# Auto-connect handled by blueman-applet (started in Hyprland)
 _:
 
 {
