@@ -6,58 +6,80 @@ _:
   flake.modules.homeManager.waybar =
     { pkgs, ... }:
     {
-      home = {
-        packages = with pkgs; [ cava ];
+      home.file = {
+        # VPN status script using PIA CLI
+        ".config/waybar/scripts/vpn-status.sh" = {
+          text = ''
+            #!/usr/bin/env bash
 
-        file = {
-          # Cava wrapper script that continuously monitors audio and hides when stopped
-          ".config/waybar/scripts/cava-wrapper.sh" = {
-            text = ''
-              #!/usr/bin/env bash
+            while true; do
+              PIA_STATUS=$(pia status --short 2>/dev/null)
 
-              # Function to check if audio is playing
-              is_playing() {
-                pactl list short sink-inputs 2>/dev/null | grep -q .
-              }
+              if echo "$PIA_STATUS" | grep -q "connected:wg"; then
+                echo "PIA:wg"
+              elif echo "$PIA_STATUS" | grep -q "connected:ovpn"; then
+                echo "PIA:ovpn"
+              else
+                echo ""
+              fi
 
-              # Start cava in the background and capture its output
-              cava -p ~/.config/cava/config_waybar 2>/dev/null | while IFS= read -r line; do
-                if is_playing; then
-                  # Transform and output the visualization
-                  echo "$line" | sed 's/;//g;s/0/▁/g;s/1/▂/g;s/2/▃/g;s/3/▄/g;s/4/▅/g;s/5/▆/g;s/6/▇/g;s/7/█/g;'
-                else
-                  # No audio - output empty to hide module
-                  echo ""
-                fi
-              done
-            '';
-            executable = true;
-          };
+              sleep 2
+            done
+          '';
+          executable = true;
+        };
 
-          # VPN status script using PIA CLI
-          ".config/waybar/scripts/vpn-status.sh" = {
-            text = ''
-              #!/usr/bin/env bash
+        # Power menu XML definition
+        ".config/waybar/power_menu.xml".source = ./power_menu.xml;
 
-              while true; do
-                PIA_STATUS=$(pia status --short 2>/dev/null)
+        # Cava script for audio visualization (VM audio via Scream)
+        ".config/waybar/scripts/cava.sh" = {
+          text = ''
+            #!/usr/bin/env bash
+            bar="▁▂▃▄▅▆▇█"
+            dict="s/;//g"
 
-                if echo "$PIA_STATUS" | grep -q "connected:wg"; then
-                  echo "PIA:wg"
-                elif echo "$PIA_STATUS" | grep -q "connected:ovpn"; then
-                  echo "PIA:ovpn"
-                else
-                  echo ""
-                fi
+            # Create cava config - listen to scream_sink.monitor for VM audio
+            config_file="/tmp/waybar_cava_config"
+            cat > "$config_file" << EOF
+            [general]
+            bars = 12
+            framerate = 60
+            sensitivity = 100
+            autosens = 1
+            lower_cutoff_freq = 50
+            higher_cutoff_freq = 10000
 
-                sleep 2
-              done
-            '';
-            executable = true;
-          };
+            [input]
+            method = pulse
+            source = auto
 
-          # Power menu XML definition
-          ".config/waybar/power_menu.xml".source = ./power_menu.xml;
+            [output]
+            method = raw
+            raw_target = /dev/stdout
+            data_format = ascii
+            ascii_max_range = 7
+
+            [smoothing]
+            noise_reduction = 90
+            EOF
+
+            # Build sed dictionary
+            for i in $(seq 0 7); do
+              dict="$dict;s/$i/''${bar:$i:1}/g"
+            done
+
+            # Run cava and format output
+            # Only show when there's actual audio (any value >= 2 indicates real audio)
+            cava -p "$config_file" | while read -r line; do
+              if [[ "$line" =~ [1-7] ]]; then
+                echo "󰝚 $line" | sed "$dict"
+              else
+                echo ""
+              fi
+            done
+          '';
+          executable = true;
         };
       };
 
@@ -248,10 +270,8 @@ _:
             };
 
             "custom/cava" = {
-              exec = "~/.config/waybar/scripts/cava-wrapper.sh";
-              format = " {}";
+              exec = "~/.config/waybar/scripts/cava.sh";
               tooltip = false;
-              on-click = "pavucontrol";
             };
 
             "custom/vpn" = {
@@ -288,9 +308,9 @@ _:
               menu-file = "~/.config/waybar/power_menu.xml";
               menu-actions = {
                 suspend = "systemctl suspend";
-                logout = "pkill -TERM brave; hyprshutdown -t 'Logging out...' --no-exit && hyprctl dispatch exit";
-                reboot = "pkill -TERM brave; hyprshutdown -t 'Rebooting...' --no-exit && systemctl reboot";
-                shutdown = "pkill -TERM brave; hyprshutdown -t 'Shutting down...' --no-exit && systemctl poweroff";
+                logout = "sh -c 'pkill -TERM brave; systemd-run --user --no-block --setenv=HYPRLAND_INSTANCE_SIGNATURE=$HYPRLAND_INSTANCE_SIGNATURE --setenv=WAYLAND_DISPLAY=$WAYLAND_DISPLAY hyprshutdown -t Logging\\ out...'";
+                reboot = "sh -c 'pkill -TERM brave; systemd-run --user --no-block --setenv=HYPRLAND_INSTANCE_SIGNATURE=$HYPRLAND_INSTANCE_SIGNATURE --setenv=WAYLAND_DISPLAY=$WAYLAND_DISPLAY hyprshutdown -t Rebooting... --post-cmd reboot'";
+                shutdown = "sh -c 'pkill -TERM brave; systemd-run --user --no-block --setenv=HYPRLAND_INSTANCE_SIGNATURE=$HYPRLAND_INSTANCE_SIGNATURE --setenv=WAYLAND_DISPLAY=$WAYLAND_DISPLAY hyprshutdown -t Shutting\\ down... --post-cmd \"shutdown -P 0\"'";
               };
             };
           };

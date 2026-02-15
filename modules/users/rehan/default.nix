@@ -68,7 +68,6 @@ in
             inputs.self.modules.homeManager.ghostty
 
             # Media
-            inputs.self.modules.homeManager.cava
             inputs.self.modules.homeManager.mpv
             inputs.self.modules.homeManager.zathura
             inputs.self.modules.homeManager.kdenlive
