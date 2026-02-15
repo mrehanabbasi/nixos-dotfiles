@@ -308,9 +308,9 @@ _:
               menu-file = "~/.config/waybar/power_menu.xml";
               menu-actions = {
                 suspend = "systemctl suspend";
-                logout = "sh -c 'pkill -TERM brave; systemd-run --user --no-block --setenv=HYPRLAND_INSTANCE_SIGNATURE=$HYPRLAND_INSTANCE_SIGNATURE --setenv=WAYLAND_DISPLAY=$WAYLAND_DISPLAY hyprshutdown -t Logging\\ out...'";
-                reboot = "sh -c 'pkill -TERM brave; systemd-run --user --no-block --setenv=HYPRLAND_INSTANCE_SIGNATURE=$HYPRLAND_INSTANCE_SIGNATURE --setenv=WAYLAND_DISPLAY=$WAYLAND_DISPLAY hyprshutdown -t Rebooting... --post-cmd reboot'";
-                shutdown = "sh -c 'pkill -TERM brave; systemd-run --user --no-block --setenv=HYPRLAND_INSTANCE_SIGNATURE=$HYPRLAND_INSTANCE_SIGNATURE --setenv=WAYLAND_DISPLAY=$WAYLAND_DISPLAY hyprshutdown -t Shutting\\ down... --post-cmd \"shutdown -P 0\"'";
+                logout = "pkill -TERM brave; hyprctl dispatch exit";
+                reboot = "pkill -TERM brave; systemctl reboot";
+                shutdown = "pkill -TERM brave; systemctl poweroff";
               };
             };
           };

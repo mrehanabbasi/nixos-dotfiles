@@ -12,11 +12,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    hyprshutdown = {
-      url = "github:hyprwm/hyprshutdown";
-      inputs.nixpkgs.follows = "nixpkgs-unstable";
-    };
-
     catppuccin = {
       url = "github:catppuccin/nix?ref=v25.11";
       inputs.nixpkgs.follows = "nixpkgs";
