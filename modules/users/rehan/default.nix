@@ -83,6 +83,7 @@ in
             inputs.self.modules.homeManager.gpg
             inputs.self.modules.homeManager.opencode
             inputs.self.modules.homeManager.claude
+            inputs.self.modules.homeManager.pre-commit
 
             # Misc
             inputs.self.modules.homeManager.mime-apps
