@@ -17,26 +17,60 @@ _:
           ls = "eza --icons --color=always";
           ll = "eza -al --icons --color=always";
         };
+        shellGlobalAliases = {
+          NE = "2>/dev/null";
+          ND = ">/dev/null";
+          NUL = ">/dev/null 2>&1";
+          JQ = "| jq";
+          C = "| wl-copy";
+        };
         initContent = ''
           # Set GPG_TTY for pinentry-tty to work in CLI tools (e.g., Claude Code commits)
           export GPG_TTY=$(tty)
 
           bindkey -e
 
+          autoload -Uz edit-command-line
+          zle -N edit-command-line
+          bindkey '^X^e' edit-command-line
+
+          zle -N copy-command
+          bindkey '^Xc' copy-command
+          bindkey ' ' magic-space
+
+          bindkey -s '^Xgc' 'git commit -am ""\C-b'
+
           # disable sort when completing `git checkout`
           zstyle ':completion:*:git-checkout:*' sort false
+
           # set descriptions format to enable group support
+          # NOTE: don't use escape sequences herem fzf-tab will ignore them
           zstyle ':completion:*:descriptions' format '[%d]'
+
           # set list-colors to enable filename colorizing
           zstyle ':completion:*' list-colors ''${(s.:.)LS_COLORS}
+
           # force zsh not to show completion menu, which allows fzf-tab to capture the unambiguous prefix
           zstyle ':completion:*' menu no
+
           # preview directory's content with eza when completing cd
           zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'eza -1 --color=always $realpath'
           zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -1 --color=always $realpath'
           zstyle ':fzf-tab:complete:ls:*' fzf-preview 'cat $realpath'
+
           # switch group using `<` and `>`
           zstyle ':fzf-tab:*' switch-group '<' '>'
+
+          # Suffix aliases
+          alias -s md='bat'
+          alias -s mov='open'
+          alias -s png='open'
+          alias -s mp4='open'
+          alias -s go='$EDITOR'
+          alias -s js='$EDITOR'
+          alias -s ts='$EDITOR'
+          alias -s yaml='bat -l yaml'
+          alias -s json='jq <'
         '';
         oh-my-zsh = {
           enable = false;

@@ -9,9 +9,9 @@ _:
       efi.canTouchEfiVariables = true;
     };
 
-    # Use default kernel (6.12 LTS) - linuxPackages_latest (6.18+) has unstable
-    # MLO (Multi-Link Operation) support in ath12k that causes firmware timeouts
-    # and kernel panics on suspend. Revisit when upstream fixes land.
-    # boot.kernelPackages = pkgs.linuxPackages_latest;
+    # Use default kernel (6.12 LTS) - linuxPackages_latest (6.19) fixes USB-C DP
+    # alt mode but has unstable MLO (Multi-Link Operation) in ath12k causing
+    # firmware timeouts and kernel panics on suspend. Revisit when upstream lands.
+
   };
 }

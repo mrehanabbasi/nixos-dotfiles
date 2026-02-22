@@ -29,11 +29,13 @@ _:
 
         # Neovim-related
         gnumake
+        just
         zig
         nil
         go
         gopls
         gofumpt
+        golangci-lint
         nodePackages_latest.vscode-json-languageserver
         yaml-language-server
         lua-language-server
@@ -46,11 +48,13 @@ _:
         nodejs
         statix # nix linter
         markdownlint-cli2
+        addlicense
 
         libsForQt5.qtstyleplugin-kvantum
         libsForQt5.qt5ct
 
         jq
+        jless
         yq
         vlc
         webcord
