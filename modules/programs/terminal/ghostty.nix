@@ -19,6 +19,9 @@ _:
 
       settings = {
         font-family = "JetBrainsMono Nerd Font";
+        font-style-italic = "Italic";
+        font-style-bold = "Bold";
+        font-style-bold-italic = "Bold Italic";
         font-size = 14;
 
         # Disable ligatures
