@@ -49,11 +49,18 @@ _:
         wget
         git
         unzip
+        zip
         unrar
         p7zip # 7zip support
+        gnutar
+        gzip
+        xz
 
-        # Archive manager (backend for thunar-archive-plugin)
+        # Archive managers (backends for thunar-archive-plugin)
+        # xarchiver is lightweight GTK archive manager
+        # file-roller provides better thunar-archive-plugin integration via .tap files
         xarchiver
+        file-roller
         net-tools
         btop
         procps
