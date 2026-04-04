@@ -37,24 +37,29 @@
 
   # Custom importTree that imports ALL .nix files (not just default.nix)
   # Excludes: flake.nix, _ prefixed files, and files in _ prefixed directories
-  outputs = inputs:
+  outputs =
+    inputs:
     let
       inherit (inputs.nixpkgs) lib;
 
       # Recursively find all .nix files, excluding _ prefixed paths
-      findNixFiles = dir:
-        lib.flatten (lib.mapAttrsToList (name: type:
-          if lib.hasPrefix "_" name then
-            [ ] # Skip _ prefixed entries
-          else if type == "directory" then
-            findNixFiles (dir + "/${name}")
-          else if type == "regular" && lib.hasSuffix ".nix" name && name != "flake.nix" then
-            [ (dir + "/${name}") ]
-          else
-            [ ]
-        ) (builtins.readDir dir));
+      findNixFiles =
+        dir:
+        lib.flatten (
+          lib.mapAttrsToList (
+            name: type:
+            if lib.hasPrefix "_" name then
+              [ ] # Skip _ prefixed entries
+            else if type == "directory" then
+              findNixFiles (dir + "/${name}")
+            else if type == "regular" && lib.hasSuffix ".nix" name && name != "flake.nix" then
+              [ (dir + "/${name}") ]
+            else
+              [ ]
+          ) (builtins.readDir dir)
+        );
 
-      importTree = path: findNixFiles path;
+      importTree = findNixFiles;
     in
     inputs.flake-parts.lib.mkFlake { inherit inputs; } { imports = importTree ./modules; };
 }
