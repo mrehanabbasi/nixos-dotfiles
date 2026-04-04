@@ -1,78 +1,91 @@
-# nixos-dotfiles
+# NixOS Dotfiles
 
-NixOS configuration using flake-parts and the dendritic pattern for modular, declarative system management.
+Personal NixOS configuration using the [Dendritic pattern](https://discourse.nixos.org/t/the-dendritic-pattern/61271) with flake-parts and automatic module discovery.
+
+## Features
+
+- **Dendritic pattern** - Feature-based organization with automatic module discovery
+- **Hyprland** - Wayland compositor with Waybar, Hyprlock, and Hypridle
+- **Catppuccin Mocha** - System-wide theming (GTK uses Tokyonight-Dark)
+- **Home Manager** - Declarative user environment management
+- **sops-nix** - Secrets management with age encryption
+- **Gaming** - Steam, Gamemode, Wine, Lutris, Heroic, Bottles
+
+## Prerequisites
+
+- NixOS installed with flakes enabled
+- Git
 
 ## Quick Start
 
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/mrehanabbasi/nixos-dotfiles.git
+   cd nixos-dotfiles
+   ```
+
+2. **Create your host configuration**
+   ```bash
+   cp -r modules/hosts/_template modules/hosts/your-hostname
+   ```
+
+3. **Generate hardware configuration**
+   ```bash
+   nixos-generate-config --show-hardware-config > modules/hosts/your-hostname/hardware.nix
+   ```
+   Then wrap the output in a flake-parts module (see `modules/hosts/one-piece/hardware.nix` for reference).
+
+4. **Update user configuration**
+
+   Edit `modules/users/rehan/default.nix` or create your own user module.
+
+5. **Set up secrets (optional)**
+
+   Create age key and configure sops:
+   ```bash
+   mkdir -p ~/.config/sops/age
+   age-keygen -o ~/.config/sops/age/keys.txt
+   ```
+   Update `modules/secrets/.sops.yaml` with your public key.
+
+6. **Build and switch**
+   ```bash
+   sudo nixos-rebuild switch --flake .#your-hostname
+   ```
+
+## Structure
+
+```
+modules/
+├── features/       # Self-contained feature modules (audio, hyprland, zsh, etc.)
+├── hosts/          # Host-specific configurations
+├── users/          # User configurations (Home Manager)
+├── system/         # Core system modules (base, boot, networking, fonts)
+├── theming/        # Catppuccin and GTK theming
+├── secrets/        # sops-nix configuration
+└── flake/          # flake-parts setup
+```
+
+## Commands
+
 ```bash
-# Build and validate configuration
+# Build without switching
 sudo nixos-rebuild build --flake .#one-piece
 
-# Apply configuration
+# Build and switch
 sudo nixos-rebuild switch --flake .#one-piece
 
 # Update flake inputs
 nix flake update
-```
 
-## Features
-
-- **Modular Architecture**: Dendritic pattern with automatic module discovery via import-tree
-- **Declarative Everything**: System, user, and application configuration in Nix
-- **Hyprland Desktop**: Wayland compositor with full theming integration
-- **Catppuccin Mocha Theme**: System-wide consistent theming
-- **Secrets Management**: sops-nix for encrypted secrets
-- **Flatpak Integration**: Declarative Flatpak application management with auto-updates
-
-## Key Components
-
-### System
-- **Host**: `one-piece` (x86_64-linux)
-- **User**: `rehan` with Home Manager integration
-- **Desktop**: Hyprland, SDDM, walker launcher
-- **Services**: Audio (Pipewire), Tailscale, PIA VPN, Flatpak
-
-### Application Management
-
-**NixOS Packages**: Traditional package installation via `environment.systemPackages`
-
-**Flatpak**: Declarative management via nix-flatpak
-- Apps defined in `modules/services/flatpak.nix`
-- Automatic daily updates enabled
-- Flathub repository automatically managed
-
-Example:
-```nix
-services.flatpak.packages = [
-  "de.z_ray.Facetracker"
-];
+# Format nix files
+nix fmt
 ```
 
 ## Documentation
 
-- **CLAUDE.md**: Comprehensive agent guidelines, code style, and patterns
-- **modules/**: Self-documenting module structure
+See `CLAUDE.md` for detailed guidelines on adding modules, code style, and patterns.
 
-## Repository Structure
+## License
 
-```
-modules/
-├── flake/          # flake-parts configuration
-├── hosts/          # Host-specific configs (one-piece)
-├── users/          # User configurations (rehan)
-├── system/         # Base system, boot, networking
-├── services/       # System services (audio, flatpak, VPN)
-├── desktop/        # Hyprland and desktop environment
-├── programs/       # Applications (CLI, terminal, media, dev tools)
-├── gaming/         # Steam, gamemode, wine
-├── theming/        # Catppuccin theme configuration
-└── secrets/        # sops-nix encrypted secrets
-```
-
-## Contributing
-
-See **CLAUDE.md** for detailed guidelines on:
-- Adding new modules
-- Code style and formatting
-- Common patterns and anti-patterns
-- Build and validation workflow
+[MIT](LICENSE)

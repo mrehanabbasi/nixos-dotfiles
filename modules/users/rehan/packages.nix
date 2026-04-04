@@ -6,28 +6,28 @@ _:
     { pkgs, ... }:
     {
       home.packages = with pkgs; [
+        # Core utilities (not managed by feature modules)
         ripgrep
         nixfmt-rfc-style
         gcc
-        fzf
-        zoxide
-        bat
-        nerd-fonts.jetbrains-mono
+
+        # Fonts (nerd-fonts.jetbrains-mono is in system/fonts.nix)
         noto-fonts
         nerd-fonts.iosevka
         icomoon-feather
-        yazi
-        fastfetch
+
+        # Media utilities
         cava
         imv
-        nwg-look
-        zathura
         mpc
         pamixer
         alsa-utils
+
+        # GUI utilities
+        nwg-look
         kdePackages.kalk
 
-        # Neovim-related
+        # Neovim-related (LSPs, formatters, build tools)
         gnumake
         just
         zig
@@ -44,27 +44,30 @@ _:
         typescript-language-server
         tailwindcss-language-server
         tree-sitter
-        lazygit
         nodejs
         statix # nix linter
         markdownlint-cli2
         addlicense
 
+        # Qt theming
         libsForQt5.qtstyleplugin-kvantum
         libsForQt5.qt5ct
 
+        # CLI tools
         jq
         jless
         yq
+
+        # Applications
         vlc
         webcord
         bitwarden-desktop
-        librewolf
         notesnook
         claude-code
         blender
         unityhub
 
+        # Communication
         zoom-us
         slack
       ];

@@ -1,6 +1,8 @@
 # Scream virtual sound card for VM audio passthrough
 # Provides low-latency audio from Windows VMs via network
-_: {
+_:
+
+{
   flake.modules.nixos.vm-audio =
     { pkgs, ... }:
     {

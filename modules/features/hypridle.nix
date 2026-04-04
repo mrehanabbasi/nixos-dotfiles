@@ -1,6 +1,6 @@
 # Hypridle - idle daemon for Hyprland with power-state-aware timeouts
 # Automatically switches between AC and battery configurations
-{ inputs, ... }:
+_:
 
 {
   flake.modules.homeManager.hypridle =

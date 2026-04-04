@@ -5,7 +5,6 @@
     nixpkgs.url = "nixpkgs/nixos-25.11";
     nixpkgs-unstable.url = "nixpkgs/nixos-unstable";
     flake-parts.url = "github:hercules-ci/flake-parts";
-    import-tree.url = "github:vic/import-tree";
 
     home-manager = {
       url = "github:nix-community/home-manager/release-25.11";
@@ -32,8 +31,30 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Note: nix-flatpak doesn't have a nixpkgs input to follow
     nix-flatpak.url = "github:gmodena/nix-flatpak";
   };
 
-  outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } (inputs.import-tree ./modules);
+  # Custom importTree that imports ALL .nix files (not just default.nix)
+  # Excludes: flake.nix, _ prefixed files, and files in _ prefixed directories
+  outputs = inputs:
+    let
+      inherit (inputs.nixpkgs) lib;
+
+      # Recursively find all .nix files, excluding _ prefixed paths
+      findNixFiles = dir:
+        lib.flatten (lib.mapAttrsToList (name: type:
+          if lib.hasPrefix "_" name then
+            [ ] # Skip _ prefixed entries
+          else if type == "directory" then
+            findNixFiles (dir + "/${name}")
+          else if type == "regular" && lib.hasSuffix ".nix" name && name != "flake.nix" then
+            [ (dir + "/${name}") ]
+          else
+            [ ]
+        ) (builtins.readDir dir));
+
+      importTree = path: findNixFiles path;
+    in
+    inputs.flake-parts.lib.mkFlake { inherit inputs; } { imports = importTree ./modules; };
 }

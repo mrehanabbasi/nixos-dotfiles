@@ -4,8 +4,15 @@ _:
 
 {
   flake.modules.nixos.pia =
-    { config, ... }:
+    { config, lib, ... }:
     {
+      assertions = [
+        {
+          assertion = config.sops.secrets ? pia;
+          message = "PIA module requires sops secret 'pia' to be defined";
+        }
+      ];
+
       services.pia = {
         enable = true;
         credentials = {

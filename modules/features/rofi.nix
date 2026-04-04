@@ -280,7 +280,15 @@ _:
         theme = "catppuccin-mocha-custom";
 
         extraConfig = {
-          modi = "drun,run,window,calc,emoji,cliphist:${config.home.homeDirectory}/.local/bin/cliphist-rofi,websearch:${config.home.homeDirectory}/.local/bin/rofi-websearch";
+          modi = builtins.concatStringsSep "," [
+            "drun"
+            "run"
+            "window"
+            "calc"
+            "emoji"
+            "cliphist:${config.home.homeDirectory}/.local/bin/cliphist-rofi"
+            "websearch:${config.home.homeDirectory}/.local/bin/rofi-websearch"
+          ];
           show-icons = true;
           drun-display-format = "{name}";
           disable-history = false;

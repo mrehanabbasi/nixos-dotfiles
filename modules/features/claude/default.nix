@@ -1,6 +1,6 @@
 # Claude Code - AI coding assistant configuration with XDG compliance
 # Extends the upstream Home Manager claude-code module with custom defaults
-{ inputs, ... }:
+_:
 
 {
   flake.modules.homeManager.claude =

@@ -28,7 +28,7 @@ _:
         secureSocket = true;
         shell = "${pkgs.zsh}/bin/zsh";
         shortcut = "a";
-        terminal = "screen-256color";
+        terminal = "tmux-256color";
 
         plugins = with pkgs.tmuxPlugins; [
           tokyo-night

@@ -53,6 +53,13 @@ _:
               block = true;
             }
           ];
+
+          extract = [
+            {
+              run = ''ya pub extract --list "$@"'';
+              desc = "Extract here";
+            }
+          ];
         };
 
         open = {
@@ -72,6 +79,13 @@ _:
             {
               mime = "text/*";
               use = "nvim_code";
+            }
+            {
+              mime = "application/{zip,rar,7z*,tar,gzip,xz,zstd,bzip*,lzma,compress,archive,cpio,arj,xar,ms-cab*}";
+              use = [
+                "extract"
+                "reveal"
+              ];
             }
           ];
         };

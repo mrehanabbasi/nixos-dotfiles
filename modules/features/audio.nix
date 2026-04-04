@@ -3,15 +3,14 @@ _:
 
 {
   flake.modules.nixos.audio =
+    { pkgs, ... }:
     {
-      pkgs,
-      lib,
-      config,
-      ...
-    }:
-    {
-      # PulseAudio utilities for compatibility with PipeWire-Pulse
-      environment.systemPackages = with pkgs; [ pulseaudio ];
+      # Audio control tools
+      environment.systemPackages = with pkgs; [
+        pulseaudio # PulseAudio utilities for compatibility with PipeWire-Pulse
+        pavucontrol # PulseAudio/PipeWire volume control GUI
+        qpwgraph # PipeWire graph manager/patchbay
+      ];
       services.pipewire = {
         enable = true;
         audio.enable = true;

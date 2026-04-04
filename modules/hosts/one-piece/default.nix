@@ -49,8 +49,13 @@ in
       # ════════════════════════════════════════════════════════════════════
       inputs.self.modules.nixos.hyprland
       inputs.self.modules.nixos.sddm
-      inputs.self.modules.nixos.browsers
-      inputs.self.modules.nixos.system-packages
+      inputs.self.modules.nixos.brave
+      inputs.self.modules.nixos.thunar
+      inputs.self.modules.nixos.obs-studio
+      inputs.self.modules.nixos.localsend
+      inputs.self.modules.nixos.appimage
+      inputs.self.modules.nixos.core-packages
+      inputs.self.modules.nixos.core-services
       inputs.self.modules.nixos.zsh
       inputs.self.modules.nixos.neovim
       inputs.self.modules.nixos.ghostty
@@ -60,17 +65,18 @@ in
       # ════════════════════════════════════════════════════════════════════
       # LAYER 7: Optional features
       # ════════════════════════════════════════════════════════════════════
-      inputs.self.modules.nixos.gaming
+      inputs.self.modules.nixos.steam
+      inputs.self.modules.nixos.gamemode
+      inputs.self.modules.nixos.wine
 
       # ════════════════════════════════════════════════════════════════════
-      # LAYER 8: Host-specific hardware (plain NixOS modules)
-      # Prefixed with _ to exclude from import-tree auto-import
+      # LAYER 8: Host-specific hardware
       # ════════════════════════════════════════════════════════════════════
-      ./_hardware.nix
-      ./_gpu.nix
-      ./_network.nix
-      ./_bluetooth.nix
-      ./_kanata.nix
+      inputs.self.modules.nixos.one-piece-hardware
+      inputs.self.modules.nixos.one-piece-gpu
+      inputs.self.modules.nixos.one-piece-network
+      inputs.self.modules.nixos.one-piece-bluetooth
+      inputs.self.modules.nixos.one-piece-kanata
 
       # ════════════════════════════════════════════════════════════════════
       # LAYER 9: User (composes Home Manager)

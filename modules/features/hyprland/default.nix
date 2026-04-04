@@ -1,5 +1,5 @@
 # Hyprland window manager - NixOS and Home Manager configuration
-{ inputs, ... }:
+_:
 
 {
   # NixOS aspect
@@ -21,16 +21,10 @@
         hyprpaper
         hyprshot
         hyprpicker
-        wl-clipboard
-
-        # Waybar dependencies
-        pavucontrol
       ];
 
-      services = {
-        gvfs.enable = true;
-        upower.enable = true;
-      };
+      # Note: gvfs.enable is in thunar.nix
+      services.upower.enable = true;
     };
 
   # Home Manager aspect
@@ -52,15 +46,15 @@
         "$fileManager" = "$terminal -e yazi";
         "$menu" = "rofi -show drun";
         "$webBrowser" = "brave --allowlisted-extension-id=clngdbkpkpeebahjckkjfobafhncgmne";
+        "$webBrowser2" = "librewolf";
         "$cursorTheme" = "Catppuccin Mocha Blue";
         "$cursorSize" = "24";
 
         # Autostart
+        # Note: kdeconnect is started via kdeconnect.nix (services.kdeconnect.indicator)
         exec-once = [
           "hyprpaper"
           "hyprctl setcursor $cursorTheme $cursorSize"
-          "kdeconnectd"
-          "kdeconnect-indicator"
           "swaync"
           "blueman-applet"
         ];
@@ -182,10 +176,12 @@
           "$mainMod, P, pseudo,"
           "$mainMod, S, togglesplit,"
           "$mainMod, B, exec, $webBrowser"
+          "$mainMod SHIFT, B, exec, $webBrowser2"
           "$mainMod, T, exec, $terminal --title='btop' -e btop"
           "$mainMod, SEMICOLON, exec, hyprlock"
           "$mainMod, N, exec, swaync-client -t -sw"
           "$mainMod SHIFT, N, exec, swaync-client -C"
+          "$mainMod, A, exec, pavucontrol"
 
           # Rofi modes
           "$mainMod, Equal, exec, rofi -show calc -modi calc -no-show-match -no-sort"
