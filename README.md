@@ -19,20 +19,24 @@ Personal NixOS configuration using the [Dendritic pattern](https://discourse.nix
 ## Quick Start
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/mrehanabbasi/nixos-dotfiles.git
    cd nixos-dotfiles
    ```
 
 2. **Create your host configuration**
+
    ```bash
    cp -r modules/hosts/_template modules/hosts/your-hostname
    ```
 
 3. **Generate hardware configuration**
+
    ```bash
    nixos-generate-config --show-hardware-config > modules/hosts/your-hostname/hardware.nix
    ```
+
    Then wrap the output in a flake-parts module (see `modules/hosts/one-piece/hardware.nix` for reference).
 
 4. **Update user configuration**
@@ -42,13 +46,16 @@ Personal NixOS configuration using the [Dendritic pattern](https://discourse.nix
 5. **Set up secrets (optional)**
 
    Create age key and configure sops:
+
    ```bash
    mkdir -p ~/.config/sops/age
    age-keygen -o ~/.config/sops/age/keys.txt
    ```
+
    Update `modules/secrets/.sops.yaml` with your public key.
 
 6. **Build and switch**
+
    ```bash
    sudo nixos-rebuild switch --flake .#your-hostname
    ```
@@ -81,10 +88,6 @@ nix flake update
 # Format nix files
 nix fmt
 ```
-
-## Documentation
-
-See `CLAUDE.md` for detailed guidelines on adding modules, code style, and patterns.
 
 ## License
 
