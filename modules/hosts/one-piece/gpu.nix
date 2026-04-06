@@ -13,7 +13,7 @@ _:
           nvidiaSettings = true;
           package = config.boot.kernelPackages.nvidiaPackages.stable;
 
-          # Critical for suspend/resume stability with dynamic power management
+          # Power management for suspend/resume stability
           powerManagement = {
             enable = true;
             finegrained = true; # GPU powers off completely when not in use
@@ -49,11 +49,6 @@ _:
       boot.kernelParams = [
         "nvidia.NVreg_PreserveVideoMemoryAllocations=1"
         "nvidia.NVreg_TemporaryFilePath=/var/tmp"
-
-        # AMD USB-C DisplayPort alt mode fixes
-        "amdgpu.dc=1" # Force enable Display Core
-        "amdgpu.dcdebugmask=0x10" # Enable DP alt mode debug logging
-        "amdgpu.dcfeaturemask=0xffffffff" # Enable all DC features (MST, PSR, etc.)
       ];
     };
 }

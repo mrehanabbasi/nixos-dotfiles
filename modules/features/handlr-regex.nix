@@ -120,6 +120,12 @@ _:
           'https?://(www\.)?snapchat\.com',
           'https?://(www\.)?pinterest\.com',
         ]
+
+        # Catch-all: everything else goes to Brave
+        [[handlers]]
+        exec = "brave %u"
+        terminal = false
+        regexes = ['.*']
       '';
     };
 }
