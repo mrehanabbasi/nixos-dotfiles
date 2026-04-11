@@ -44,6 +44,7 @@ _:
         addlicense
 
         # CLI tools
+        gh
         jq
         jless
         yq
