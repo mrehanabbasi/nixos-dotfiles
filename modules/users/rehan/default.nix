@@ -33,20 +33,15 @@ in
         users.${userName} = {
           imports = [
             inputs.catppuccin.homeModules.catppuccin
+            inputs.voxtype.homeManagerModules.default
 
             # Theming
             inputs.self.modules.homeManager.catppuccin
-            inputs.self.modules.homeManager.gtk
 
             # Desktop
             inputs.self.modules.homeManager.hyprland
-            inputs.self.modules.homeManager.hyprlock
-            inputs.self.modules.homeManager.hypridle
-            inputs.self.modules.homeManager.idle-inhibit-media
             inputs.self.modules.homeManager.vm-audio
-            inputs.self.modules.homeManager.hyprpaper
-            inputs.self.modules.homeManager.swaync
-            inputs.self.modules.homeManager.waybar
+            inputs.self.modules.homeManager.dank-material-shell
 
             # CLI tools
             inputs.self.modules.homeManager.zsh
@@ -71,10 +66,10 @@ in
             inputs.self.modules.homeManager.mpv
             inputs.self.modules.homeManager.zathura
             inputs.self.modules.homeManager.kdenlive
+            inputs.self.modules.homeManager.voxtype
 
             # Productivity
             inputs.self.modules.homeManager.kdeconnect
-            inputs.self.modules.homeManager.rofi
 
             # Browsers
             inputs.self.modules.homeManager.librewolf

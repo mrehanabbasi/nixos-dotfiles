@@ -5,9 +5,6 @@ _:
 {
   flake.modules.nixos.core-services = _: {
     services = {
-      # Bluetooth manager GUI
-      blueman.enable = true;
-
       # Input device support
       libinput.enable = true;
 

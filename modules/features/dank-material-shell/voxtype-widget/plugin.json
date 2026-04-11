@@ -1,0 +1,11 @@
+{
+  "id": "voxtype-status",
+  "name": "Voxtype Status",
+  "version": "1.0.0",
+  "author": "rehan",
+  "description": "Shows voxtype recording status indicator",
+  "icon": "mic",
+  "type": "daemon",
+  "component": "./VoxtypeWidget.qml",
+  "permissions": []
+}

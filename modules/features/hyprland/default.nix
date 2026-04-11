@@ -44,7 +44,6 @@ _:
         # Programs
         "$terminal" = "ghostty";
         "$fileManager" = "$terminal -e yazi";
-        "$menu" = "rofi -show drun";
         "$webBrowser" = "brave --allowlisted-extension-id=clngdbkpkpeebahjckkjfobafhncgmne";
         "$webBrowser2" = "librewolf";
         "$cursorTheme" = "Catppuccin Mocha Blue";
@@ -52,15 +51,18 @@ _:
 
         # Autostart
         # Note: kdeconnect is started via kdeconnect.nix (services.kdeconnect.indicator)
+        # Note: DMS handles wallpaper, notifications, and Bluetooth via systemd
         exec-once = [
-          "hyprpaper"
           "hyprctl setcursor $cursorTheme $cursorSize"
-          "swaync"
-          "blueman-applet"
+          "sleep 3 && hyprctl reload" # Delayed reload to detect DP-2 after NVIDIA GPU initializes
         ];
 
         # Environment variables
-        env = [ "XCURSOR_SIZE,$cursorSize" ];
+        env = [
+          "XCURSOR_SIZE,$cursorSize"
+          "QT_QPA_PLATFORMTHEME,gtk3"
+          "QT_QPA_PLATFORMTHEME_QT6,gtk3"
+        ];
 
         # General
         general = {
@@ -169,7 +171,7 @@ _:
           "$mainMod, E, exec, $fileManager"
           "$mainMod SHIFT, E, exec, thunar"
           "$mainMod, V, togglefloating,"
-          "$mainMod, Space, exec, $menu"
+          "$mainMod, Space, exec, dms ipc call spotlight open"
           "$mainMod, Print, exec, hyprshot -m region"
           "$mainMod SHIFT, Print, exec, hyprshot -m output"
           "$mainMod SHIFT, P, exec, hyprpicker"
@@ -178,17 +180,21 @@ _:
           "$mainMod, B, exec, $webBrowser"
           "$mainMod SHIFT, B, exec, $webBrowser2"
           "$mainMod, T, exec, $terminal --title='btop' -e btop"
-          "$mainMod, SEMICOLON, exec, hyprlock"
-          "$mainMod, N, exec, swaync-client -t -sw"
-          "$mainMod SHIFT, N, exec, swaync-client -C"
+          "$mainMod, SEMICOLON, exec, dms ipc call lock lock"
+          "$mainMod, N, exec, dms ipc call notifications toggle"
+          "$mainMod SHIFT, N, exec, dms ipc call notifications clearAll"
           "$mainMod, A, exec, pavucontrol"
+          "$mainMod SHIFT, A, exec, voxtype record toggle"
+          "$mainMod, F, fullscreen, -1 toggle"
 
-          # Rofi modes
-          "$mainMod, Equal, exec, rofi -show calc -modi calc -no-show-match -no-sort"
-          "$mainMod SHIFT, V, exec, cliphist list | rofi -dmenu | cliphist decode | wl-copy"
-          "$mainMod, Period, exec, rofi -show emoji -modi emoji"
-          "$mainMod, slash, exec, rofi -show websearch -modi websearch:$HOME/.local/bin/rofi-websearch"
-          "$mainMod, Backslash, exec, rofi-rbw"
+          # Cycle between windows in same workspace
+          "ALT, Tab, cyclenext,"
+          "ALT, Tab, alterzorder, top"
+          "ALT SHIFT, Tab, cyclenext, prev"
+          "ALT SHIFT, Tab, alterzorder, top"
+
+          # DMS clipboard
+          "$mainMod SHIFT, V, exec, dms ipc call clipboard toggle"
 
           # Move focus with vim keys
           "$mainMod, H, movefocus, l"

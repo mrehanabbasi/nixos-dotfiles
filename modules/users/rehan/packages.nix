@@ -17,15 +17,9 @@ _:
         icomoon-feather
 
         # Media utilities
-        cava
         imv
         mpc
-        pamixer
         alsa-utils
-
-        # GUI utilities
-        nwg-look
-        kdePackages.kalk
 
         # Neovim-related (LSPs, formatters, build tools)
         gnumake
@@ -49,10 +43,6 @@ _:
         markdownlint-cli2
         addlicense
 
-        # Qt theming
-        libsForQt5.qtstyleplugin-kvantum
-        libsForQt5.qt5ct
-
         # CLI tools
         jq
         jless
@@ -75,25 +65,5 @@ _:
       home.pointerCursor = {
         size = 24;
       };
-
-      qt = {
-        enable = true;
-        platformTheme.name = "kvantum";
-        style.name = "kvantum";
-      };
-
-      xdg.configFile."qt5ct/qt5ct.conf".text = ''
-        [Fonts]
-        fixed="JetBrainsMono Nerd Font,10,-1,5,50,0,0,0,0,0"
-        general="JetBrainsMono Nerd Font,10,-1,5,50,0,0,0,0,0"
-      '';
-      xdg.configFile."qt6ct/qt6ct.conf".text = ''
-        [Appearance]
-        style=kvantum-dark
-
-        [Fonts]
-        fixed="JetBrainsMono Nerd Font,10,-1,5,50,0,0,0,0,0"
-        general="JetBrainsMono Nerd Font,10,-1,5,50,0,0,0,0,0"
-      '';
     };
 }

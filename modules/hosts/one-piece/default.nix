@@ -48,7 +48,7 @@ in
       # LAYER 6: Desktop & Programs
       # ════════════════════════════════════════════════════════════════════
       inputs.self.modules.nixos.hyprland
-      inputs.self.modules.nixos.sddm
+      inputs.self.modules.nixos.dms-greeter
       inputs.self.modules.nixos.brave
       inputs.self.modules.nixos.thunar
       inputs.self.modules.nixos.obs-studio
