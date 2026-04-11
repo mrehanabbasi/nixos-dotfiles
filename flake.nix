@@ -12,7 +12,7 @@
     };
 
     catppuccin = {
-      url = "github:catppuccin/nix?ref=v25.11";
+      url = "github:catppuccin/nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -23,7 +23,7 @@
 
     opencode = {
       url = "github:anomalyco/opencode?ref=latest";
-      inputs.nixpkgs.follows = "nixpkgs";
+      # Don't follow nixpkgs - opencode needs newer bun (^1.3.11) than stable provides
     };
 
     pia = {
@@ -33,6 +33,26 @@
 
     # Note: nix-flatpak doesn't have a nixpkgs input to follow
     nix-flatpak.url = "github:gmodena/nix-flatpak";
+
+    dms = {
+      url = "github:AvengeMedia/DankMaterialShell/stable";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    dms-plugin-registry = {
+      url = "github:AvengeMedia/dms-plugin-registry";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    dgop = {
+      url = "github:AvengeMedia/dgop";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    voxtype = {
+      url = "github:peteonrails/voxtype";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   # Custom importTree that imports ALL .nix files (not just default.nix)
