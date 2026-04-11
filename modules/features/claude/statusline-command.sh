@@ -128,7 +128,7 @@ format_reset_time() {
 
 # Helper function: Fetch usage data from Anthropic API with caching
 fetch_usage_data() {
-    local credentials_file="$HOME/.local/share/claude/secrets/credentials.json"
+    local credentials_file="$HOME/.claude/.credentials.json"
     local cache_file="$HOME/.cache/claude/usage-cache.json"
     local cache_duration=60  # seconds
 
@@ -137,6 +137,7 @@ fetch_usage_data() {
     weekly_usage="-1"
     session_resets_at=""
     weekly_resets_at=""
+    extra_cost="0"
 
     # Check if credentials exist
     [ ! -f "$credentials_file" ] && return
@@ -148,7 +149,7 @@ fetch_usage_data() {
         local now=$(date +%s)
         local cache_age=$((now - cache_timestamp))
 
-        if [ $cache_age -lt $cache_duration ]; then
+        if [ $cache_age -lt $cache_duration ] && [ "$(jq 'has("five_hour")' "$cache_file" 2>/dev/null)" = "true" ]; then
             use_cache=1
         fi
     fi
@@ -159,6 +160,7 @@ fetch_usage_data() {
         weekly_usage=$(jq -r '.seven_day.utilization // -1' "$cache_file" 2>/dev/null)
         session_resets_at=$(jq -r '.five_hour.resets_at // ""' "$cache_file" 2>/dev/null)
         weekly_resets_at=$(jq -r '.seven_day.resets_at // ""' "$cache_file" 2>/dev/null)
+        extra_cost=$(jq -r '.extra_usage.used_credits // 0' "$cache_file" 2>/dev/null || echo "0")
         return
     fi
 
@@ -172,24 +174,33 @@ fetch_usage_data() {
         -H "anthropic-beta: oauth-2025-04-20" \
         "https://api.anthropic.com/api/oauth/usage" 2>/dev/null)
 
-    # Check if API call succeeded
-    if [ -n "$api_response" ]; then
-        # Extract data
+    mkdir -p "$(dirname "$cache_file")"
+    local now=$(date +%s)
+
+    # Check if API call returned valid data
+    local has_error=$(echo "$api_response" | jq -r '.error // empty' 2>/dev/null)
+    if [ -n "$api_response" ] && [ -z "$has_error" ]; then
+        # Valid response — extract and cache
         session_usage=$(echo "$api_response" | jq -r '.five_hour.utilization // -1' 2>/dev/null)
         weekly_usage=$(echo "$api_response" | jq -r '.seven_day.utilization // -1' 2>/dev/null)
         session_resets_at=$(echo "$api_response" | jq -r '.five_hour.resets_at // ""' 2>/dev/null)
         weekly_resets_at=$(echo "$api_response" | jq -r '.seven_day.resets_at // ""' 2>/dev/null)
-
-        # Update cache
-        mkdir -p "$(dirname "$cache_file")"
-        local now=$(date +%s)
+        extra_cost=$(echo "$api_response" | jq -r '.extra_usage.used_credits // 0' 2>/dev/null || echo "0")
         echo "$api_response" | jq --arg ts "$now" '. + {timestamp: ($ts | tonumber)}' > "$cache_file" 2>/dev/null
-    elif [ -f "$cache_file" ]; then
-        # API failed, fall back to stale cache
-        session_usage=$(jq -r '.five_hour.utilization // -1' "$cache_file" 2>/dev/null)
-        weekly_usage=$(jq -r '.seven_day.utilization // -1' "$cache_file" 2>/dev/null)
-        session_resets_at=$(jq -r '.five_hour.resets_at // ""' "$cache_file" 2>/dev/null)
-        weekly_resets_at=$(jq -r '.seven_day.resets_at // ""' "$cache_file" 2>/dev/null)
+    else
+        # API error — prevent hammering by refreshing timestamp, preserve any valid stale data
+        if [ -f "$cache_file" ] && [ "$(jq 'has("five_hour")' "$cache_file" 2>/dev/null)" = "true" ]; then
+            # Use stale data and bump timestamp to enforce backoff
+            session_usage=$(jq -r '.five_hour.utilization // -1' "$cache_file" 2>/dev/null)
+            weekly_usage=$(jq -r '.seven_day.utilization // -1' "$cache_file" 2>/dev/null)
+            session_resets_at=$(jq -r '.five_hour.resets_at // ""' "$cache_file" 2>/dev/null)
+            weekly_resets_at=$(jq -r '.seven_day.resets_at // ""' "$cache_file" 2>/dev/null)
+            extra_cost=$(jq -r '.extra_usage.used_credits // 0' "$cache_file" 2>/dev/null || echo "0")
+            jq --arg ts "$now" '.timestamp = ($ts | tonumber)' "$cache_file" > "${cache_file}.tmp" 2>/dev/null && mv "${cache_file}.tmp" "$cache_file" 2>/dev/null
+        else
+            # No valid stale data — write minimal backoff entry
+            printf '{"timestamp":%s}\n' "$now" > "$cache_file" 2>/dev/null
+        fi
     fi
 }
 
@@ -198,6 +209,7 @@ input=$(cat)
 
 # Extract values
 model_name=$(echo "$input" | jq -r '.model.display_name')
+model_short=$(echo "$model_name" | sed 's/^Claude //' | tr ' ' '-' | tr '[:upper:]' '[:lower:]')
 project_dir=$(echo "$input" | jq -r '.workspace.project_dir')
 transcript_path=$(echo "$input" | jq -r '.transcript_path')
 output_style=$(echo "$input" | jq -r '.output_style.name // "default"')
@@ -228,13 +240,16 @@ fi
 
 # Calculate context usage from transcript
 if [ -f "$transcript_path" ]; then
-    # Count tokens (approximation: characters / 4)
-    char_count=$(wc -c < "$transcript_path")
-    token_count=$((char_count / 4))
+    # Count tokens from actual usage fields in transcript JSONL
+    token_count=$(tr -d '\000-\010\013\014\016-\037' < "$transcript_path" | jq -s '[.[].message.usage | select(.) | (.input_tokens // 0) + (.output_tokens // 0)] | add // 0')
 
-    # Context limits for different models (approximate)
-    # Claude Sonnet 4.5 has 200k context window
-    max_tokens=200000
+    # Context limits per model
+    case "$model_name" in
+      *haiku*) max_tokens=200000 ;;
+      *sonnet*) max_tokens=200000 ;;
+      *opus*) max_tokens=200000 ;;
+      *) max_tokens=200000 ;;
+    esac
 
     # Calculate percentage
     percentage=$((token_count * 100 / max_tokens))
@@ -281,6 +296,73 @@ if [ -f "$transcript_path" ]; then
     context_info="$bar ${context_color}${tokens_display}${SUBTEXT0}/${SUBTEXT1}${max_display}${RESET} ${SUBTEXT0}(${context_color}${percentage}%${SUBTEXT0})${RESET}"
 else
     context_info="${SUBTEXT0}[${SUBTEXT0}░░░░░░░░░░░░░░░░░░░░]${RESET} ${GREEN}0K${SUBTEXT0}/${SUBTEXT1}200K${RESET} ${SUBTEXT0}(${GREEN}0%${SUBTEXT0})${RESET}"
+fi
+
+# Calculate burn rate (Option G)
+burn_rate_info=""
+burn_rate_file="$HOME/.cache/claude/burn-rate.json"
+if [ "$token_count" -gt 0 ] 2>/dev/null; then
+    now=$(date +%s)
+    if [ -f "$burn_rate_file" ]; then
+        prev_time=$(jq -r '.timestamp // 0' "$burn_rate_file" 2>/dev/null || echo 0)
+        prev_tokens=$(jq -r '.tokens // 0' "$burn_rate_file" 2>/dev/null || echo 0)
+        delta_time=$(( now - prev_time ))
+        delta_tokens=$(( token_count - prev_tokens ))
+        if [ "$delta_time" -gt 10 ] && [ "$delta_tokens" -gt 0 ]; then
+            # tokens per minute
+            burn_per_min=$(( delta_tokens * 60 / delta_time ))
+            if [ "$burn_per_min" -ge 1000 ]; then
+                burn_display="$(echo "scale=1; $burn_per_min / 1000" | bc)K tok/min"
+            else
+                burn_display="${burn_per_min} tok/min"
+            fi
+            if [ "$burn_per_min" -lt 500 ]; then
+                burn_color="$GREEN"
+            elif [ "$burn_per_min" -lt 2000 ]; then
+                burn_color="$YELLOW"
+            else
+                burn_color="$RED"
+            fi
+            burn_rate_info="${burn_color}↑ ${burn_display}${RESET}"
+        fi
+    fi
+    # Update state file
+    mkdir -p "$(dirname "$burn_rate_file")"
+    printf '{"timestamp":%s,"tokens":%s}\n' "$now" "$token_count" > "$burn_rate_file"
+fi
+
+# Predictions (Option F) — requires burn_per_min from Option G
+predictions_info=""
+if [ -n "$burn_rate_info" ] && [ "${burn_per_min:-0}" -gt 0 ]; then
+    # Context ETA
+    tokens_remaining=$(( max_tokens - token_count ))
+    if [ "$tokens_remaining" -gt 0 ]; then
+        mins_to_ctx_full=$(( tokens_remaining / burn_per_min ))
+        if [ "$mins_to_ctx_full" -ge 60 ]; then
+            ctx_eta="~$(( mins_to_ctx_full / 60 ))h $(( mins_to_ctx_full % 60 ))m"
+        else
+            ctx_eta="~${mins_to_ctx_full}m"
+        fi
+        predictions_info="${TEAL}Predictions: ctx full ${ctx_eta}${RESET}"
+    fi
+
+    # Session cap ETA (only if session usage available)
+    if [ "$session_usage" != "-1" ] && [ -n "$session_resets_at" ]; then
+        # session_usage is 0-100 percentage; estimate remaining tokens in session
+        # Claude Pro session limit ~ 90000 tokens per 5h window (approximate)
+        session_limit_tokens=90000
+        session_used_tokens=$(( session_limit_tokens * session_usage / 100 ))
+        session_remaining_tokens=$(( session_limit_tokens - session_used_tokens ))
+        if [ "$session_remaining_tokens" -gt 0 ]; then
+            mins_to_session_cap=$(( session_remaining_tokens / burn_per_min ))
+            if [ "$mins_to_session_cap" -ge 60 ]; then
+                session_eta="~$(( mins_to_session_cap / 60 ))h $(( mins_to_session_cap % 60 ))m"
+            else
+                session_eta="~${mins_to_session_cap}m"
+            fi
+            predictions_info="${predictions_info} ${SUBTEXT0}|${RESET} ${TEAL}session cap ${session_eta}${RESET}"
+        fi
+    fi
 fi
 
 # Fetch usage data from Anthropic API (Step 2)
@@ -341,8 +423,45 @@ if [ "$session_usage" != "-1" ] && [ "$weekly_usage" != "-1" ]; then
     fi
 fi
 
+# Append extra cost if non-zero
+if [ -n "$extra_cost" ] && [ "$extra_cost" != "0" ] && [ "$extra_cost" != "null" ]; then
+    usage_info="${usage_info} | ${RED}Extra Usage: \$$(awk "BEGIN {printf \"%.2f\", $extra_cost/100}")${RESET}"
+fi
+
+# Calculate model distribution from transcript (Option C)
+model_dist_info=""
+if [ -f "$transcript_path" ] && command -v jq >/dev/null 2>&1; then
+    model_dist=$(tr -d '\000-\010\013\014\016-\037' < "$transcript_path" | jq -rs '
+        map(select(.message.model != null and .message.usage != null)) |
+        group_by(.message.model) |
+        map({
+            model: .[0].message.model,
+            tokens: (map((.message.usage.input_tokens // 0) + (.message.usage.output_tokens // 0)) | add)
+        }) |
+        . as $groups |
+        (map(.tokens) | add) as $total |
+        if ($groups | length) <= 1 or $total == 0 then ""
+        else
+            $groups |
+            sort_by(-.tokens) |
+            map(
+                (.tokens * 100 / $total | floor | tostring) + "% " +
+                (if .tokens >= 1000 then (.tokens / 1000 * 10 | floor / 10 | tostring) + "K" else (.tokens | tostring) end) +
+                " tok " + (.model | ltrimstr("claude-"))
+            ) |
+            "Models: " + join(" | ")
+        end
+    ' 2>/dev/null || echo "")
+    if [ -n "$model_dist" ]; then
+        colored_dist=$(echo "$model_dist" | sed \
+            -e "s|Models: |${TEAL}Models:${RESET} |" \
+            -e "s| | ${SUBTEXT0}|${RESET} |g")
+        model_dist_info="$colored_dist"
+    fi
+fi
+
 # Build status line with colors
-output="${MAUVE}${model_name}${RESET}"
+output="${MAUVE}${model_short}${RESET}"
 
 # Add output style if not default
 if [ "$output_style" != "default" ] && [ "$output_style" != "null" ]; then
@@ -350,6 +469,19 @@ if [ "$output_style" != "default" ] && [ "$output_style" != "null" ]; then
 fi
 
 output="$output ${SUBTEXT0}|${RESET} $context_info"
+
+# Add caveman mode badge if active (only when Claude Code session is running)
+caveman_flag="$HOME/.claude/.caveman-active"
+if [ -f "$caveman_flag" ] && pgrep -x "claude" > /dev/null 2>&1; then
+    caveman_mode=$(cat "$caveman_flag" 2>/dev/null)
+    if [ "$caveman_mode" = "full" ] || [ -z "$caveman_mode" ]; then
+        caveman_badge="${PEACH}CAVEMAN${RESET}"
+    else
+        caveman_suffix=$(echo "$caveman_mode" | tr '[:lower:]' '[:upper:]')
+        caveman_badge="${PEACH}CAVEMAN:${caveman_suffix}${RESET}"
+    fi
+    output="$output ${SUBTEXT0}|${RESET} ${caveman_badge}"
+fi
 
 if [ -n "$git_info" ]; then
     output="$output ${SUBTEXT0}|${RESET} ${git_info}"
@@ -360,6 +492,21 @@ output="$output ${SUBTEXT0}|${RESET} ${LAVENDER}${project_name}${RESET}"
 # Add usage limits on separate line if available (Step 4)
 if [ -n "$usage_info" ]; then
     output="$output\n$usage_info"
+fi
+
+# Add burn rate line if available (Option G)
+if [ -n "$burn_rate_info" ]; then
+    output="$output\n$burn_rate_info"
+fi
+
+# Add predictions line if available (Option F)
+if [ -n "$predictions_info" ]; then
+    output="$output\n$predictions_info"
+fi
+
+# Add model distribution line if multiple models were used (Option C)
+if [ -n "$model_dist_info" ]; then
+    output="$output\n$model_dist_info"
 fi
 
 printf "%b\n" "$output"

@@ -1,4 +1,4 @@
-# Claude Code - AI coding assistant configuration with XDG compliance
+# Claude Code - AI coding assistant configuration
 # Extends the upstream Home Manager claude-code module with custom defaults
 _:
 
@@ -17,264 +17,203 @@ _:
       );
     in
     {
-      # Use upstream Home Manager claude-code module for package only
-      # Settings are managed via XDG to avoid conflicts with symlink structure
       programs.claude-code = {
         enable = lib.mkDefault true;
-        # DO NOT set settings here - it creates .claude/settings.json which conflicts
-        # with our .claude symlink. Settings are managed via xdg.configFile below.
+        hooks = {
+          "caveman-activate.js" = builtins.readFile ../../../.claude/hooks/caveman-activate.js;
+          "caveman-mode-tracker.js" = builtins.readFile ../../../.claude/hooks/caveman-mode-tracker.js;
+        };
+        settings = {
+          "$schema" = "https://json.schemastore.org/claude-code-settings.json";
+          alwaysThinkingEnabled = true;
+
+          statusLine = {
+            type = "command";
+            command = "bash ${statuslineScript}";
+          };
+
+          hooks = {
+            SessionStart = [
+              {
+                hooks = [
+                  {
+                    type = "command";
+                    command = "node .claude/hooks/caveman-activate.js";
+                  }
+                ];
+              }
+            ];
+            UserPromptSubmit = [
+              {
+                hooks = [
+                  {
+                    type = "command";
+                    command = "node .claude/hooks/caveman-mode-tracker.js";
+                  }
+                ];
+              }
+            ];
+            PreToolUse = [
+              {
+                matcher = "Edit";
+                hooks = [
+                  {
+                    type = "command";
+                    command = ".claude/hooks/protect-files.sh";
+                  }
+                ];
+              }
+              {
+                matcher = "Write";
+                hooks = [
+                  {
+                    type = "command";
+                    command = ".claude/hooks/protect-files.sh";
+                  }
+                ];
+              }
+            ];
+            PostToolUse = [
+              {
+                matcher = "Edit";
+                hooks = [
+                  {
+                    type = "command";
+                    command = ".claude/hooks/auto-format-nix.sh";
+                  }
+                ];
+              }
+            ];
+          };
+
+          permissions = {
+            allow = [
+              "Edit"
+              "Glob"
+              "Grep"
+              "Read"
+              "WebFetch"
+              "WebSearch"
+              "Write"
+              "Skill(commit-message)"
+              "Skill(diagnose)"
+              "Skill(emergency-rollback)"
+              "Skill(flake-update)"
+              "Skill(nixos-rebuild)"
+              "Skill(pre-commit-check)"
+              "Bash(awk *)"
+              "Bash(base64 *)"
+              "Bash(basename *)"
+              "Bash(cat *)"
+              "Bash(cd *)"
+              "Bash(cut *)"
+              "Bash(date)"
+              "Bash(date *)"
+              "Bash(diff *)"
+              "Bash(dirname *)"
+              "Bash(du *)"
+              "Bash(echo *)"
+              "Bash(env)"
+              "Bash(env *)"
+              "Bash(file *)"
+              "Bash(find *)"
+              "Bash(head *)"
+              "Bash(hostname)"
+              "Bash(hostname *)"
+              "Bash(id)"
+              "Bash(id *)"
+              "Bash(jq *)"
+              "Bash(ls)"
+              "Bash(ls *)"
+              "Bash(md5sum *)"
+              "Bash(mkdir *)"
+              "Bash(printenv)"
+              "Bash(printenv *)"
+              "Bash(pwd)"
+              "Bash(realpath *)"
+              "Bash(sed *)"
+              "Bash(sha256sum *)"
+              "Bash(sort *)"
+              "Bash(stat *)"
+              "Bash(tail *)"
+              "Bash(tee *)"
+              "Bash(tr *)"
+              "Bash(tree)"
+              "Bash(tree *)"
+              "Bash(uname)"
+              "Bash(uname *)"
+              "Bash(uniq *)"
+              "Bash(wc *)"
+              "Bash(whereis *)"
+              "Bash(which *)"
+              "Bash(whoami)"
+              "Bash(xargs *)"
+              "Bash(git add *)"
+              "Bash(git branch)"
+              "Bash(git branch -a)"
+              "Bash(git branch -r)"
+              "Bash(git branch -v)"
+              "Bash(git branch -v *)"
+              "Bash(git diff)"
+              "Bash(git diff *)"
+              "Bash(git -C * diff)"
+              "Bash(git -C * diff *)"
+              "Bash(git fetch)"
+              "Bash(git fetch *)"
+              "Bash(git log)"
+              "Bash(git log *)"
+              "Bash(git -C * log)"
+              "Bash(git -C * log *)"
+              "Bash(git remote)"
+              "Bash(git remote *)"
+              "Bash(git rev-parse *)"
+              "Bash(git show *)"
+              "Bash(git stash list)"
+              "Bash(git stash show *)"
+              "Bash(git status)"
+              "Bash(git -C * status)"
+              "Bash(git -C * status *)"
+            ];
+            ask = [
+              "Bash(cp *)"
+              "Bash(mv *)"
+              "Bash(rm *)"
+              "Bash(rmdir *)"
+              "Bash(touch *)"
+              "Bash(curl *)"
+              "Bash(wget *)"
+              "Bash(git stash)"
+              "Bash(git stash apply *)"
+              "Bash(git stash clear)"
+              "Bash(git stash drop *)"
+              "Bash(git stash pop *)"
+              "Bash(git stash push *)"
+              "Bash(git branch -D *)"
+              "Bash(git branch -d *)"
+              "Bash(git branch --delete *)"
+              "Bash(git checkout *)"
+              "Bash(git commit *)"
+              "Bash(git merge *)"
+              "Bash(git rebase *)"
+              "Bash(git reset *)"
+              "Bash(git tag *)"
+              "Bash(kill *)"
+              "Bash(pkill *)"
+            ];
+            deny = [
+              "Bash(chmod *)"
+              "Bash(chown *)"
+              "Bash(git clean *)"
+              "Bash(git push *)"
+              "Bash(sudo *)"
+            ];
+          };
+        };
       };
 
       # Ensure jq dependency is available (required by statusline script)
       home.packages = lib.mkIf config.programs.claude-code.enable [
         pkgs.jq
       ];
-
-      # XDG directory structure with config, data, cache, and state
-      xdg = lib.mkIf config.programs.claude-code.enable {
-        # Config: symlinks to runtime data in proper XDG locations
-        configFile = {
-          # Settings file with custom configuration
-          "claude/settings.json".text = builtins.toJSON {
-            "$schema" = "https://json.schemastore.org/claude-code-settings.json";
-
-            # Enable extended thinking mode
-            alwaysThinkingEnabled = true;
-
-            # Custom status line with Catppuccin colors
-            statusLine = {
-              type = "command";
-              command = "bash ${statuslineScript}";
-            };
-
-            # Pre/post tool execution hooks
-            hooks = {
-              PreToolUse = [
-                {
-                  matcher = "Edit";
-                  hooks = [
-                    {
-                      type = "command";
-                      command = ".claude/hooks/protect-files.sh";
-                    }
-                  ];
-                }
-                {
-                  matcher = "Write";
-                  hooks = [
-                    {
-                      type = "command";
-                      command = ".claude/hooks/protect-files.sh";
-                    }
-                  ];
-                }
-              ];
-              PostToolUse = [
-                {
-                  matcher = "Edit";
-                  hooks = [
-                    {
-                      type = "command";
-                      command = ".claude/hooks/auto-format-nix.sh";
-                    }
-                  ];
-                }
-              ];
-            };
-
-            # Tool permissions configuration
-            permissions = {
-              allow = [
-                # Core tools
-                "Edit"
-                "Glob"
-                "Grep"
-                "Read"
-                "WebFetch"
-                "WebSearch"
-                "Write"
-
-                # Skills
-                "Skill(commit-message)"
-                "Skill(diagnose)"
-                "Skill(emergency-rollback)"
-                "Skill(flake-update)"
-                "Skill(nixos-rebuild)"
-                "Skill(pre-commit-check)"
-
-                # Safe Bash commands - file info
-                "Bash(awk *)"
-                "Bash(base64 *)"
-                "Bash(basename *)"
-                "Bash(cat *)"
-                "Bash(cd *)"
-                "Bash(cut *)"
-                "Bash(date)"
-                "Bash(date *)"
-                "Bash(diff *)"
-                "Bash(dirname *)"
-                "Bash(du *)"
-                "Bash(echo *)"
-                "Bash(env)"
-                "Bash(env *)"
-                "Bash(file *)"
-                "Bash(find *)"
-                "Bash(head *)"
-                "Bash(hostname)"
-                "Bash(hostname *)"
-                "Bash(id)"
-                "Bash(id *)"
-                "Bash(jq *)"
-                "Bash(ls)"
-                "Bash(ls *)"
-                "Bash(md5sum *)"
-                "Bash(mkdir *)"
-                "Bash(printenv)"
-                "Bash(printenv *)"
-                "Bash(pwd)"
-                "Bash(realpath *)"
-                "Bash(sed *)"
-                "Bash(sha256sum *)"
-                "Bash(sort *)"
-                "Bash(stat *)"
-                "Bash(tail *)"
-                "Bash(tee *)"
-                "Bash(tr *)"
-                "Bash(tree)"
-                "Bash(tree *)"
-                "Bash(uname)"
-                "Bash(uname *)"
-                "Bash(uniq *)"
-                "Bash(wc *)"
-                "Bash(whereis *)"
-                "Bash(which *)"
-                "Bash(whoami)"
-                "Bash(xargs *)"
-
-                # Git operations
-                "Bash(git add *)"
-                "Bash(git branch)"
-                "Bash(git branch -a)"
-                "Bash(git branch -r)"
-                "Bash(git branch -v)"
-                "Bash(git branch -v *)"
-                "Bash(git diff)"
-                "Bash(git diff *)"
-                "Bash(git -C * diff)"
-                "Bash(git -C * diff *)"
-                "Bash(git fetch)"
-                "Bash(git fetch *)"
-                "Bash(git log)"
-                "Bash(git log *)"
-                "Bash(git -C * log)"
-                "Bash(git -C * log *)"
-                "Bash(git remote)"
-                "Bash(git remote *)"
-                "Bash(git rev-parse *)"
-                "Bash(git show *)"
-                "Bash(git stash list)"
-                "Bash(git stash show *)"
-                "Bash(git status)"
-                "Bash(git -C * status)"
-                "Bash(git -C * status *)"
-              ];
-              ask = [
-                # File operations
-                "Bash(cp *)"
-                "Bash(mv *)"
-                "Bash(rm *)"
-                "Bash(rmdir *)"
-                "Bash(touch *)"
-
-                # Network
-                "Bash(curl *)"
-                "Bash(wget *)"
-
-                # Git stash modifications
-                "Bash(git stash)"
-                "Bash(git stash apply *)"
-                "Bash(git stash clear)"
-                "Bash(git stash drop *)"
-                "Bash(git stash pop *)"
-                "Bash(git stash push *)"
-
-                # Git write operations
-                "Bash(git branch -D *)"
-                "Bash(git branch -d *)"
-                "Bash(git branch --delete *)"
-                "Bash(git checkout *)"
-                "Bash(git commit *)"
-                "Bash(git merge *)"
-                "Bash(git rebase *)"
-                "Bash(git reset *)"
-                "Bash(git tag *)"
-
-                # Process management
-                "Bash(kill *)"
-                "Bash(pkill *)"
-              ];
-              deny = [
-                # Dangerous operations
-                "Bash(chmod *)"
-                "Bash(chown *)"
-                "Bash(git clean *)"
-                "Bash(git push *)"
-                "Bash(sudo *)"
-              ];
-            };
-          };
-
-          # Symlinks from ~/.config/claude to XDG locations
-          # This allows Claude Code to access runtime data in proper XDG locations
-          "claude/projects".source =
-            config.lib.file.mkOutOfStoreSymlink "${config.xdg.dataHome}/claude/projects";
-          "claude/history.jsonl".source =
-            config.lib.file.mkOutOfStoreSymlink "${config.xdg.dataHome}/claude/history.jsonl";
-          "claude/plans".source = config.lib.file.mkOutOfStoreSymlink "${config.xdg.dataHome}/claude/plans";
-          "claude/file-history".source =
-            config.lib.file.mkOutOfStoreSymlink "${config.xdg.cacheHome}/claude/file-history";
-          "claude/session-env".source =
-            config.lib.file.mkOutOfStoreSymlink "${config.xdg.cacheHome}/claude/session-env";
-          "claude/shell-snapshots".source =
-            config.lib.file.mkOutOfStoreSymlink "${config.xdg.cacheHome}/claude/shell-snapshots";
-          "claude/statsig".source =
-            config.lib.file.mkOutOfStoreSymlink "${config.xdg.cacheHome}/claude/statsig";
-          "claude/todos".source = config.lib.file.mkOutOfStoreSymlink "${config.xdg.stateHome}/claude/todos";
-          "claude/debug".source = config.lib.file.mkOutOfStoreSymlink "${config.xdg.stateHome}/claude/debug";
-
-          # Credentials: MANUAL SETUP REQUIRED
-          # Users must create: ~/.local/share/claude/secrets/credentials.json
-          # This file contains OAuth tokens and should NOT be managed by Nix
-          "claude/.credentials.json".source =
-            config.lib.file.mkOutOfStoreSymlink "${config.xdg.dataHome}/claude/secrets/credentials.json";
-        };
-
-        # Data: persistent user data
-        dataFile = {
-          "claude/projects/.keep".text = "";
-          "claude/plans/.keep".text = "";
-          "claude/secrets/.keep".text = "";
-        };
-
-        # Cache: temporary cache data
-        cacheFile = {
-          "claude/file-history/.keep".text = "";
-          "claude/session-env/.keep".text = "";
-          "claude/shell-snapshots/.keep".text = "";
-          "claude/statsig/.keep".text = "";
-        };
-
-        # State: application state and logs
-        stateFile = {
-          "claude/todos/.keep".text = "";
-          "claude/debug/.keep".text = "";
-        };
-      };
-
-      # Main symlink: ~/.claude -> ~/.config/claude
-      # This ensures Claude Code finds config even if it doesn't fully support XDG
-      home.file.".claude" = lib.mkIf config.programs.claude-code.enable {
-        source = config.lib.file.mkOutOfStoreSymlink "${config.xdg.configHome}/claude";
-      };
     };
 }
