@@ -45,7 +45,7 @@ _:
         [[handlers]]
         exec = "librewolf %u"
         terminal = false
-        regexes = ['https?://(www\.)?google\.[a-z.]+']
+        regexes = ['https?://(.*\.)?google\.[a-z.]+']
 
         # Facebook (main site + short domains)
         [[handlers]]

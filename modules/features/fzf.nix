@@ -1,4 +1,4 @@
-# FZF - fuzzy finder with Catppuccin theme
+# FZF - fuzzy finder
 _:
 
 {

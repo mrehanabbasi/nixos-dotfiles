@@ -1,4 +1,4 @@
-# Bat - better cat with Catppuccin theme
+# Bat - better cat
 _:
 
 {

@@ -26,6 +26,10 @@ _:
             "http://google.com"
             "https://instagram.com"
             "http://instagram.com"
+            "https://x.com"
+            "http://x.com"
+            "https://twitter.com"
+            "http://twitter.com"
           ];
         };
       };
@@ -43,6 +47,7 @@ _:
 
         # Enable WebGL (required for some web conferencing features)
         "webgl.disabled" = false;
+        "webgl.force-enabled" = true;
 
         # Reduce fingerprinting resistance to allow device access
         # Note: This is necessary for Google Meet to enumerate devices

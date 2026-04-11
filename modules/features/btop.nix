@@ -1,4 +1,4 @@
-# Btop - system monitor with Catppuccin theme
+# Btop - system monitor
 _:
 
 {
