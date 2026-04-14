@@ -3,9 +3,8 @@
   "name": "Voxtype Status",
   "version": "1.0.0",
   "author": "rehan",
-  "description": "Shows voxtype recording status indicator",
-  "icon": "mic",
-  "type": "daemon",
+  "description": "Shows voxtype recording status in DankBar",
+  "type": "widget",
   "component": "./VoxtypeWidget.qml",
   "permissions": []
 }

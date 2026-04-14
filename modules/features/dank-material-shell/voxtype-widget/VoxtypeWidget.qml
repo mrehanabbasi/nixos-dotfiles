@@ -1,21 +1,20 @@
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import qs.Common
-import qs.Services
+import qs.Modules.Plugins
 
-// Simple daemon - just monitors voxtype and shows toasts
-Item {
+PluginComponent {
     id: root
 
-    property string currentStatus: "idle"
-    property bool isActive: currentStatus === "recording" || currentStatus === "transcribing"
-
     Component.onCompleted: {
-        console.info("=== VOXTYPE DAEMON STARTED ===");
+        setVisibilityOverride(false);
     }
 
-    // Voxtype status monitor
+    QtObject {
+        id: voxtypeStatus
+        property string text: "idle"
+    }
+
     Process {
         id: voxtypeProcess
         command: ["voxtype", "status", "--follow", "--format", "json"]
@@ -23,25 +22,35 @@ Item {
 
         stdout: SplitParser {
             onRead: data => {
-                console.log("=== VOXTYPE RAW:", data);
                 try {
                     const status = JSON.parse(data);
-                    root.currentStatus = status.class || "idle";
-                    console.log("=== VOXTYPE STATUS:", root.currentStatus);
+                    const cls = status.class || "idle";
+                    voxtypeStatus.text = cls;
+                    root.setVisibilityOverride(cls === "recording" || cls === "transcribing");
                 } catch (e) {
-                    console.error("=== VOXTYPE PARSE ERROR:", e);
+                    console.error("voxtype parse error:", e);
                 }
             }
         }
     }
 
-    // Show toast notification when status changes
-    onCurrentStatusChanged: {
-        console.log("=== VOXTYPE STATUS CHANGED TO:", currentStatus);
-        if (currentStatus === "recording") {
-            ToastService.showInfo("Voxtype", "Recording...");
-        } else if (currentStatus === "transcribing") {
-            ToastService.showInfo("Voxtype", "Transcribing...");
+    horizontalBarPill: Component {
+        Text {
+            text: voxtypeStatus.text === "recording" ? "󰻂" : "󰔮"
+            color: voxtypeStatus.text === "recording" ? "#f38ba8" : "#cdd6f4"
+            font.family: "JetBrainsMono Nerd Font"
+            font.pixelSize: 16
+            font.bold: true
+        }
+    }
+
+    verticalBarPill: Component {
+        Text {
+            text: voxtypeStatus.text === "recording" ? "󰻂" : "󰔮"
+            color: voxtypeStatus.text === "recording" ? "#f38ba8" : "#cdd6f4"
+            font.family: "JetBrainsMono Nerd Font"
+            font.pixelSize: 16
+            font.bold: true
         }
     }
 }

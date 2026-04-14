@@ -180,6 +180,10 @@
                 "focusedWindow"
               ];
               centerWidgets = [
+                {
+                  id = "voxtype-status";
+                  enabled = true;
+                }
                 "music"
                 {
                   id = "clock";
