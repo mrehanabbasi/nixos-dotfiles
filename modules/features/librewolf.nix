@@ -34,47 +34,58 @@ _:
         };
       };
 
-      # Configure settings for WebRTC and media device access
-      settings = {
-        # Enable WebRTC for video/audio calls
-        "media.navigator.enabled" = true;
-        "media.navigator.permission.disabled" = false;
-        "media.peerconnection.enabled" = true;
+      # Use a named profile so settings go into user.js (user_pref calls)
+      # instead of librewolf.overrides.cfg (defaultPref calls).
+      # user_pref() overrides LibreWolf's mozilla.cfg defaults reliably.
+      profiles.default = {
+        isDefault = true;
+        # Reuse existing profile directory to preserve data
+        path = "hjdiq242.default";
 
-        # Allow device enumeration for audio/video devices
-        "media.navigator.streams.fake" = false;
-        "media.setsinkid.enabled" = true; # Allow apps to select specific audio output devices
+        settings = {
+          # Disable LibreWolf's WebGL prompt gate (silently blocks WebGL when hidden)
+          "librewolf.webgl.prompt" = false;
 
-        # Enable WebGL (required for some web conferencing features)
-        "webgl.disabled" = false;
-        "webgl.force-enabled" = true;
+          # Enable WebRTC for video/audio calls
+          "media.navigator.enabled" = true;
+          "media.navigator.permission.disabled" = false;
+          "media.peerconnection.enabled" = true;
 
-        # Reduce fingerprinting resistance to allow device access
-        # Note: This is necessary for Google Meet to enumerate devices
-        "privacy.resistFingerprinting" = false;
+          # Allow device enumeration for audio/video devices
+          "media.navigator.streams.fake" = false;
+          "media.setsinkid.enabled" = true; # Allow apps to select specific audio output devices
 
-        # Allow persistent permissions for trusted sites
-        "permissions.default.microphone" = 0; # 0 = always ask
-        "permissions.default.camera" = 0; # 0 = always ask
+          # Enable WebGL (required for some web conferencing features)
+          "webgl.disabled" = false;
+          "webgl.force-enabled" = true;
 
-        # Keep history on shutdown but clear cookies (with exceptions)
-        "privacy.clearOnShutdown.history" = false;
-        "privacy.clearOnShutdown.cookies" = true;
-        "network.cookie.lifetimePolicy" = 0; # 0 = accept cookies normally
+          # Reduce fingerprinting resistance to allow device access
+          # Note: This is necessary for Google Meet to enumerate devices
+          "privacy.resistFingerprinting" = false;
 
-        # Enable media autoplay for conferencing (optional)
-        "media.autoplay.default" = 0; # 0 = allow all
+          # Allow persistent permissions for trusted sites
+          "permissions.default.microphone" = 0; # 0 = always ask
+          "permissions.default.camera" = 0; # 0 = always ask
 
-        # Disable letterboxing which can interfere with video calls
-        "privacy.resistFingerprinting.letterboxing" = false;
+          # Keep history on shutdown but clear cookies (with exceptions)
+          "privacy.clearOnShutdown.history" = false;
+          "privacy.clearOnShutdown.cookies" = true;
+          "network.cookie.lifetimePolicy" = 0; # 0 = accept cookies normally
 
-        # Enable PipeWire for WebRTC (Firefox 110+)
-        "media.webrtc.camera.allow-pipewire" = true;
-        "media.webrtc.microphone.allow-pipewire" = true;
+          # Enable media autoplay for conferencing (optional)
+          "media.autoplay.default" = 0; # 0 = allow all
 
-        # Block cookie banners
-        "cookiebanners.service.mode" = 2;
-        "cookiebanners.service.mode.privateBrowsing" = 2;
+          # Disable letterboxing which can interfere with video calls
+          "privacy.resistFingerprinting.letterboxing" = false;
+
+          # Enable PipeWire for WebRTC (Firefox 110+)
+          "media.webrtc.camera.allow-pipewire" = true;
+          "media.webrtc.microphone.allow-pipewire" = true;
+
+          # Block cookie banners
+          "cookiebanners.service.mode" = 2;
+          "cookiebanners.service.mode.privateBrowsing" = 2;
+        };
       };
     };
   };
