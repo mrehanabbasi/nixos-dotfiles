@@ -31,6 +31,14 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    claude-desktop-debian = {
+      url = "github:aaddrick/claude-desktop-debian";
+      inputs = {
+        nixpkgs.follows = "nixpkgs-unstable";
+        flake-parts.follows = "flake-parts";
+      };
+    };
+
     # Note: nix-flatpak doesn't have a nixpkgs input to follow
     nix-flatpak.url = "github:gmodena/nix-flatpak";
 
@@ -53,6 +61,7 @@
       url = "github:peteonrails/voxtype";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
   };
 
   # Custom importTree that imports ALL .nix files (not just default.nix)

@@ -20,6 +20,29 @@
         "type": "github"
       }
     },
+    "claude-desktop-debian": {
+      "inputs": {
+        "flake-parts": [
+          "flake-parts"
+        ],
+        "nixpkgs": [
+          "nixpkgs-unstable"
+        ]
+      },
+      "locked": {
+        "lastModified": 1777951057,
+        "narHash": "sha256-9ScET7VXtmhkcEkq+wsJ2AGY8q4yxfAOYSnOyUZeOh0=",
+        "owner": "aaddrick",
+        "repo": "claude-desktop-debian",
+        "rev": "3506c14918e1487fde8bab42c0c6301c7a902ff6",
+        "type": "github"
+      },
+      "original": {
+        "owner": "aaddrick",
+        "repo": "claude-desktop-debian",
+        "type": "github"
+      }
+    },
     "dgop": {
       "inputs": {
         "nixpkgs": [
@@ -298,6 +321,7 @@
     "root": {
       "inputs": {
         "catppuccin": "catppuccin",
+        "claude-desktop-debian": "claude-desktop-debian",
         "dgop": "dgop",
         "dms": "dms",
         "dms-plugin-registry": "dms-plugin-registry",

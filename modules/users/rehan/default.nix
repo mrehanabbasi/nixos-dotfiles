@@ -78,6 +78,7 @@ in
             inputs.self.modules.homeManager.gpg
             inputs.self.modules.homeManager.opencode
             inputs.self.modules.homeManager.claude
+            inputs.self.modules.homeManager.claude-desktop
             inputs.self.modules.homeManager.gemini-cli
             inputs.self.modules.homeManager.pre-commit
 
