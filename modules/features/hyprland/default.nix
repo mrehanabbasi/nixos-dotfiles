@@ -186,6 +186,7 @@ _:
           "$mainMod, A, exec, pavucontrol"
           "$mainMod SHIFT, A, exec, voxtype record toggle"
           "$mainMod, F, fullscreen, -1 toggle"
+          "$mainMod, X, exec, dms ipc call powermenu toggle"
 
           # Cycle between windows in same workspace
           "ALT, Tab, cyclenext,"
