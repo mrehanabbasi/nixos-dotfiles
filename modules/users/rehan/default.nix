@@ -51,6 +51,7 @@ in
             inputs.self.modules.homeManager.neovim
             inputs.self.modules.homeManager.zoxide
             inputs.self.modules.homeManager.fzf
+            inputs.self.modules.homeManager.doppler
             inputs.self.modules.homeManager.bat
             inputs.self.modules.homeManager.eza
             inputs.self.modules.homeManager.yazi
