@@ -76,6 +76,7 @@ in
             inputs.self.modules.homeManager.librewolf
 
             # Development
+            inputs.self.modules.homeManager.go
             inputs.self.modules.homeManager.gpg
             inputs.self.modules.homeManager.opencode
             inputs.self.modules.homeManager.claude

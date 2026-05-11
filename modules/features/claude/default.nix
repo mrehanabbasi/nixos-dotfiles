@@ -15,14 +15,22 @@ _:
       statuslineScript = pkgs.writeShellScript "statusline-command" (
         builtins.readFile ./statusline-command.sh
       );
+
+      # Bundle all JS hooks into one derivation so node's require('./caveman-config')
+      # resolves correctly. HM's programs.claude-code.hooks creates a separate store
+      # derivation per file — symlink resolution lands each file in its own isolated
+      # dir, so relative require() calls fail. Copying all files into one derivation
+      # keeps them in the same __dirname.
+      cavemanHooks = pkgs.runCommandLocal "claude-caveman-hooks" { } ''
+        mkdir $out
+        cp ${../../../.claude/hooks/caveman-activate.js} $out/caveman-activate.js
+        cp ${../../../.claude/hooks/caveman-mode-tracker.js} $out/caveman-mode-tracker.js
+        cp ${../../../.claude/hooks/caveman-config.js} $out/caveman-config.js
+      '';
     in
     {
       programs.claude-code = {
         enable = lib.mkDefault true;
-        hooks = {
-          "caveman-activate.js" = builtins.readFile ../../../.claude/hooks/caveman-activate.js;
-          "caveman-mode-tracker.js" = builtins.readFile ../../../.claude/hooks/caveman-mode-tracker.js;
-        };
         settings = {
           "$schema" = "https://json.schemastore.org/claude-code-settings.json";
           alwaysThinkingEnabled = true;
@@ -208,6 +216,23 @@ _:
               "Bash(sudo *)"
             ];
           };
+        };
+      };
+
+      # Hook files — all placed in ~/.claude/hooks/ via home.file so Claude Code
+      # can find them. JS files share one derivation (cavemanHooks) so that
+      # require('./caveman-config') resolves correctly after symlink resolution.
+      # Bash hooks get executable = true since HM strips the bit on copy.
+      home.file = lib.mkIf config.programs.claude-code.enable {
+        ".claude/hooks/caveman-activate.js".source = "${cavemanHooks}/caveman-activate.js";
+        ".claude/hooks/caveman-mode-tracker.js".source = "${cavemanHooks}/caveman-mode-tracker.js";
+        ".claude/hooks/protect-files.sh" = {
+          source = ../../../.claude/hooks/protect-files.sh;
+          executable = true;
+        };
+        ".claude/hooks/auto-format-nix.sh" = {
+          source = ../../../.claude/hooks/auto-format-nix.sh;
+          executable = true;
         };
       };
 

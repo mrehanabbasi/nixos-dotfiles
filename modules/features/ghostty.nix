@@ -22,7 +22,7 @@ _:
         font-style-italic = "Italic";
         font-style-bold = "Bold";
         font-style-bold-italic = "Bold Italic";
-        font-size = 14;
+        font-size = 12;
 
         # Disable ligatures
         font-feature = [

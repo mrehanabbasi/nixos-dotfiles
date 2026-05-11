@@ -26,10 +26,6 @@ _:
         just
         zig
         nil
-        go
-        gopls
-        gofumpt
-        golangci-lint
         nodePackages_latest.vscode-json-languageserver
         yaml-language-server
         lua-language-server
