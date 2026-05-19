@@ -26,6 +26,9 @@ _:
         dnsutils
         networkmanager
 
+        # Hardware tools
+        usbutils
+
         # Process management
         procps
         psmisc

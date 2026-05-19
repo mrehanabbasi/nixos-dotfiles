@@ -54,7 +54,7 @@ _:
         # Note: DMS handles wallpaper, notifications, and Bluetooth via systemd
         exec-once = [
           "hyprctl setcursor $cursorTheme $cursorSize"
-          "sleep 3 && hyprctl reload" # Delayed reload to detect DP-2 after NVIDIA GPU initializes
+          "sleep 3 && hyprctl reload" # Fallback: re-detect monitors if USB-C DP alt mode was slow
         ];
 
         # Environment variables

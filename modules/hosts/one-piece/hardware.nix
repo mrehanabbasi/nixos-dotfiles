@@ -24,7 +24,9 @@ _:
             "sd_mod"
             "rtsx_pci_sdmmc"
           ];
-          kernelModules = [ ];
+          # Start USB-C DisplayPort alt mode negotiation early so external
+          # monitors are ready before amdgpu probes connectors (~11s)
+          kernelModules = [ "typec_ucsi" "ucsi_acpi" "typec_displayport" ];
         };
         kernelModules = [ "kvm-amd" ];
         extraModulePackages = [ ];
