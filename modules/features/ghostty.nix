@@ -24,6 +24,9 @@ _:
         font-style-bold-italic = "Bold Italic";
         font-size = 12;
 
+        adjust-cell-height = "+15%";
+        adjust-cell-width = "+2%";
+
         # Disable ligatures
         font-feature = [
           "-dlig"

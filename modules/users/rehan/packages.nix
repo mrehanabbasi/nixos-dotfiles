@@ -35,6 +35,7 @@ _:
         tailwindcss-language-server
         tree-sitter
         nodejs
+        bun
         statix # nix linter
         markdownlint-cli2
         addlicense
