@@ -11,8 +11,8 @@ _:
         src = pkgs.fetchFromGitHub {
           owner = "janoamaral";
           repo = "tokyo-night-tmux";
-          rev = "master";
-          sha256 = "sha256-TOS9+eOEMInAgosB3D9KhahudW2i1ZEH+IXEc0RCpU0=";
+          rev = "a39e00bf01fea05f916e4b7707bad5e64adee02c";
+          sha256 = "sha256-tmS0MBANSsTg53E2GB0TnjwGcZXboTRFNeDE6Ehn+bM=";
         };
       };
     in
