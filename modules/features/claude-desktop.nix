@@ -3,10 +3,17 @@
 
 {
   flake.modules.homeManager.claude-desktop =
-    { pkgs, ... }:
+    { config, lib, pkgs, ... }:
+    let
+      cfg = config.features."claude-desktop";
+    in
     {
-      home.packages = [
-        inputs.claude-desktop-debian.packages.${pkgs.stdenv.hostPlatform.system}.claude-desktop-fhs
-      ];
+      options.features."claude-desktop".enable = lib.mkEnableOption "Claude Desktop app";
+
+      config = lib.mkIf cfg.enable {
+        home.packages = [
+          inputs.claude-desktop-debian.packages.${pkgs.stdenv.hostPlatform.system}.claude-desktop-fhs
+        ];
+      };
     };
 }

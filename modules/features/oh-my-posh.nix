@@ -4,11 +4,15 @@
 
 {
   flake.modules.homeManager.oh-my-posh =
-    { config, pkgs, ... }:
+    { config, lib, pkgs, ... }:
     let
+      cfg = config.features."oh-my-posh";
       pkgs-unstable = import inputs.nixpkgs-unstable { inherit (pkgs) system config; };
     in
     {
+      options.features."oh-my-posh".enable = lib.mkEnableOption "oh-my-posh shell prompt";
+
+      config = lib.mkIf cfg.enable {
       programs.oh-my-posh = {
         enable = true;
         enableZshIntegration = true;
@@ -91,6 +95,7 @@
             grey = "#6c6c6c";
           };
         };
+      };
       };
     };
 }

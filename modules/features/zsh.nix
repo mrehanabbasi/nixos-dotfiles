@@ -2,13 +2,28 @@
 _:
 
 {
-  flake.modules.nixos.zsh = _: {
-    programs.zsh.enable = true;
-  };
+  flake.modules.nixos.zsh =
+    { config, lib, ... }:
+    let
+      cfg = config.features.zsh;
+    in
+    {
+      options.features.zsh.enable = lib.mkEnableOption "zsh shell";
+
+      config = lib.mkIf cfg.enable {
+        programs.zsh.enable = true;
+      };
+    };
 
   flake.modules.homeManager.zsh =
-    { config, pkgs, ... }:
+    { config, lib, pkgs, ... }:
+    let
+      cfg = config.features.zsh;
+    in
     {
+      options.features.zsh.enable = lib.mkEnableOption "zsh shell";
+
+      config = lib.mkIf cfg.enable {
       programs.zsh = {
         enable = true;
         history.size = 10000;
@@ -112,6 +127,7 @@ _:
             file = "share/fzf-tab/fzf-tab.plugin.zsh";
           }
         ];
+      };
       };
     };
 }

@@ -11,6 +11,7 @@ _:
       ...
     }:
     let
+      cfg = config.features.claude;
       # Status line script with Catppuccin colors and real-time session info
       statuslineScript = pkgs.writeShellScript "statusline-command" (
         builtins.readFile ./statusline-command.sh
@@ -29,6 +30,9 @@ _:
       '';
     in
     {
+      options.features.claude.enable = lib.mkEnableOption "Claude Code AI assistant";
+
+      config = lib.mkIf cfg.enable {
       programs.claude-code = {
         enable = lib.mkDefault true;
         settings = {
@@ -240,5 +244,6 @@ _:
       home.packages = lib.mkIf config.programs.claude-code.enable [
         pkgs.jq
       ];
+      };
     };
 }

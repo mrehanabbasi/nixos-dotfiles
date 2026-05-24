@@ -2,14 +2,32 @@
 _:
 
 {
-  flake.modules.nixos.kdeconnect = _: {
-    programs.kdeconnect.enable = true;
-  };
+  flake.modules.nixos.kdeconnect =
+    { config, lib, ... }:
+    let
+      cfg = config.features.kdeconnect;
+    in
+    {
+      options.features.kdeconnect.enable = lib.mkEnableOption "KDE Connect phone connectivity";
 
-  flake.modules.homeManager.kdeconnect = _: {
-    services.kdeconnect = {
-      enable = true;
-      indicator = true;
+      config = lib.mkIf cfg.enable {
+        programs.kdeconnect.enable = true;
+      };
     };
-  };
+
+  flake.modules.homeManager.kdeconnect =
+    { config, lib, ... }:
+    let
+      cfg = config.features.kdeconnect;
+    in
+    {
+      options.features.kdeconnect.enable = lib.mkEnableOption "KDE Connect phone connectivity";
+
+      config = lib.mkIf cfg.enable {
+        services.kdeconnect = {
+          enable = true;
+          indicator = true;
+        };
+      };
+    };
 }

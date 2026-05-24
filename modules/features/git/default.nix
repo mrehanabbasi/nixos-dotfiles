@@ -3,11 +3,15 @@ _:
 
 {
   flake.modules.homeManager.git =
-    { pkgs, ... }:
+    { config, lib, pkgs, ... }:
     let
+      cfg = config.features.git;
       commitMsgHook = pkgs.writeShellScript "commit-msg" (builtins.readFile ./commit-msg);
     in
     {
+      options.features.git.enable = lib.mkEnableOption "git version control";
+
+      config = lib.mkIf cfg.enable {
       programs.git = {
         enable = true;
         lfs.enable = true;
@@ -44,6 +48,7 @@ _:
             st = "status";
           };
         };
+      };
       };
     };
 }

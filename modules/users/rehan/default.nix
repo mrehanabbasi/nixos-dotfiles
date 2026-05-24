@@ -127,6 +127,18 @@ in
           features.yazi.enable = true;
           features.zathura.enable = true;
           features.zoxide.enable = true;
+          features.go.enable = true;
+          features."oh-my-posh".enable = true;
+          features.zsh.enable = true;
+          features.neovim.enable = true;
+          features.tmux.enable = true;
+          features.hyprland.enable = true;
+          features.kdeconnect.enable = true;
+          features.git.enable = true;
+          features.gpg.enable = true;
+          features.claude.enable = true;
+          features."claude-desktop".enable = true;
+          features."dank-material-shell".enable = true;
 
           home = {
             username = userName;

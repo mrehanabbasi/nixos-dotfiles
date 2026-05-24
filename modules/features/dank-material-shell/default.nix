@@ -6,16 +6,22 @@
   flake.modules.homeManager.dank-material-shell =
     {
       config,
-      pkgs,
       lib,
+      pkgs,
       ...
     }:
+    let
+      cfg = config.features."dank-material-shell";
+    in
     {
       imports = [
         inputs.dms.homeModules.dank-material-shell
         inputs.dms-plugin-registry.modules.default
       ];
 
+      options.features."dank-material-shell".enable = lib.mkEnableOption "DankMaterialShell desktop shell";
+
+      config = lib.mkIf cfg.enable {
       programs.dank-material-shell = {
         enable = true;
 
@@ -343,32 +349,40 @@
           fi
           echo "${configHash}" > "${markerFile}"
         '';
+      };
     };
 
   # NixOS module for dms-greeter (replaces SDDM)
   flake.modules.nixos.dms-greeter =
     {
       config,
-      pkgs,
       lib,
+      pkgs,
       ...
     }:
+    let
+      cfg = config.features."dms-greeter";
+    in
     {
       imports = [
         inputs.dms.nixosModules.greeter
       ];
 
-      programs.dank-material-shell.greeter = {
-        enable = true;
-        compositor.name = "hyprland";
-        configFiles = [ "${./background.png}" ]; # Greeter wallpaper
-        logs.save = true; # Enable logging for debugging
+      options.features."dms-greeter".enable = lib.mkEnableOption "DMS greeter display manager";
+
+      config = lib.mkIf cfg.enable {
+        programs.dank-material-shell.greeter = {
+          enable = true;
+          compositor.name = "hyprland";
+          configFiles = [ "${./background.png}" ]; # Greeter wallpaper
+          logs.save = true; # Enable logging for debugging
+        };
+
+        # Default session
+        services.displayManager.defaultSession = "hyprland";
+
+        # Disk management (was in SDDM module)
+        services.udisks2.enable = true;
       };
-
-      # Default session
-      services.displayManager.defaultSession = "hyprland";
-
-      # Disk management (was in SDDM module)
-      services.udisks2.enable = true;
     };
 }

@@ -4,20 +4,25 @@
 
 {
   flake.modules.homeManager.go =
-    { config, pkgs, ... }:
+    { config, lib, pkgs, ... }:
     let
+      cfg = config.features.go;
       pkgs-unstable = import inputs.nixpkgs-unstable { inherit (pkgs) system config; };
     in
     {
-      home.packages = with pkgs-unstable; [
-        go
-        gopls
-        gofumpt
-        golangci-lint
-        delve
-        gotools
-      ];
+      options.features.go.enable = lib.mkEnableOption "Go development environment";
 
-      home.sessionPath = [ "${config.home.homeDirectory}/go/bin" ];
+      config = lib.mkIf cfg.enable {
+        home.packages = with pkgs-unstable; [
+          go
+          gopls
+          gofumpt
+          golangci-lint
+          delve
+          gotools
+        ];
+
+        home.sessionPath = [ "${config.home.homeDirectory}/go/bin" ];
+      };
     };
 }

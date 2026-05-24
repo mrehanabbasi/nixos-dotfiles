@@ -112,6 +112,12 @@ in
         features.thunar.enable = true;
         features."vm-audio".enable = true;
         features.wine.enable = true;
+        features.zsh.enable = true;
+        features.neovim.enable = true;
+        features.hyprland.enable = true;
+        features.kdeconnect.enable = true;
+        features.gpg.enable = true;
+        features."dms-greeter".enable = true;
       }
     ];
   };

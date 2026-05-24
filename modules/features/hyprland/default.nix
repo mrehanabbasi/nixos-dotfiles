@@ -4,8 +4,14 @@ _:
 {
   # NixOS aspect
   flake.modules.nixos.hyprland =
-    { pkgs, ... }:
+    { config, lib, pkgs, ... }:
+    let
+      cfg = config.features.hyprland;
+    in
     {
+      options.features.hyprland.enable = lib.mkEnableOption "Hyprland window manager";
+
+      config = lib.mkIf cfg.enable {
       programs.hyprland = {
         enable = true;
         xwayland.enable = true;
@@ -28,11 +34,20 @@ _:
 
       # Note: gvfs.enable is in thunar.nix
       services.upower.enable = true;
+      };
     };
 
   # Home Manager aspect
-  flake.modules.homeManager.hyprland = _: {
-    wayland.windowManager.hyprland = {
+  flake.modules.homeManager.hyprland =
+    { config, lib, ... }:
+    let
+      cfg = config.features.hyprland;
+    in
+    {
+      options.features.hyprland.enable = lib.mkEnableOption "Hyprland window manager";
+
+      config = lib.mkIf cfg.enable {
+      wayland.windowManager.hyprland = {
       enable = true;
 
       settings = {
@@ -305,6 +320,7 @@ _:
           "size 50% 80%, class:^org.kde.kalk$"
         ];
       };
+      };
+      };
     };
-  };
 }

@@ -3,8 +3,9 @@ _:
 
 {
   flake.modules.homeManager.tmux =
-    { pkgs, ... }:
+    { config, lib, pkgs, ... }:
     let
+      cfg = config.features.tmux;
       tokyo-night = pkgs.tmuxPlugins.mkTmuxPlugin {
         pluginName = "tokyo-night";
         version = "stable-2025-02-26";
@@ -17,6 +18,9 @@ _:
       };
     in
     {
+      options.features.tmux.enable = lib.mkEnableOption "tmux terminal multiplexer";
+
+      config = lib.mkIf cfg.enable {
       programs.tmux = {
         enable = true;
 
@@ -88,6 +92,7 @@ _:
           bind % split-window -h -c "#{pane_current_path}"
           bind c new-window -c "#{pane_current_path}"
         '';
+      };
       };
     };
 }
