@@ -90,6 +90,10 @@ in
             inputs.self.modules.homeManager.communication
             inputs.self.modules.homeManager.discord
 
+            # Creative tools
+            inputs.self.modules.homeManager.unity
+            inputs.self.modules.homeManager.blender
+
             # Misc
             inputs.self.modules.homeManager.mime-apps
             inputs.self.modules.homeManager.packages
@@ -99,6 +103,8 @@ in
           features.discord.enable = true;
           features.notesnook.enable = true;
           features.bitwarden.enable = true;
+          features.unity.enable = true;
+          features.blender.enable = true;
 
           home = {
             username = userName;

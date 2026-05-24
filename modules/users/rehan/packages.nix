@@ -7,9 +7,7 @@ _:
     {
       home.packages = with pkgs; [
         # Core utilities (not managed by feature modules)
-        ripgrep
         nixfmt-rfc-style
-        gcc
 
         # Fonts (nerd-fonts.jetbrains-mono is in system/fonts.nix)
         noto-fonts
@@ -41,9 +39,6 @@ _:
 
         # Applications
         claude-code
-        blender
-        unityhub
-
       ];
 
       home.pointerCursor = {

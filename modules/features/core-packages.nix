@@ -38,6 +38,11 @@ _:
 
         # Build tools
         cmake
+        ripgrep
+        gnumake
+        just
+        zig
+        gcc
 
         # Office
         onlyoffice-desktopeditors
