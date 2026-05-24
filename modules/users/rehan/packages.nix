@@ -18,8 +18,6 @@ _:
 
         # Media utilities
         imv
-        mpc
-        alsa-utils
 
         # Neovim-related (LSPs, formatters, build tools)
         gnumake
@@ -47,8 +45,7 @@ _:
         yq
 
         # Applications
-        vlc
-        webcord
+        vesktop
         bitwarden-desktop
         notesnook
         claude-code
