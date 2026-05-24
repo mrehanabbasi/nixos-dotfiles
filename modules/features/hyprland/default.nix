@@ -285,14 +285,6 @@ _:
           # No borders on single tiled window in workspace
           "bordersize 0, onworkspace:w[t1]"
 
-          # Idle inhibit for video conferencing apps
-          "idleinhibit focus, class:^(zoom|Zoom)$"
-          "idleinhibit focus, class:^(Slack|slack)$"
-          "idleinhibit focus, class:^(teams-for-linux|Microsoft Teams)$"
-          "idleinhibit focus, title:(Google Meet)"
-          "idleinhibit focus, title:(Microsoft Teams)"
-          "idleinhibit focus, title:(Zoom Meeting)"
-
           "suppressevent maximize, class:.*"
           "nofocus,class:^$,title:^$,xwayland:1,floating:1,fullscreen:0,pinned:0"
           "float, class:^imv$"

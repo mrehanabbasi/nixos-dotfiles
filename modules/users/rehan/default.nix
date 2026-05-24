@@ -85,6 +85,7 @@ in
             inputs.self.modules.homeManager.pre-commit
 
             # Communication
+            inputs.self.modules.homeManager.communication
             inputs.self.modules.homeManager.discord
 
             # Misc
@@ -92,6 +93,7 @@ in
             inputs.self.modules.homeManager.packages
           ];
 
+          features.communication.enable = true;
           features.discord.enable = true;
 
           home = {

@@ -46,9 +46,6 @@ _:
         blender
         unityhub
 
-        # Communication
-        zoom-us
-        slack
       ];
 
       home.pointerCursor = {
