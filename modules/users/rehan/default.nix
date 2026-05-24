@@ -72,6 +72,7 @@ in
             # Productivity
             inputs.self.modules.homeManager.notesnook
             inputs.self.modules.homeManager.kdeconnect
+            inputs.self.modules.homeManager.bitwarden
 
             # Browsers
             inputs.self.modules.homeManager.librewolf
@@ -97,6 +98,7 @@ in
           features.communication.enable = true;
           features.discord.enable = true;
           features.notesnook.enable = true;
+          features.bitwarden.enable = true;
 
           home = {
             username = userName;

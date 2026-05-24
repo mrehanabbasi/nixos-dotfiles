@@ -40,7 +40,6 @@ _:
         age
 
         # Applications
-        bitwarden-desktop
         claude-code
         blender
         unityhub

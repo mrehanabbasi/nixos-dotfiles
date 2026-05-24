@@ -276,16 +276,6 @@
         };
       };
 
-      # rbw - Bitwarden CLI backend for dankBitwarden (moved from rofi.nix)
-      programs.rbw = {
-        enable = true;
-        settings = {
-          email = "mrehanabbasi@proton.me";
-          pinentry = pkgs.pinentry-qt;
-          base_url = "https://vaultwarden.mrehanabbasi.com";
-        };
-      };
-
       # GTK theming - adw-gtk3 is required for Matugen to theme GTK3 apps like Thunar
       gtk = {
         enable = true;
