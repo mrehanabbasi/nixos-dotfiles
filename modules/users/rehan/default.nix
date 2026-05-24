@@ -70,6 +70,7 @@ in
             inputs.self.modules.homeManager.voxtype
 
             # Productivity
+            inputs.self.modules.homeManager.notesnook
             inputs.self.modules.homeManager.kdeconnect
 
             # Browsers
@@ -95,6 +96,7 @@ in
 
           features.communication.enable = true;
           features.discord.enable = true;
+          features.notesnook.enable = true;
 
           home = {
             username = userName;

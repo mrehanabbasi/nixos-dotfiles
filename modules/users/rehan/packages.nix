@@ -41,7 +41,6 @@ _:
 
         # Applications
         bitwarden-desktop
-        notesnook
         claude-code
         blender
         unityhub
