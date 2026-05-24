@@ -91,6 +91,11 @@ in
         i18n.defaultLocale = "en_US.UTF-8";
         system.stateVersion = "25.11";
         features.catppuccin.enable = true;
+        features.base.enable = true;
+        features.boot.enable = true;
+        features.fonts.enable = true;
+        features.networking.enable = true;
+        features.virtualisation.enable = true;
       }
     ];
   };

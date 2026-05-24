@@ -3,21 +3,30 @@
 _:
 
 {
-  flake.modules.nixos.networking = _: {
-    networking = {
-      timeServers = [ "pool.ntp.org" ];
+  flake.modules.nixos.networking =
+    { config, lib, ... }:
+    let
+      cfg = config.features.networking;
+    in
+    {
+      options.features.networking.enable = lib.mkEnableOption "system networking";
 
-      # NetworkManager for network management
-      # Host-specific wifi.backend configured in host module
-      networkmanager.enable = true;
+      config = lib.mkIf cfg.enable {
+        networking = {
+          timeServers = [ "pool.ntp.org" ];
 
-      # Firewall enabled by default
-      # Host-specific ports configured in host module
-      firewall.enable = true;
+          # NetworkManager for network management
+          # Host-specific wifi.backend configured in host module
+          networkmanager.enable = true;
+
+          # Firewall enabled by default
+          # Host-specific ports configured in host module
+          firewall.enable = true;
+        };
+
+        # Use systemd-resolved for DNS
+        # Provides proper split DNS support (Tailscale domains via MagicDNS, rest via normal DNS)
+        services.resolved.enable = true;
+      };
     };
-
-    # Use systemd-resolved for DNS
-    # Provides proper split DNS support (Tailscale domains via MagicDNS, rest via normal DNS)
-    services.resolved.enable = true;
-  };
 }

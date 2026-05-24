@@ -4,15 +4,22 @@ _:
 
 {
   flake.modules.nixos.fonts =
-    { pkgs, ... }:
+    { config, lib, pkgs, ... }:
+    let
+      cfg = config.features.fonts;
+    in
     {
-      fonts.packages = with pkgs; [
-        nerd-fonts.jetbrains-mono
-      ];
+      options.features.fonts.enable = lib.mkEnableOption "system fonts";
 
-      fonts.fontconfig = {
-        defaultFonts = {
-          monospace = [ "JetBrainsMono Nerd Font" ];
+      config = lib.mkIf cfg.enable {
+        fonts.packages = with pkgs; [
+          nerd-fonts.jetbrains-mono
+        ];
+
+        fonts.fontconfig = {
+          defaultFonts = {
+            monospace = [ "JetBrainsMono Nerd Font" ];
+          };
         };
       };
     };
