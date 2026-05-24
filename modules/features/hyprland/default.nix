@@ -287,8 +287,6 @@ _:
 
           # Idle inhibit for video conferencing apps
           "idleinhibit focus, class:^(zoom|Zoom)$"
-          "idleinhibit focus, class:^(WebCord)$"
-          "idleinhibit focus, class:^(discord|Discord)$"
           "idleinhibit focus, class:^(Slack|slack)$"
           "idleinhibit focus, class:^(teams-for-linux|Microsoft Teams)$"
           "idleinhibit focus, title:(Google Meet)"

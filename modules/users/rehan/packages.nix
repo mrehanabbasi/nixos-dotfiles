@@ -40,7 +40,6 @@ _:
         age
 
         # Applications
-        vesktop
         bitwarden-desktop
         notesnook
         claude-code

@@ -84,10 +84,15 @@ in
             inputs.self.modules.homeManager.gemini-cli
             inputs.self.modules.homeManager.pre-commit
 
+            # Communication
+            inputs.self.modules.homeManager.discord
+
             # Misc
             inputs.self.modules.homeManager.mime-apps
             inputs.self.modules.homeManager.packages
           ];
+
+          features.discord.enable = true;
 
           home = {
             username = userName;
