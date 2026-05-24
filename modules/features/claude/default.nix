@@ -24,9 +24,9 @@ _:
       # keeps them in the same __dirname.
       cavemanHooks = pkgs.runCommandLocal "claude-caveman-hooks" { } ''
         mkdir $out
-        cp ${../../../.claude/hooks/caveman-activate.js} $out/caveman-activate.js
-        cp ${../../../.claude/hooks/caveman-mode-tracker.js} $out/caveman-mode-tracker.js
-        cp ${../../../.claude/hooks/caveman-config.js} $out/caveman-config.js
+        cp ${./hooks/caveman-activate.js} $out/caveman-activate.js
+        cp ${./hooks/caveman-mode-tracker.js} $out/caveman-mode-tracker.js
+        cp ${./hooks/caveman-config.js} $out/caveman-config.js
       '';
     in
     {
@@ -231,11 +231,11 @@ _:
         ".claude/hooks/caveman-activate.js".source = "${cavemanHooks}/caveman-activate.js";
         ".claude/hooks/caveman-mode-tracker.js".source = "${cavemanHooks}/caveman-mode-tracker.js";
         ".claude/hooks/protect-files.sh" = {
-          source = ../../../.claude/hooks/protect-files.sh;
+          source = ./hooks/protect-files.sh;
           executable = true;
         };
         ".claude/hooks/auto-format-nix.sh" = {
-          source = ../../../.claude/hooks/auto-format-nix.sh;
+          source = ./hooks/auto-format-nix.sh;
           executable = true;
         };
       };
