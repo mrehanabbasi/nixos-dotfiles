@@ -6,7 +6,7 @@
   flake.modules.homeManager.go =
     { config, pkgs, ... }:
     let
-      pkgs-unstable = import inputs.nixpkgs-unstable { inherit (pkgs) system; };
+      pkgs-unstable = import inputs.nixpkgs-unstable { inherit (pkgs) system config; };
     in
     {
       home.packages = with pkgs-unstable; [
@@ -14,6 +14,8 @@
         gopls
         gofumpt
         golangci-lint
+        delve
+        gotools
       ];
 
       home.sessionPath = [ "${config.home.homeDirectory}/go/bin" ];
