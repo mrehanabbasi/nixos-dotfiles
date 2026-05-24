@@ -99,6 +99,7 @@ in
             inputs.self.modules.homeManager.packages
           ];
 
+          features.catppuccin.enable = true;
           features.communication.enable = true;
           features.discord.enable = true;
           features.notesnook.enable = true;
