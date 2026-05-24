@@ -3,16 +3,22 @@ _:
 
 {
   flake.modules.nixos.obs-studio =
-    { pkgs, ... }:
+    { config, lib, pkgs, ... }:
+    let
+      cfg = config.features."obs-studio";
+    in
     {
-      programs.obs-studio = {
-        enable = true;
-        enableVirtualCamera = true;
-        plugins = with pkgs.obs-studio-plugins; [
-          wlrobs
-          obs-vkcapture
-          obs-composite-blur
-        ];
+      options.features."obs-studio".enable = lib.mkEnableOption "OBS Studio streaming and recording";
+      config = lib.mkIf cfg.enable {
+        programs.obs-studio = {
+          enable = true;
+          enableVirtualCamera = true;
+          plugins = with pkgs.obs-studio-plugins; [
+            wlrobs
+            obs-vkcapture
+            obs-composite-blur
+          ];
+        };
       };
     };
 }

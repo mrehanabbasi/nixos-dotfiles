@@ -96,6 +96,22 @@ in
         features.fonts.enable = true;
         features.networking.enable = true;
         features.virtualisation.enable = true;
+        features.audio.enable = true;
+        features.appimage.enable = true;
+        features.brave.enable = true;
+        features."core-packages".enable = true;
+        features."core-services".enable = true;
+        features.flatpak.enable = true;
+        features.gamemode.enable = true;
+        features.ghostty.enable = true;
+        features.localsend.enable = true;
+        features."obs-studio".enable = true;
+        features.pia.enable = true;
+        features.steam.enable = true;
+        features.tailscale.enable = true;
+        features.thunar.enable = true;
+        features."vm-audio".enable = true;
+        features.wine.enable = true;
       }
     ];
   };

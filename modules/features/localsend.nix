@@ -3,7 +3,15 @@
 _:
 
 {
-  flake.modules.nixos.localsend = _: {
-    programs.localsend.enable = true;
-  };
+  flake.modules.nixos.localsend =
+    { config, lib, ... }:
+    let
+      cfg = config.features.localsend;
+    in
+    {
+      options.features.localsend.enable = lib.mkEnableOption "LocalSend local file sharing";
+      config = lib.mkIf cfg.enable {
+        programs.localsend.enable = true;
+      };
+    };
 }

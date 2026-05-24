@@ -2,11 +2,19 @@
 _:
 
 {
-  flake.modules.homeManager.mpv = _: {
-    catppuccin.mpv.enable = true;
+  flake.modules.homeManager.mpv =
+    { config, lib, ... }:
+    let
+      cfg = config.features.mpv;
+    in
+    {
+      options.features.mpv.enable = lib.mkEnableOption "mpv media player";
+      config = lib.mkIf cfg.enable {
+        catppuccin.mpv.enable = true;
 
-    programs.mpv = {
-      enable = true;
+        programs.mpv = {
+          enable = true;
+        };
+      };
     };
-  };
 }

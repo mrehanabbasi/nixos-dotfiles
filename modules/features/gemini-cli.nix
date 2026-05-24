@@ -3,20 +3,26 @@ _:
 
 {
   flake.modules.homeManager.gemini-cli =
-    { pkgs, ... }:
+    { config, lib, pkgs, ... }:
+    let
+      cfg = config.features."gemini-cli";
+    in
     {
-      catppuccin.gemini-cli.enable = true;
+      options.features."gemini-cli".enable = lib.mkEnableOption "Gemini CLI AI coding assistant";
+      config = lib.mkIf cfg.enable {
+        catppuccin.gemini-cli.enable = true;
 
-      programs.gemini-cli = {
-        enable = true;
-        package = pkgs.gemini-cli;
-        settings = {
-          general = {
-            preferredEditor = "nvim";
-            vimMode = true;
-          };
-          privacy = {
-            usageStatisticsEnabled = false;
+        programs.gemini-cli = {
+          enable = true;
+          package = pkgs.gemini-cli;
+          settings = {
+            general = {
+              preferredEditor = "nvim";
+              vimMode = true;
+            };
+            privacy = {
+              usageStatisticsEnabled = false;
+            };
           };
         };
       };

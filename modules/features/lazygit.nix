@@ -2,11 +2,19 @@
 _:
 
 {
-  flake.modules.homeManager.lazygit = _: {
-    catppuccin.lazygit.enable = true;
+  flake.modules.homeManager.lazygit =
+    { config, lib, ... }:
+    let
+      cfg = config.features.lazygit;
+    in
+    {
+      options.features.lazygit.enable = lib.mkEnableOption "lazygit terminal UI for git";
+      config = lib.mkIf cfg.enable {
+        catppuccin.lazygit.enable = true;
 
-    programs.lazygit = {
-      enable = true;
+        programs.lazygit = {
+          enable = true;
+        };
+      };
     };
-  };
 }

@@ -4,60 +4,72 @@ _:
 
 {
   flake.modules.nixos.vm-audio =
-    { pkgs, ... }:
+    { config, lib, pkgs, ... }:
+    let
+      cfg = config.features."vm-audio";
+    in
     {
-      environment.systemPackages = [ pkgs.scream ];
+      options.features."vm-audio".enable = lib.mkEnableOption "VM audio passthrough via Scream";
+      config = lib.mkIf cfg.enable {
+        environment.systemPackages = [ pkgs.scream ];
 
-      networking.firewall.allowedUDPPorts = [ 4010 ];
+        networking.firewall.allowedUDPPorts = [ 4010 ];
+      };
     };
 
   flake.modules.homeManager.vm-audio =
-    { pkgs, ... }:
+    { config, lib, pkgs, ... }:
+    let
+      cfg = config.features."vm-audio";
+    in
     {
-      # Virtual sink setup via pactl (runs once at login)
-      systemd.user.services.scream-sink-setup = {
-        Unit = {
-          Description = "Create virtual sink for Scream VM audio";
-          After = [ "pipewire-pulse.service" ];
-          PartOf = [ "graphical-session.target" ];
+      options.features."vm-audio".enable = lib.mkEnableOption "VM audio passthrough via Scream";
+      config = lib.mkIf cfg.enable {
+        # Virtual sink setup via pactl (runs once at login)
+        systemd.user.services.scream-sink-setup = {
+          Unit = {
+            Description = "Create virtual sink for Scream VM audio";
+            After = [ "pipewire-pulse.service" ];
+            PartOf = [ "graphical-session.target" ];
+          };
+
+          Service = {
+            Type = "oneshot";
+            RemainAfterExit = true;
+            ExecStart = pkgs.writeShellScript "scream-sink-setup" ''
+              # Only create sink if it doesn't already exist
+              if ! ${pkgs.pulseaudio}/bin/pactl list sinks short | grep -q scream_sink; then
+                ${pkgs.pulseaudio}/bin/pactl load-module module-null-sink sink_name=scream_sink sink_properties=device.description=Scream_VM
+                ${pkgs.pulseaudio}/bin/pactl load-module module-loopback source=scream_sink.monitor latency_msec=20
+              fi
+            '';
+          };
+
+          Install = {
+            WantedBy = [ "graphical-session.target" ];
+          };
         };
 
-        Service = {
-          Type = "oneshot";
-          RemainAfterExit = true;
-          ExecStart = pkgs.writeShellScript "scream-sink-setup" ''
-            # Only create sink if it doesn't already exist
-            if ! ${pkgs.pulseaudio}/bin/pactl list sinks short | grep -q scream_sink; then
-              ${pkgs.pulseaudio}/bin/pactl load-module module-null-sink sink_name=scream_sink sink_properties=device.description=Scream_VM
-              ${pkgs.pulseaudio}/bin/pactl load-module module-loopback source=scream_sink.monitor latency_msec=20
-            fi
-          '';
-        };
+        systemd.user.services.scream-receiver = {
+          Unit = {
+            Description = "Scream virtual sound card receiver";
+            After = [
+              "pipewire.service"
+              "scream-sink-setup.service"
+            ];
+            PartOf = [ "graphical-session.target" ];
+          };
 
-        Install = {
-          WantedBy = [ "graphical-session.target" ];
-        };
-      };
+          Service = {
+            Environment = [ "PULSE_SINK=scream_sink" ];
+            ExecStart = "${pkgs.scream}/bin/scream -i virbr0 -o pulse";
+            Restart = "on-failure";
+            RestartSec = 3;
+          };
 
-      systemd.user.services.scream-receiver = {
-        Unit = {
-          Description = "Scream virtual sound card receiver";
-          After = [
-            "pipewire.service"
-            "scream-sink-setup.service"
-          ];
-          PartOf = [ "graphical-session.target" ];
-        };
-
-        Service = {
-          Environment = [ "PULSE_SINK=scream_sink" ];
-          ExecStart = "${pkgs.scream}/bin/scream -i virbr0 -o pulse";
-          Restart = "on-failure";
-          RestartSec = 3;
-        };
-
-        Install = {
-          WantedBy = [ "graphical-session.target" ];
+          Install = {
+            WantedBy = [ "graphical-session.target" ];
+          };
         };
       };
     };

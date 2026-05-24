@@ -4,57 +4,63 @@ _:
 
 {
   flake.modules.nixos.core-packages =
-    { pkgs, ... }:
+    { config, lib, pkgs, ... }:
+    let
+      cfg = config.features."core-packages";
+    in
     {
-      environment.systemPackages = with pkgs; [
-        # Core utilities
-        wget
-        git
-        tree
+      options.features."core-packages".enable = lib.mkEnableOption "core system utilities and tools";
+      config = lib.mkIf cfg.enable {
+        environment.systemPackages = with pkgs; [
+          # Core utilities
+          wget
+          git
+          tree
 
-        # Archive tools
-        unzip
-        zip
-        unrar
-        p7zip
-        gnutar
-        gzip
-        xz
+          # Archive tools
+          unzip
+          zip
+          unrar
+          p7zip
+          gnutar
+          gzip
+          xz
 
-        # Network tools
-        net-tools
-        dnsutils
-        networkmanager
+          # Network tools
+          net-tools
+          dnsutils
+          networkmanager
 
-        # Hardware tools
-        usbutils
+          # Hardware tools
+          usbutils
 
-        # Process management
-        procps
-        psmisc
+          # Process management
+          procps
+          psmisc
 
-        # Clipboard
-        wl-clipboard
+          # Clipboard
+          wl-clipboard
 
-        # Build tools
-        cmake
-        ripgrep
-        gnumake
-        just
-        zig
-        gcc
+          # Build tools
+          cmake
+          ripgrep
+          gnumake
+          just
+          zig
+          gcc
 
-        # Office
-        onlyoffice-desktopeditors
+          # Office
+          onlyoffice-desktopeditors
 
-        # Container tools
-        dive
-        podman-tui
-        docker-compose
+          # Container tools
+          dive
+          podman-tui
+          docker-compose
 
-        # Recovery tools
-        testdisk
-        testdisk-qt
-      ];
+          # Recovery tools
+          testdisk
+          testdisk-qt
+        ];
+      };
     };
 }

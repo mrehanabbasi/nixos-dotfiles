@@ -3,20 +3,26 @@ _:
 
 {
   flake.modules.homeManager.kdenlive =
-    { pkgs, ... }:
+    { config, lib, pkgs, ... }:
+    let
+      cfg = config.features.kdenlive;
+    in
     {
-      home.packages = with pkgs; [
-        kdePackages.kdenlive
-        ffmpeg
-        frei0r
-        ladspaPlugins
-        movit
-      ];
+      options.features.kdenlive.enable = lib.mkEnableOption "Kdenlive video editor";
+      config = lib.mkIf cfg.enable {
+        home.packages = with pkgs; [
+          kdePackages.kdenlive
+          ffmpeg
+          frei0r
+          ladspaPlugins
+          movit
+        ];
 
-      home.sessionVariables = {
-        FREI0R_PATH = "${pkgs.frei0r}/lib/frei0r-1";
-        LADSPA_PATH = "${pkgs.ladspaPlugins}/lib/ladspa";
-        MLT_PROFILES_PATH = "${pkgs.mlt}/share/mlt-7/profiles";
+        home.sessionVariables = {
+          FREI0R_PATH = "${pkgs.frei0r}/lib/frei0r-1";
+          LADSPA_PATH = "${pkgs.ladspaPlugins}/lib/ladspa";
+          MLT_PROFILES_PATH = "${pkgs.mlt}/share/mlt-7/profiles";
+        };
       };
     };
 }

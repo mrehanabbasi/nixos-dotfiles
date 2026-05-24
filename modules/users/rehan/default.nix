@@ -106,6 +106,27 @@ in
           features.bitwarden.enable = true;
           features.unity.enable = true;
           features.blender.enable = true;
+          features.bat.enable = true;
+          features.btop.enable = true;
+          features.doppler.enable = true;
+          features.eza.enable = true;
+          features.fastfetch.enable = true;
+          features.fzf.enable = true;
+          features."gemini-cli".enable = true;
+          features.ghostty.enable = true;
+          features."handlr-regex".enable = true;
+          features.kdenlive.enable = true;
+          features.lazygit.enable = true;
+          features.librewolf.enable = true;
+          features."mime-apps".enable = true;
+          features.mpv.enable = true;
+          features.opencode.enable = true;
+          features."pre-commit".enable = true;
+          features.voxtype.enable = true;
+          features."vm-audio".enable = true;
+          features.yazi.enable = true;
+          features.zathura.enable = true;
+          features.zoxide.enable = true;
 
           home = {
             username = userName;

@@ -3,8 +3,14 @@ _:
 
 {
   flake.modules.homeManager.pre-commit =
-    { pkgs, ... }:
+    { config, lib, pkgs, ... }:
+    let
+      cfg = config.features."pre-commit";
+    in
     {
-      home.packages = [ pkgs.pre-commit ];
+      options.features."pre-commit".enable = lib.mkEnableOption "pre-commit git hooks framework";
+      config = lib.mkIf cfg.enable {
+        home.packages = [ pkgs.pre-commit ];
+      };
     };
 }

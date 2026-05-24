@@ -3,10 +3,16 @@ _:
 
 {
   flake.modules.nixos.brave =
-    { pkgs, ... }:
+    { config, lib, pkgs, ... }:
+    let
+      cfg = config.features.brave;
+    in
     {
-      environment.systemPackages = with pkgs; [
-        brave
-      ];
+      options.features.brave.enable = lib.mkEnableOption "Brave browser";
+      config = lib.mkIf cfg.enable {
+        environment.systemPackages = with pkgs; [
+          brave
+        ];
+      };
     };
 }
