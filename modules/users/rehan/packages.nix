@@ -18,6 +18,9 @@ _:
 
         # Media utilities
         imv
+        mediainfo
+        ffmpegthumbnailer
+        imagemagick
 
         # Neovim-related (LSPs, formatters, build tools)
         gnumake
@@ -43,6 +46,17 @@ _:
         jq
         jless
         yq
+
+        # Git/shell tooling
+        delta
+        shellcheck
+        shfmt
+
+        # Nix tooling
+        nix-tree
+
+        # Encryption
+        age
 
         # Applications
         vesktop
