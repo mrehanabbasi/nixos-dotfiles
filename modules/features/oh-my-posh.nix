@@ -4,9 +4,9 @@
 
 {
   flake.modules.homeManager.oh-my-posh =
-    { pkgs, ... }:
+    { config, pkgs, ... }:
     let
-      pkgs-unstable = import inputs.nixpkgs-unstable { inherit (pkgs) system; };
+      pkgs-unstable = import inputs.nixpkgs-unstable { inherit (pkgs) system config; };
     in
     {
       programs.oh-my-posh = {
