@@ -22,25 +22,6 @@ _:
         ffmpegthumbnailer
         imagemagick
 
-        # Neovim-related (LSPs, formatters, build tools)
-        gnumake
-        just
-        zig
-        nil
-        nodePackages_latest.vscode-json-languageserver
-        yaml-language-server
-        lua-language-server
-        docker-language-server
-        typescript
-        typescript-language-server
-        tailwindcss-language-server
-        tree-sitter
-        nodejs
-        bun
-        statix # nix linter
-        markdownlint-cli2
-        addlicense
-
         # CLI tools
         gh
         jq
