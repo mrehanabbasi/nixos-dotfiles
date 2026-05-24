@@ -21,6 +21,9 @@ _:
         hyprpaper
         hyprshot
         hyprpicker
+        # Runtime deps for Hyprland keybindings
+        brightnessctl
+        playerctl
       ];
 
       # Note: gvfs.enable is in thunar.nix
