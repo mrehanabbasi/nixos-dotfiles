@@ -3,16 +3,23 @@ _:
 
 {
   flake.modules.nixos.sops =
-    { config, ... }:
+    { config, lib, ... }:
+    let
+      cfg = config.features.sops;
+    in
     {
-      sops = {
-        defaultSopsFile = ./secrets.yaml;
-        defaultSopsFormat = "yaml";
+      options.features.sops.enable = lib.mkEnableOption "SOPS secrets management";
 
-        age.keyFile = "${config.users.users.rehan.home}/.config/sops/age/keys.txt";
+      config = lib.mkIf cfg.enable {
+        sops = {
+          defaultSopsFile = ./secrets.yaml;
+          defaultSopsFormat = "yaml";
 
-        secrets.pia = {
-          format = "yaml";
+          age.keyFile = "${config.users.users.rehan.home}/.config/sops/age/keys.txt";
+
+          secrets.pia = {
+            format = "yaml";
+          };
         };
       };
     };

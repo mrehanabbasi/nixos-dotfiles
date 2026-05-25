@@ -139,6 +139,7 @@ in
           features.claude.enable = true;
           features."claude-desktop".enable = true;
           features."dank-material-shell".enable = true;
+          features.packages.enable = true;
 
           home = {
             username = userName;

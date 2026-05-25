@@ -4,7 +4,7 @@
 # Steps:
 # 1. Copy this directory: cp -r _template new-hostname
 # 2. Generate hardware config: nixos-generate-config --show-hardware-config > hardware.nix
-# 3. Register hardware.nix as a module: add flake.modules.nixos.new-hostname-hardware = _: { imports = [ ./hardware.nix ]; }; to a nix file in this dir
+# 3. Register hardware.nix as a flake module: add flake.modules.nixos.new-hostname-hardware = _: { imports = [ ./hardware.nix ]; }; in a nix file in this dir, then reference it as inputs.self.modules.nixos.new-hostname-hardware
 # 4. Create gpu.nix, network.nix, etc. as needed following the same pattern
 # 5. Update the host definition below
 # 6. Remove the underscore prefix from the directory name
@@ -71,6 +71,7 @@ in
         features.fonts.enable = true;
         features.networking.enable = true;
         features.virtualisation.enable = true;
+        features.sops.enable = true;
         features.catppuccin.enable = true;
         features.audio.enable = true;
         features.tailscale.enable = true;

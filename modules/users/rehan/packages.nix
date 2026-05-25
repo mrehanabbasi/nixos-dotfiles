@@ -3,46 +3,54 @@ _:
 
 {
   flake.modules.homeManager.packages =
-    { pkgs, ... }:
     {
-      home.packages = with pkgs; [
-        # Core utilities (not managed by feature modules)
-        nixfmt-rfc-style
+      pkgs,
+      config,
+      lib,
+      ...
+    }:
+    let
+      cfg = config.features.packages;
+    in
+    {
+      options.features.packages.enable = lib.mkEnableOption "user packages for rehan";
 
-        # Fonts (nerd-fonts.jetbrains-mono is in system/fonts.nix)
-        noto-fonts
-        nerd-fonts.iosevka
-        icomoon-feather
+      config = lib.mkIf cfg.enable {
+        home.packages = with pkgs; [
+          # Core utilities (not managed by feature modules)
+          nixfmt-rfc-style
 
-        # Media utilities
-        imv
-        mediainfo
-        ffmpegthumbnailer
-        imagemagick
+          # Fonts (nerd-fonts.jetbrains-mono is in system/fonts.nix)
+          noto-fonts
+          nerd-fonts.iosevka
+          icomoon-feather
 
-        # CLI tools
-        gh
-        jq
-        jless
-        yq
+          # Media utilities
+          imv
+          mediainfo
+          ffmpegthumbnailer
+          imagemagick
 
-        # Git/shell tooling
-        delta
-        shellcheck
-        shfmt
+          # CLI tools
+          gh
+          jless
+          yq
 
-        # Nix tooling
-        nix-tree
+          # Git/shell tooling
+          delta
+          shellcheck
+          shfmt
 
-        # Encryption
-        age
+          # Nix tooling
+          nix-tree
 
-        # Applications
-        claude-code
-      ];
+          # Encryption
+          age
+        ];
 
-      home.pointerCursor = {
-        size = 24;
+        home.pointerCursor = {
+          size = 24;
+        };
       };
     };
 }

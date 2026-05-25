@@ -39,7 +39,7 @@ in
       # LAYER 5: Services (may depend on secrets/theming)
       # ════════════════════════════════════════════════════════════════════
       inputs.self.modules.nixos.audio
-      inputs.self.modules.nixos.vm-audio
+      inputs.self.modules.nixos."vm-audio"
       inputs.self.modules.nixos.tailscale
       inputs.self.modules.nixos.pia
       inputs.self.modules.nixos.flatpak
@@ -48,14 +48,14 @@ in
       # LAYER 6: Desktop & Programs
       # ════════════════════════════════════════════════════════════════════
       inputs.self.modules.nixos.hyprland
-      inputs.self.modules.nixos.dms-greeter
+      inputs.self.modules.nixos."dms-greeter"
       inputs.self.modules.nixos.brave
       inputs.self.modules.nixos.thunar
-      inputs.self.modules.nixos.obs-studio
+      inputs.self.modules.nixos."obs-studio"
       inputs.self.modules.nixos.localsend
       inputs.self.modules.nixos.appimage
-      inputs.self.modules.nixos.core-packages
-      inputs.self.modules.nixos.core-services
+      inputs.self.modules.nixos."core-packages"
+      inputs.self.modules.nixos."core-services"
       inputs.self.modules.nixos.zsh
       inputs.self.modules.nixos.neovim
       inputs.self.modules.nixos.ghostty
@@ -90,6 +90,7 @@ in
       {
         time.timeZone = "Asia/Karachi";
         system.stateVersion = "25.11";
+        features.sops.enable = true;
         features.catppuccin.enable = true;
         features.base.enable = true;
         features.boot.enable = true;
