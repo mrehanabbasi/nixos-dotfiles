@@ -108,6 +108,72 @@ _:
             src = pkgs.zsh-fzf-tab;
             file = "share/fzf-tab/fzf-tab.plugin.zsh";
           }
+          # oh-my-zsh plugins (sourced directly, no framework)
+          {
+            name = "git";
+            src = "${pkgs.oh-my-zsh}/share/oh-my-zsh/plugins/git";
+            file = "git.plugin.zsh";
+          }
+          {
+            name = "sudo";
+            src = "${pkgs.oh-my-zsh}/share/oh-my-zsh/plugins/sudo";
+            file = "sudo.plugin.zsh";
+          }
+          {
+            name = "golang";
+            src = "${pkgs.oh-my-zsh}/share/oh-my-zsh/plugins/golang";
+            file = "golang.plugin.zsh";
+          }
+          {
+            name = "command-not-found";
+            src = "${pkgs.oh-my-zsh}/share/oh-my-zsh/plugins/command-not-found";
+            file = "command-not-found.plugin.zsh";
+          }
+          {
+            name = "docker";
+            src = "${pkgs.oh-my-zsh}/share/oh-my-zsh/plugins/docker";
+            file = "docker.plugin.zsh";
+          }
+          {
+            name = "docker-compose";
+            src = "${pkgs.oh-my-zsh}/share/oh-my-zsh/plugins/docker-compose";
+            file = "docker-compose.plugin.zsh";
+          }
+          {
+            name = "eza";
+            src = "${pkgs.oh-my-zsh}/share/oh-my-zsh/plugins/eza";
+            file = "eza.plugin.zsh";
+          }
+          {
+            name = "fzf";
+            src = "${pkgs.oh-my-zsh}/share/oh-my-zsh/plugins/fzf";
+            file = "fzf.plugin.zsh";
+          }
+          {
+            name = "gh";
+            src = "${pkgs.oh-my-zsh}/share/oh-my-zsh/plugins/gh";
+            file = "gh.plugin.zsh";
+          }
+          {
+            name = "podman";
+            src = "${pkgs.oh-my-zsh}/share/oh-my-zsh/plugins/podman";
+            file = "podman.plugin.zsh";
+          }
+          {
+            name = "ssh";
+            src = "${pkgs.oh-my-zsh}/share/oh-my-zsh/plugins/ssh";
+            file = "ssh.plugin.zsh";
+          }
+          {
+            name = "tailscale";
+            src = "${pkgs.oh-my-zsh}/share/oh-my-zsh/plugins/tailscale";
+            file = "tailscale.plugin.zsh";
+          }
+          {
+            name = "zoxide";
+            src = "${pkgs.oh-my-zsh}/share/oh-my-zsh/plugins/zoxide";
+            file = "zoxide.plugin.zsh";
+          }
         ];
       };
       };
