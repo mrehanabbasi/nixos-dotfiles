@@ -4,9 +4,10 @@
 # Steps:
 # 1. Copy this directory: cp -r _template new-hostname
 # 2. Generate hardware config: nixos-generate-config --show-hardware-config > hardware.nix
-# 3. Create gpu.nix, network.nix, etc. as needed
-# 4. Update the host definition below
-# 5. Remove the underscore prefix from the directory name
+# 3. Register hardware.nix as a module: add flake.modules.nixos.new-hostname-hardware = _: { imports = [ ./hardware.nix ]; }; to a nix file in this dir
+# 4. Create gpu.nix, network.nix, etc. as needed following the same pattern
+# 5. Update the host definition below
+# 6. Remove the underscore prefix from the directory name
 #
 { inputs, ... }:
 let
@@ -26,6 +27,7 @@ in
       inputs.self.modules.nixos.boot
       inputs.self.modules.nixos.networking
       inputs.self.modules.nixos.virtualisation
+      inputs.self.modules.nixos.fonts
 
       # Secrets
       inputs.self.modules.nixos.sops
@@ -39,29 +41,47 @@ in
 
       # Desktop
       inputs.self.modules.nixos.hyprland
-      inputs.self.modules.nixos.sddm
-      inputs.self.modules.nixos.browsers
-      inputs.self.modules.nixos.system-packages
+      inputs.self.modules.nixos."dms-greeter"
+      inputs.self.modules.nixos.brave
+      inputs.self.modules.nixos."core-packages"
+      inputs.self.modules.nixos."core-services"
       inputs.self.modules.nixos.zsh
       inputs.self.modules.nixos.neovim
       inputs.self.modules.nixos.ghostty
       inputs.self.modules.nixos.gpg
       inputs.self.modules.nixos.kdeconnect
 
-      # Host-specific (customize these)
-      ./hardware.nix
-      # ./gpu.nix
-      # ./network.nix
-      # ./bluetooth.nix
+      # Host-specific (add these as modules in this directory)
+      # inputs.self.modules.nixos.new-hostname-hardware
+      # inputs.self.modules.nixos.new-hostname-gpu
+      # inputs.self.modules.nixos.new-hostname-network
 
       # User
       inputs.self.modules.nixos.rehan
 
-      # Host-specific overrides
+      # Host-specific overrides and feature enables
       {
         networking.hostName = "new-hostname";
         time.timeZone = "Asia/Karachi";
         system.stateVersion = "25.11";
+
+        # Enable features (add/remove as needed for this host)
+        features.base.enable = true;
+        features.boot.enable = true;
+        features.fonts.enable = true;
+        features.networking.enable = true;
+        features.virtualisation.enable = true;
+        features.catppuccin.enable = true;
+        features.audio.enable = true;
+        features.tailscale.enable = true;
+        features.hyprland.enable = true;
+        features."dms-greeter".enable = true;
+        features.brave.enable = true;
+        features."core-packages".enable = true;
+        features."core-services".enable = true;
+        features.zsh.enable = true;
+        features.neovim.enable = true;
+        features.kdeconnect.enable = true;
       }
     ];
   };
