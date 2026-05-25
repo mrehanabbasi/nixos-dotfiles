@@ -87,24 +87,6 @@ _:
           alias -s yaml='bat -l yaml'
           alias -s json='jq <'
         '';
-        oh-my-zsh = {
-          enable = false;
-          plugins = [
-            "git"
-            "sudo"
-            "golang"
-            "command-not-found"
-            "docker"
-            "docker-compose"
-            "eza"
-            "fzf"
-            "gh"
-            "podman"
-            "ssh"
-            "tailscale"
-            "zoxide"
-          ];
-        };
         plugins = [
           {
             name = "zsh-autosuggestions";
