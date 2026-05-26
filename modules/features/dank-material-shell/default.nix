@@ -25,6 +25,18 @@
       programs.dank-material-shell = {
         enable = true;
 
+        # Patch lock screen: custom wallpaper, reduced blur, halved fonts
+        package = inputs.dms.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (old: {
+          postInstall = (old.postInstall or "") + ''
+            chmod -R u+w $out/share/quickshell/dms/Modules/Lock
+            patch -p1 -d $out/share/quickshell/dms < ${./lock-screen-customize.patch}
+            substituteInPlace $out/share/quickshell/dms/Modules/Lock/LockScreenContent.qml \
+              --replace-fail "@LOCK_WALLPAPER@" "file://${./lock.png}"
+            sed -i 's/font\.pixelSize: 120/font.pixelSize: 60/g' \
+              $out/share/quickshell/dms/Modules/Lock/LockScreenContent.qml
+          '';
+        });
+
         # Systemd integration
         systemd = {
           enable = true;
@@ -168,7 +180,7 @@
           wallpaperFillMode = "Fill";
 
           # Greeter wallpaper
-          greeterWallpaperPath = "${./background.png}";
+          greeterWallpaperPath = "${./login.png}";
           greeterWallpaperFillMode = "Fill";
 
           # Bar config
@@ -390,10 +402,10 @@
         systemd.services.greetd.preStart = lib.mkAfter ''
           cd /var/lib/dms-greeter
           # Remove any stale hash-prefixed files (from old configFiles experiments)
-          rm -f -- *-session.json *-settings.json *-background.png *-greeter_wallpaper_override.jpg
-          cp -f ${./background.png} greeter_wallpaper_override.jpg
+          rm -f -- *-session.json *-settings.json *-background.png *-login.png *-greeter_wallpaper_override.jpg
+          cp -f ${./login.png} greeter_wallpaper_override.jpg
           cp -f ${pkgs.writeText "greeter-settings.json" (builtins.toJSON {
-            greeterWallpaperPath = "${./background.png}";
+            greeterWallpaperPath = "${./login.png}";
             greeterWallpaperFillMode = "Fill";
             lockScreenShowProfileImage = false;
           })} settings.json
