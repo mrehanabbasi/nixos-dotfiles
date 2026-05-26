@@ -140,6 +140,8 @@ fetch_usage_data() {
     session_resets_at=""
     weekly_resets_at=""
     extra_cost="0"
+    session_stale=0
+    weekly_stale=0
 
     # Check if credentials exist
     [ ! -f "$credentials_file" ] && return
@@ -236,6 +238,7 @@ roll_forward_if_stale() {
         target=$(date -d "$session_resets_at" +%s 2>/dev/null)
         if [ -n "$target" ] && [ "$target" -lt "$now" ]; then
             session_usage="0"
+            session_stale=1
             while [ -n "$target" ] && [ "$target" -lt "$now" ]; do
                 target=$((target + 18000))
             done
@@ -248,6 +251,7 @@ roll_forward_if_stale() {
         target=$(date -d "$weekly_resets_at" +%s 2>/dev/null)
         if [ -n "$target" ] && [ "$target" -lt "$now" ]; then
             weekly_usage="0"
+            weekly_stale=1
             while [ -n "$target" ] && [ "$target" -lt "$now" ]; do
                 target=$((target + 604800))
             done
@@ -424,9 +428,15 @@ roll_forward_if_stale
 # Build usage display string (Step 3)
 usage_info=""
 if [ "$session_usage" != "-1" ] && [ "$weekly_usage" != "-1" ]; then
-    # Format session with relative time
-    session_pct=$(format_percentage "$session_usage")
-    session_color=$(get_usage_color "$session_usage")
+    # Format session with relative time. Stale (rolled-forward) data shows "--"
+    # in neutral color since real utilization is unknown until API recovers.
+    if [ "$session_stale" = "1" ]; then
+        session_pct="--"
+        session_color="$SUBTEXT0"
+    else
+        session_pct=$(format_percentage "$session_usage")
+        session_color=$(get_usage_color "$session_usage")
+    fi
     session_time=$(format_reset_time "$session_resets_at" "relative")
 
     # Calculate absolute reset time for session (12-hour format)
@@ -436,8 +446,13 @@ if [ "$session_usage" != "-1" ] && [ "$weekly_usage" != "-1" ]; then
     fi
 
     # Format weekly with smart same-day detection
-    weekly_pct=$(format_percentage "$weekly_usage")
-    weekly_color=$(get_usage_color "$weekly_usage")
+    if [ "$weekly_stale" = "1" ]; then
+        weekly_pct="--"
+        weekly_color="$SUBTEXT0"
+    else
+        weekly_pct=$(format_percentage "$weekly_usage")
+        weekly_color=$(get_usage_color "$weekly_usage")
+    fi
     weekly_time=$(format_reset_time "$weekly_resets_at" "weekly")
 
     # Calculate absolute reset time for weekly (12-hour format) - same as session logic
