@@ -373,10 +373,32 @@
       config = lib.mkIf cfg.enable {
         programs.dank-material-shell.greeter = {
           enable = true;
+          package = inputs.dms.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (old: {
+            postInstall = (old.postInstall or "") + ''
+              chmod -R u+w $out/share/quickshell/dms/Modules/Greetd
+              patch -p1 -d $out/share/quickshell/dms < ${./greeter-left-align.patch}
+            '';
+          });
           compositor.name = "hyprland";
-          configFiles = [ "${./background.png}" ]; # Greeter wallpaper
+          # Skip upstream configFiles: its preStart does `cp $src .` which preserves
+          # nix store hash prefix in basename, but greeter expects exact filenames.
           logs.save = true; # Enable logging for debugging
         };
+
+        # Place wallpaper override + settings.json with exact names greeter expects.
+        # Cleans up stale hash-prefixed files left from earlier configFiles experiments.
+        systemd.services.greetd.preStart = lib.mkAfter ''
+          cd /var/lib/dms-greeter
+          # Remove any stale hash-prefixed files (from old configFiles experiments)
+          rm -f -- *-session.json *-settings.json *-background.png *-greeter_wallpaper_override.jpg
+          cp -f ${./background.png} greeter_wallpaper_override.jpg
+          cp -f ${pkgs.writeText "greeter-settings.json" (builtins.toJSON {
+            greeterWallpaperPath = "${./background.png}";
+            greeterWallpaperFillMode = "Fill";
+          })} settings.json
+          chmod 644 settings.json greeter_wallpaper_override.jpg
+          chown greeter: settings.json greeter_wallpaper_override.jpg
+        '';
 
         # Default session
         services.displayManager.defaultSession = "hyprland";

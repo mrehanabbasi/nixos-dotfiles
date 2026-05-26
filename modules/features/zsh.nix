@@ -24,10 +24,17 @@ _:
       options.features.zsh.enable = lib.mkEnableOption "zsh shell";
 
       config = lib.mkIf cfg.enable {
+      home.activation.createZshCacheDir = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        mkdir -p "${config.xdg.cacheHome}/oh-my-zsh/completions"
+      '';
+
       programs.zsh = {
         enable = true;
         history.size = 10000;
         history.path = "${config.xdg.dataHome}/zsh/history";
+        sessionVariables = {
+          ZSH_CACHE_DIR = "${config.xdg.cacheHome}/oh-my-zsh";
+        };
         shellAliases = {
           ls = "eza --icons --color=always";
           ll = "eza -al --icons --color=always";
@@ -39,7 +46,11 @@ _:
           JQ = "| jq";
           C = "| wl-copy";
         };
-        initContent = ''
+        initContent = lib.mkMerge [
+          (lib.mkBefore ''
+            chmod u+w "$ZSH_CACHE_DIR/completions/_docker" 2>/dev/null || true
+          '')
+          ''
           # Set GPG_TTY for pinentry-tty to work in CLI tools (e.g., Claude Code commits)
           export GPG_TTY=$(tty)
 
@@ -86,7 +97,8 @@ _:
           alias -s ts='$EDITOR'
           alias -s yaml='bat -l yaml'
           alias -s json='jq <'
-        '';
+          ''
+        ];
         plugins = [
           {
             name = "zsh-autosuggestions";

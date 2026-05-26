@@ -1,0 +1,59 @@
+--- a/Modules/Greetd/GreeterContent.qml
++++ b/Modules/Greetd/GreeterContent.qml
+@@ -718,15 +718,7 @@
+         asynchronous: false
+         cache: true
+         visible: source !== ""
+-        layer.enabled: true
+-
+-        layer.effect: MultiEffect {
+-            autoPaddingEnabled: false
+-            blurEnabled: true
+-            blur: 0.8
+-            blurMax: 32
+-            blurMultiplier: 1
+-        }
++        layer.enabled: false
+
+         Behavior on opacity {
+             NumberAnimation {
+@@ -753,7 +745,8 @@
+
+         Item {
+             id: clockContainer
+-            anchors.horizontalCenter: parent.horizontalCenter
++            anchors.left: parent.left
++            anchors.leftMargin: 80
+             anchors.bottom: parent.verticalCenter
+             anchors.bottomMargin: 60
+             width: parent.width
+@@ -761,7 +754,8 @@
+
+             Row {
+                 id: clockText
+-                anchors.horizontalCenter: parent.horizontalCenter
++                anchors.left: parent.left
++                anchors.leftMargin: 0
+                 anchors.top: parent.top
+                 spacing: 0
+
+@@ -872,7 +866,8 @@
+
+         StyledText {
+             id: dateText
+-            anchors.horizontalCenter: parent.horizontalCenter
++            anchors.left: parent.left
++            anchors.leftMargin: 80
+             anchors.top: clockContainer.bottom
+             anchors.topMargin: 4
+             text: {
+@@ -884,7 +879,8 @@
+         }
+
+         Item {
+-            anchors.horizontalCenter: parent.horizontalCenter
++            anchors.left: parent.left
++            anchors.leftMargin: 80
+             anchors.top: dateText.bottom
+             anchors.topMargin: Theme.spacingL
+             width: 380

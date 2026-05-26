@@ -38,6 +38,13 @@ _:
     {
       options.features.catppuccin.enable = lib.mkEnableOption "Catppuccin theme";
 
+      # Compatibility shim: catppuccin/nix vscode module defines programs.<name>.profiles
+      # for all VS Code forks, but home-manager only has programs.vscode
+      options.programs = lib.genAttrs [ "antigravity" "cursor" "kiro" "vscodium" "windsurf" ] (_: lib.mkOption {
+        type = lib.types.raw;
+        default = { };
+      });
+
       config = lib.mkIf cfg.enable {
         # Base catppuccin settings for accent/flavor (DMS uses these for Matugen)
         catppuccin = {

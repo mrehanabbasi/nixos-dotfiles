@@ -7,7 +7,7 @@
     { config, lib, pkgs, ... }:
     let
       cfg = config.features."oh-my-posh";
-      pkgs-unstable = import inputs.nixpkgs-unstable { inherit (pkgs) system config; };
+      pkgs-unstable = import inputs.nixpkgs-unstable { inherit (pkgs.stdenv.hostPlatform) system; inherit (pkgs) config; };
     in
     {
       options.features."oh-my-posh".enable = lib.mkEnableOption "oh-my-posh shell prompt";

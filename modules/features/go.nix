@@ -7,7 +7,7 @@
     { config, lib, pkgs, ... }:
     let
       cfg = config.features.go;
-      pkgs-unstable = import inputs.nixpkgs-unstable { inherit (pkgs) system config; };
+      pkgs-unstable = import inputs.nixpkgs-unstable { inherit (pkgs.stdenv.hostPlatform) system; inherit (pkgs) config; };
     in
     {
       options.features.go.enable = lib.mkEnableOption "Go development environment";
@@ -19,7 +19,7 @@
           gofumpt
           golangci-lint
           delve
-          gotools
+          (lib.meta.lowPrio gotools) # lower priority to resolve modernize conflict with gopls
         ];
 
         home.sessionPath = [ "${config.home.homeDirectory}/go/bin" ];

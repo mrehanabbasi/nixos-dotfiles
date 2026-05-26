@@ -130,7 +130,9 @@ format_reset_time() {
 fetch_usage_data() {
     local credentials_file="$HOME/.claude/.credentials.json"
     local cache_file="$HOME/.cache/claude/usage-cache.json"
-    local cache_duration=60  # seconds
+    local lock_file="$HOME/.cache/claude/usage.lock"
+    local cache_duration=180  # seconds; community floor — <180 risks rate_limit_error
+    local error_backoff=300   # seconds; extra cooldown after rate_limit_error
 
     # Reset global variables
     session_usage="-1"
@@ -142,14 +144,18 @@ fetch_usage_data() {
     # Check if credentials exist
     [ ! -f "$credentials_file" ] && return
 
-    # Check cache validity
+    # Check cache validity. Skip API when:
+    #   - cache age under cache_duration (180s), OR
+    #   - we are inside an error_backoff window from a previous rate_limit_error
     local use_cache=0
+    local now=$(date +%s)
     if [ -f "$cache_file" ]; then
         local cache_timestamp=$(jq -r '.timestamp // 0' "$cache_file" 2>/dev/null)
-        local now=$(date +%s)
+        local next_retry_at=$(jq -r '.next_retry_at // 0' "$cache_file" 2>/dev/null)
         local cache_age=$((now - cache_timestamp))
+        local has_data=$(jq 'has("five_hour")' "$cache_file" 2>/dev/null)
 
-        if [ $cache_age -lt $cache_duration ] && [ "$(jq 'has("five_hour")' "$cache_file" 2>/dev/null)" = "true" ]; then
+        if [ "$has_data" = "true" ] && { [ $cache_age -lt $cache_duration ] || [ $now -lt $next_retry_at ]; }; then
             use_cache=1
         fi
     fi
@@ -168,38 +174,84 @@ fetch_usage_data() {
     local access_token=$(jq -r '.claudeAiOauth.accessToken // ""' "$credentials_file" 2>/dev/null)
     [ -z "$access_token" ] && return
 
+    mkdir -p "$(dirname "$cache_file")"
+
+    # Inter-window mutex: if another Claude window is mid-fetch, skip this round
+    # and fall back to whatever cache we have. flock fd 9 → released on function exit.
+    exec 9>"$lock_file"
+    if ! flock -n 9; then
+        if [ -f "$cache_file" ] && [ "$(jq 'has("five_hour")' "$cache_file" 2>/dev/null)" = "true" ]; then
+            session_usage=$(jq -r '.five_hour.utilization // -1' "$cache_file" 2>/dev/null)
+            weekly_usage=$(jq -r '.seven_day.utilization // -1' "$cache_file" 2>/dev/null)
+            session_resets_at=$(jq -r '.five_hour.resets_at // ""' "$cache_file" 2>/dev/null)
+            weekly_resets_at=$(jq -r '.seven_day.resets_at // ""' "$cache_file" 2>/dev/null)
+            extra_cost=$(jq -r '.extra_usage.used_credits // 0' "$cache_file" 2>/dev/null || echo "0")
+        fi
+        return
+    fi
+
     # Fetch from API with timeout
     local api_response=$(curl -s --max-time 2 \
         -H "Authorization: Bearer $access_token" \
         -H "anthropic-beta: oauth-2025-04-20" \
         "https://api.anthropic.com/api/oauth/usage" 2>/dev/null)
 
-    mkdir -p "$(dirname "$cache_file")"
-    local now=$(date +%s)
-
     # Check if API call returned valid data
     local has_error=$(echo "$api_response" | jq -r '.error // empty' 2>/dev/null)
     if [ -n "$api_response" ] && [ -z "$has_error" ]; then
-        # Valid response — extract and cache
+        # Valid response — extract and cache. Clear any prior next_retry_at.
         session_usage=$(echo "$api_response" | jq -r '.five_hour.utilization // -1' 2>/dev/null)
         weekly_usage=$(echo "$api_response" | jq -r '.seven_day.utilization // -1' 2>/dev/null)
         session_resets_at=$(echo "$api_response" | jq -r '.five_hour.resets_at // ""' 2>/dev/null)
         weekly_resets_at=$(echo "$api_response" | jq -r '.seven_day.resets_at // ""' 2>/dev/null)
         extra_cost=$(echo "$api_response" | jq -r '.extra_usage.used_credits // 0' 2>/dev/null || echo "0")
-        echo "$api_response" | jq --arg ts "$now" '. + {timestamp: ($ts | tonumber)}' > "$cache_file" 2>/dev/null
+        echo "$api_response" | jq --arg ts "$now" '. + {timestamp: ($ts | tonumber), next_retry_at: 0}' > "$cache_file" 2>/dev/null
     else
-        # API error — prevent hammering by refreshing timestamp, preserve any valid stale data
+        # API error (likely rate_limit_error) — preserve stale data, set next_retry_at
+        # so subsequent statusline renders skip the API for error_backoff seconds.
+        local retry_at=$((now + error_backoff))
         if [ -f "$cache_file" ] && [ "$(jq 'has("five_hour")' "$cache_file" 2>/dev/null)" = "true" ]; then
-            # Use stale data and bump timestamp to enforce backoff
             session_usage=$(jq -r '.five_hour.utilization // -1' "$cache_file" 2>/dev/null)
             weekly_usage=$(jq -r '.seven_day.utilization // -1' "$cache_file" 2>/dev/null)
             session_resets_at=$(jq -r '.five_hour.resets_at // ""' "$cache_file" 2>/dev/null)
             weekly_resets_at=$(jq -r '.seven_day.resets_at // ""' "$cache_file" 2>/dev/null)
             extra_cost=$(jq -r '.extra_usage.used_credits // 0' "$cache_file" 2>/dev/null || echo "0")
-            jq --arg ts "$now" '.timestamp = ($ts | tonumber)' "$cache_file" > "${cache_file}.tmp" 2>/dev/null && mv "${cache_file}.tmp" "$cache_file" 2>/dev/null
+            jq --arg r "$retry_at" '.next_retry_at = ($r | tonumber)' "$cache_file" > "${cache_file}.tmp" 2>/dev/null && mv "${cache_file}.tmp" "$cache_file" 2>/dev/null
         else
             # No valid stale data — write minimal backoff entry
-            printf '{"timestamp":%s}\n' "$now" > "$cache_file" 2>/dev/null
+            printf '{"timestamp":%s,"next_retry_at":%s}\n' "$now" "$retry_at" > "$cache_file" 2>/dev/null
+        fi
+    fi
+}
+
+# If cached resets_at is in the past (API unreachable, window rolled over while
+# rate-limited), advance the timestamp by window size and zero the utilization.
+# Keeps the second line meaningful even after long rate-limit streaks.
+roll_forward_if_stale() {
+    local now=$(date +%s)
+    local target
+
+    # five_hour window: 5h = 18000s
+    if [ -n "$session_resets_at" ] && [ "$session_resets_at" != "null" ]; then
+        target=$(date -d "$session_resets_at" +%s 2>/dev/null)
+        if [ -n "$target" ] && [ "$target" -lt "$now" ]; then
+            session_usage="0"
+            while [ -n "$target" ] && [ "$target" -lt "$now" ]; do
+                target=$((target + 18000))
+            done
+            session_resets_at=$(date -u -d "@$target" +"%Y-%m-%dT%H:%M:%S+00:00" 2>/dev/null)
+        fi
+    fi
+
+    # seven_day window: 7d = 604800s
+    if [ -n "$weekly_resets_at" ] && [ "$weekly_resets_at" != "null" ]; then
+        target=$(date -d "$weekly_resets_at" +%s 2>/dev/null)
+        if [ -n "$target" ] && [ "$target" -lt "$now" ]; then
+            weekly_usage="0"
+            while [ -n "$target" ] && [ "$target" -lt "$now" ]; do
+                target=$((target + 604800))
+            done
+            weekly_resets_at=$(date -u -d "@$target" +"%Y-%m-%dT%H:%M:%S+00:00" 2>/dev/null)
         fi
     fi
 }
@@ -367,6 +419,7 @@ fi
 
 # Fetch usage data from Anthropic API (Step 2)
 fetch_usage_data
+roll_forward_if_stale
 
 # Build usage display string (Step 3)
 usage_info=""
