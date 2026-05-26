@@ -3,7 +3,7 @@ _:
 
 {
   flake.modules.nixos.sops =
-    { config, lib, ... }:
+    { config, lib, pkgs, ... }:
     let
       cfg = config.features.sops;
     in
@@ -11,6 +11,8 @@ _:
       options.features.sops.enable = lib.mkEnableOption "SOPS secrets management";
 
       config = lib.mkIf cfg.enable {
+        environment.systemPackages = with pkgs; [ sops age ];
+
         sops = {
           defaultSopsFile = ./secrets.yaml;
           defaultSopsFormat = "yaml";
@@ -19,6 +21,11 @@ _:
 
           secrets.pia = {
             format = "yaml";
+          };
+
+          secrets.context7_api_key = {
+            format = "yaml";
+            owner = "rehan";
           };
         };
       };
