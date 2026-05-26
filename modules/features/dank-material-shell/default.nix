@@ -138,7 +138,7 @@
           # Lock screen
           lockScreenShowTime = true;
           lockScreenShowDate = true;
-          lockScreenShowProfileImage = true;
+          lockScreenShowProfileImage = false;
           lockScreenShowPasswordField = true;
           lockScreenShowMediaPlayer = true;
           lockScreenShowPowerActions = true;
@@ -395,6 +395,7 @@
           cp -f ${pkgs.writeText "greeter-settings.json" (builtins.toJSON {
             greeterWallpaperPath = "${./background.png}";
             greeterWallpaperFillMode = "Fill";
+            lockScreenShowProfileImage = false;
           })} settings.json
           chmod 644 settings.json greeter_wallpaper_override.jpg
           chown greeter: settings.json greeter_wallpaper_override.jpg
