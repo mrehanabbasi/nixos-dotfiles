@@ -11,12 +11,9 @@ _:
     {
       options.features.pia.enable = lib.mkEnableOption "PIA VPN service";
       config = lib.mkIf cfg.enable {
-        assertions = [
-          {
-            assertion = config.sops.secrets ? pia;
-            message = "PIA module requires sops secret 'pia' to be defined";
-          }
-        ];
+        sops.secrets.pia = {
+          format = "yaml";
+        };
 
         services.pia = {
           enable = true;

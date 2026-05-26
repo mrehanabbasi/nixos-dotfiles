@@ -78,6 +78,7 @@ in
             inputs.self.modules.homeManager.librewolf
 
             # Development
+            inputs.self.modules.homeManager.context7
             inputs.self.modules.homeManager.go
             inputs.self.modules.homeManager.gpg
             inputs.self.modules.homeManager.opencode
@@ -127,6 +128,7 @@ in
           features.yazi.enable = true;
           features.zathura.enable = true;
           features.zoxide.enable = true;
+          features.context7.enable = true;
           features.go.enable = true;
           features."oh-my-posh".enable = true;
           features.zsh.enable = true;

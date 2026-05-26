@@ -29,6 +29,7 @@ in
       # LAYER 3: Secrets (before services that use them)
       # ════════════════════════════════════════════════════════════════════
       inputs.self.modules.nixos.sops
+      inputs.self.modules.nixos.context7
 
       # ════════════════════════════════════════════════════════════════════
       # LAYER 4: Theming (before modules that use theme options)
@@ -91,6 +92,7 @@ in
         time.timeZone = "Asia/Karachi";
         system.stateVersion = "25.11";
         features.sops.enable = true;
+        features.context7.enable = true;
         features.catppuccin.enable = true;
         features.base.enable = true;
         features.boot.enable = true;

@@ -49,7 +49,6 @@ _:
         initContent = lib.mkMerge [
           (lib.mkBefore ''
             chmod u+w "$ZSH_CACHE_DIR/completions/_docker" 2>/dev/null || true
-            [[ -r /run/secrets/context7_api_key ]] && export CONTEXT7_API_KEY=$(<"/run/secrets/context7_api_key")
           '')
           ''
           # Set GPG_TTY for pinentry-tty to work in CLI tools (e.g., Claude Code commits)

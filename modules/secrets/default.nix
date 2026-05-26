@@ -18,15 +18,6 @@ _:
           defaultSopsFormat = "yaml";
 
           age.keyFile = "${config.users.users.rehan.home}/.config/sops/age/keys.txt";
-
-          secrets.pia = {
-            format = "yaml";
-          };
-
-          secrets.context7_api_key = {
-            format = "yaml";
-            owner = "rehan";
-          };
         };
       };
     };
