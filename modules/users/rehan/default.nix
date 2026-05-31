@@ -144,7 +144,7 @@ in
           home = {
             username = userName;
             homeDirectory = "/home/${userName}";
-            stateVersion = "25.11";
+            stateVersion = "26.05";
           };
 
           xdg.enable = true;
