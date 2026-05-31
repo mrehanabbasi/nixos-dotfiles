@@ -83,7 +83,6 @@ in
             inputs.self.modules.homeManager.gpg
             inputs.self.modules.homeManager.opencode
             inputs.self.modules.homeManager.claude
-            inputs.self.modules.homeManager.claude-desktop
             inputs.self.modules.homeManager.gemini-cli
             inputs.self.modules.homeManager.pre-commit
 
@@ -139,7 +138,6 @@ in
           features.git.enable = true;
           features.gpg.enable = true;
           features.claude.enable = true;
-          features."claude-desktop".enable = true;
           features."dank-material-shell".enable = true;
           features.packages.enable = true;
 
