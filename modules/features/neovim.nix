@@ -39,7 +39,7 @@ _:
         # LSPs, formatters, and build tools used by neovim plugins at runtime
         home.packages = with pkgs; [
           nil
-          nodePackages_latest.vscode-json-languageserver
+          vscode-json-languageserver
           yaml-language-server
           lua-language-server
           docker-language-server
