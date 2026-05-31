@@ -13,7 +13,9 @@
       options.features.bitwarden.enable = lib.mkEnableOption "Bitwarden password manager";
 
       config = lib.mkIf cfg.enable {
-        home.packages = [ pkgs.bitwarden-desktop ];
+        # pkgs.bitwarden-desktop in 26.05 uses electron-39 (EOL/insecure).
+        # Use unstable which has 2026.3.1 with a supported electron.
+        home.packages = [ pkgs-unstable.bitwarden-desktop ];
 
         # rbw - Bitwarden CLI backend for dankBitwarden DMS plugin
         programs.rbw = {
