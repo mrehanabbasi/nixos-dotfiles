@@ -4,20 +4,17 @@ _:
 
 {
   flake.modules.nixos.catppuccin =
-    { pkgs, lib, config, ... }:
+    {
+      pkgs,
+      lib,
+      config,
+      ...
+    }:
     let
       cfg = config.features.catppuccin;
     in
     {
       options.features.catppuccin.enable = lib.mkEnableOption "Catppuccin theme";
-
-      # Compatibility shim: define services.displayManager.generic for catppuccin gtk module
-      # This option was removed in NixOS 25.11 but catppuccin/nix still references it
-      options.services.displayManager.generic.environment = lib.mkOption {
-        type = lib.types.attrsOf lib.types.str;
-        default = { };
-        description = "Compatibility shim for catppuccin/nix (unused)";
-      };
 
       config = lib.mkIf cfg.enable {
         # Cursor theme (DMS handles GTK/Qt theming, but cursor is set system-wide)
@@ -25,7 +22,6 @@ _:
           catppuccin-cursors.mochaBlue
         ];
 
-        # Disable catppuccin gtk icon (uses the shimmed option above)
         catppuccin.gtk.icon.enable = false;
       };
     };
@@ -37,13 +33,6 @@ _:
     in
     {
       options.features.catppuccin.enable = lib.mkEnableOption "Catppuccin theme";
-
-      # Compatibility shim: catppuccin/nix vscode module defines programs.<name>.profiles
-      # for all VS Code forks, but home-manager only has programs.vscode
-      options.programs = lib.genAttrs [ "antigravity" "cursor" "kiro" "vscodium" "windsurf" ] (_: lib.mkOption {
-        type = lib.types.raw;
-        default = { };
-      });
 
       config = lib.mkIf cfg.enable {
         # Base catppuccin settings for accent/flavor (DMS uses these for Matugen)
