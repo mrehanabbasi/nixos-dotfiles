@@ -18,7 +18,7 @@
     { pkgs, ... }:
     {
       # Formatter (accessible via `nix fmt`)
-      formatter = pkgs.nixfmt-rfc-style;
+      formatter = pkgs.nixfmt;
 
       # Custom packages (accessible via self'.packages.*)
       packages = {
@@ -28,7 +28,7 @@
       # Development shell (accessible via `nix develop`)
       devShells.default = pkgs.mkShell {
         packages = with pkgs; [
-          nixfmt-rfc-style
+          nixfmt
           nil
           statix
         ];

@@ -19,7 +19,12 @@ _:
     };
 
   flake.modules.homeManager.neovim =
-    { config, lib, pkgs, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
     let
       cfg = config.features.neovim;
     in
@@ -27,13 +32,16 @@ _:
       options.features.neovim.enable = lib.mkEnableOption "neovim editor";
 
       config = lib.mkIf cfg.enable {
+        # External nvim config managed via symlink; NixOS module enables nvim
+        # system-wide so HM does not set programs.neovim here (would conflict
+        # with the symlink by trying to write init.lua through it).
         xdg.configFile.nvim.source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/neovim-config";
 
-        programs.neovim = {
-          enable = true;
-          defaultEditor = true;
-          viAlias = true;
-          vimAlias = true;
+        home.sessionVariables.EDITOR = "nvim";
+        home.shellAliases = {
+          vi = "nvim";
+          vim = "nvim";
+          vimdiff = "nvim -d";
         };
 
         # LSPs, formatters, and build tools used by neovim plugins at runtime

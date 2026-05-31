@@ -3,7 +3,12 @@ _:
 
 {
   flake.modules.nixos.wine =
-    { config, lib, pkgs, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
     let
       cfg = config.features.wine;
     in
@@ -11,8 +16,8 @@ _:
       options.features.wine.enable = lib.mkEnableOption "Wine Windows compatibility layer and gaming tools";
       config = lib.mkIf cfg.enable {
         environment.systemPackages = with pkgs; [
-          # Wine and tools (wineWowPackages.stable adds 32-bit support for winetricks)
-          wineWowPackages.stable
+          # Wine and tools (wineWow64Packages.stable adds 32-bit support for winetricks)
+          wineWow64Packages.stable
           winetricks
           # Game launchers
           lutris

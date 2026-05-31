@@ -1,4 +1,4 @@
-# Communication apps - Zoom and Slack with Hyprland idle rules
+# Communication apps - Zoom and Slack
 _:
 
 {
@@ -14,16 +14,6 @@ _:
         home.packages = with pkgs; [
           zoom-us
           slack
-        ];
-
-        # Hyprland idle inhibit rules co-located with the apps they govern
-        wayland.windowManager.hyprland.settings.windowrule = [
-          "idleinhibit focus, class:^(zoom|Zoom)$"
-          "idleinhibit focus, class:^(Slack|slack)$"
-          "idleinhibit focus, class:^(teams-for-linux|Microsoft Teams)$"
-          "idleinhibit focus, title:(Google Meet)"
-          "idleinhibit focus, title:(Microsoft Teams)"
-          "idleinhibit focus, title:(Zoom Meeting)"
         ];
       };
     };

@@ -4,7 +4,12 @@ _:
 
 {
   flake.modules.nixos.thunar =
-    { config, lib, pkgs, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
     let
       cfg = config.features.thunar;
     in
@@ -13,7 +18,7 @@ _:
       config = lib.mkIf cfg.enable {
         programs.thunar = {
           enable = true;
-          plugins = with pkgs.xfce; [
+          plugins = with pkgs; [
             thunar-volman
             thunar-archive-plugin
           ];

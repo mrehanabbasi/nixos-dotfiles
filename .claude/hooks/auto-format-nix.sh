@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Hook: Auto-format and lint Nix files after edits
 # Event: PostToolUse (Edit tool)
 # Automatically runs statix fix and nixfmt on modified .nix files
@@ -22,13 +22,13 @@ if [[ ! -f "$FILE_PATH" ]]; then
 fi
 
 # Run statix fix first (linter - fixes anti-patterns)
-if command -v statix &> /dev/null; then
+if command -v statix &>/dev/null; then
   statix fix "$FILE_PATH" 2>/dev/null || true
   echo "🔧 Linted: $FILE_PATH" >&2
 fi
 
 # Run nixfmt (formatter - fixes style)
-if command -v nixfmt &> /dev/null; then
+if command -v nixfmt &>/dev/null; then
   nixfmt "$FILE_PATH" 2>/dev/null || true
   echo "✨ Formatted: $FILE_PATH" >&2
 else

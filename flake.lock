@@ -70,11 +70,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1780107042,
-        "narHash": "sha256-ISqJC5Vpg3OA1zpfe6F3NKYrsByprO0UF0Y7r/j5Bvo=",
+        "lastModified": 1780194930,
+        "narHash": "sha256-lLZ5t4q2DKoXwckk8geXEbUAs/MU6+IxLFQDC6yrO1w=",
         "owner": "AvengeMedia",
         "repo": "dms-plugin-registry",
-        "rev": "4b1a70c5423cb178bc80dbbba4ab8154ff7cbfd2",
+        "rev": "6ce7c740c5a534f6493d262b4619ec02e3877235",
         "type": "github"
       },
       "original": {
@@ -371,11 +371,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1780163878,
-        "narHash": "sha256-rdXDb+thnPbZobRROdwFDfL5DlLfPRO18gL6uxAPlyc=",
+        "lastModified": 1780177149,
+        "narHash": "sha256-ZRTlpx7np+TKs+C7JWpU8W2/QYYIrCUTkfsUsbCO42k=",
         "owner": "peteonrails",
         "repo": "voxtype",
-        "rev": "37c1a4b2bec0b70a019ff37ac64d2514fd85ebcb",
+        "rev": "c9500eacb0ec5368f6973120818cb8da907314dd",
         "type": "github"
       },
       "original": {

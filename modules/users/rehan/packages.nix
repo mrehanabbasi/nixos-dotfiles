@@ -18,7 +18,7 @@ _:
       config = lib.mkIf cfg.enable {
         home.packages = with pkgs; [
           # Core utilities (not managed by feature modules)
-          nixfmt-rfc-style
+          nixfmt
 
           # Fonts (nerd-fonts.jetbrains-mono is in system/fonts.nix)
           noto-fonts

@@ -12,12 +12,6 @@ _:
 
       config = lib.mkIf cfg.enable {
         home.packages = [ pkgs.vesktop ];
-
-        # Hyprland idle inhibit rule co-located with the app it governs
-        wayland.windowManager.hyprland.settings.windowrule = [
-          "idleinhibit focus, class:^(WebCord)$"
-          "idleinhibit focus, class:^(discord|Discord)$"
-        ];
       };
     };
 }

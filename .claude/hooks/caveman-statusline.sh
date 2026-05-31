@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # caveman — statusline badge script for Claude Code
 # Reads the caveman mode flag file and outputs a colored badge.
 #
@@ -23,8 +23,8 @@ MODE=$(printf '%s' "$MODE" | tr -cd 'a-z0-9-')
 
 # Whitelist. Anything else → render nothing rather than echo attacker bytes.
 case "$MODE" in
-  off|lite|full|ultra|wenyan-lite|wenyan|wenyan-full|wenyan-ultra|commit|review|compress) ;;
-  *) exit 0 ;;
+off | lite | full | ultra | wenyan-lite | wenyan | wenyan-full | wenyan-ultra | commit | review | compress) ;;
+*) exit 0 ;;
 esac
 
 if [ -z "$MODE" ] || [ "$MODE" = "full" ]; then

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Hook: Protect sensitive files from modifications
 # Event: PreToolUse (Edit/Write tools)
 # Per CLAUDE.md guidelines: Require confirmation for sensitive files
@@ -32,7 +32,7 @@ for pattern in "${PROTECTED_PATTERNS[@]}"; do
     echo "🛡️  PROTECTED FILE: $FILE_PATH" >&2
     echo "This file requires explicit user confirmation per CLAUDE.md guidelines." >&2
     echo "Protected patterns: _hardware.nix, secrets.yaml, stateVersion, .env files" >&2
-    exit 2  # Exit code 2 = blocking error (shown to Claude)
+    exit 2 # Exit code 2 = blocking error (shown to Claude)
   fi
 done
 

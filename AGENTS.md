@@ -1,190 +1,103 @@
-# Agent Guidelines for nixos-dotfiles
+# AGENTS.md
 
-## Agent Autonomy
+## Pattern
 
-Perform **without confirmation**:
-- Read/write/edit config files (`*.nix`, `*.md`, etc.)
-- Create new modules for requested features
-- Run `nixos-rebuild build/switch --flake .#one-piece`
-- Run `nix flake check` for validation
+- Always follow Dentritric pattern.
+- Never use file paths but instead use module names for module references.
 
-**Require confirmation**:
-- Stage, commit (Conventional Commits), and push to `main`
-- Destructive git ops (`reset --hard`, `push --force`, `rebase`)
-- Deleting files/modules
-- Changes to `_hardware.nix` or `stateVersion`
-- Operations involving secrets
+## Verify the target first
 
-## Build/Lint Commands
+- Before making changes, identify the exact target config and the host required to validate it.
+- Do not assume the edited path name matches the flake output or the machine that must run the verification command.
+- State this explicitly before editing: `Target config: <name>. Validation host: <machine/host>. Planned verification: <command>.`
 
-```bash
-sudo nixos-rebuild build --flake .#one-piece   # Validate (primary)
-sudo nixos-rebuild switch --flake .#one-piece  # Apply
-sudo nixos-rebuild test --flake .#one-piece    # Temporary (no bootloader)
-nix flake check                                 # Validate flake syntax
-nixfmt <file.nix>                              # Format single file
-nixfmt modules/programs/cli/                   # Format directory
-nix flake update                                # Update all inputs
-nix flake update <input-name>                  # Update single input
+## Prefer upstream fixes
+
+- If an issue appears to come from upstream, first check whether it is already fixed upstream.
+- If the repo uses flakes, update the relevant flake input first. If the repo does not use flakes, update the channel first.
+- If the fix is not in the pinned version, prefer an upstream PR commit or a commit already merged upstream before writing a local patch.
+- If the repo has its own nixpkgs fork, ask whether the change should be made there and consumed by commit hash instead of patching locally.
+- Only write a local patch when those options fail. Keep it minimal and put it in a separate file named `{package}-path-{fix-reason}.nix`.
+
+## Always validate with eval
+
+- After every Nix change, run a matching `nix eval` against the exact target output before claiming success.
+- When practical, follow eval with the matching dry-run/build/test command. Eval is the minimum bar, not the whole test plan.
+- `nix flake check` can also be used for validation.
+
+## Avoid Destructive Changes
+
+- `nix run` or `nixos-switch` are destructive and you should always confirm with user before running it.
+
+**Note:** NEVER RUN `nixos-rebuild switch` COMMAND under any circumstances. It will be done by the user.
+
+## Behavioral guidelines
+
+Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.
+
+**Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
+
+## 1. Think Before Coding
+
+**Don't assume. Don't hide confusion. Surface tradeoffs.**
+
+Before implementing:
+
+- State your assumptions explicitly. If uncertain, ask.
+- If multiple interpretations exist, present them - don't pick silently.
+- If a simpler approach exists, say so. Push back when warranted.
+- If something is unclear, stop. Name what's confusing. Ask.
+
+## 2. Simplicity First
+
+**Minimum code that solves the problem. Nothing speculative.**
+
+- No features beyond what was asked.
+- No abstractions for single-use code.
+- No "flexibility" or "configurability" that wasn't requested.
+- No error handling for impossible scenarios.
+- If you write 200 lines and it could be 50, rewrite it.
+
+Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
+
+## 3. Surgical Changes
+
+**Touch only what you must. Clean up only your own mess.**
+
+When editing existing code:
+
+- Don't "improve" adjacent code, comments, or formatting.
+- Don't refactor things that aren't broken.
+- Match existing style, even if you'd do it differently.
+- If you notice unrelated dead code, mention it - don't delete it.
+
+When your changes create orphans:
+
+- Remove imports/variables/functions that YOUR changes made unused.
+- Don't remove pre-existing dead code unless asked.
+
+The test: Every changed line should trace directly to the user's request.
+
+## 4. Goal-Driven Execution
+
+**Define success criteria. Loop until verified.**
+
+Transform tasks into verifiable goals:
+
+- "Add validation" → "Write tests for invalid inputs, then make them pass"
+- "Fix the bug" → "Write a test that reproduces it, then make it pass"
+- "Refactor X" → "Ensure tests pass before and after"
+
+For multi-step tasks, state a brief plan:
+
+```
+1. [Step] → verify: [check]
+2. [Step] → verify: [check]
+3. [Step] → verify: [check]
 ```
 
-## Repository Structure (Dendritic Pattern)
+Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
 
-Uses **Dendritic pattern** with flake-parts + import-tree for automatic module discovery. Modules define reusable "aspects" that hosts compose.
+---
 
-```
-├── flake.nix                 # Minimal entry (imports modules/)
-├── modules/
-│   ├── flake/default.nix     # flake-parts config
-│   ├── _lib/default.nix      # Helper functions (mkNixos)
-│   ├── hosts/one-piece/      # Host: default.nix + _hardware.nix, _gpu.nix, etc.
-│   ├── users/rehan/          # User + Home Manager integration
-│   ├── system/               # base, boot, networking, virtualisation
-│   ├── secrets/              # sops config + secrets.yaml
-│   ├── services/             # audio, tailscale, pia, flatpak
-│   ├── desktop/              # hyprland, sddm, hyprlock, hypridle, walker
-│   ├── programs/             # cli/, terminal/, media/, development/
-│   ├── gaming/               # steam, gamemode, wine
-│   └── theming/              # catppuccin
-```
-
-**Key conventions**:
-- `_` prefix = ignored by import-tree (helpers, plain NixOS modules)
-- Modules define `flake.modules.nixos.<name>` / `flake.modules.homeManager.<name>`
-- Hosts compose via `inputs.self.modules.nixos.<name>`
-
-## Code Style
-
-### Module Template
-```nix
-# Description of module
-# Depends on: other-module (if applicable)
-{ inputs, ... }:  # Use { ... }: if inputs not needed
-{
-  flake.modules.nixos.feature-name = { config, pkgs, lib, ... }: {
-    # NixOS configuration
-  };
-
-  flake.modules.homeManager.feature-name = { config, pkgs, ... }: {
-    # Home Manager configuration
-  };
-}
-```
-
-### Module Arguments
-| Argument | When to Use |
-|----------|-------------|
-| `{ ... }:` | No external args needed |
-| `{ inputs, ... }:` | Needs flake inputs (external packages, modules) |
-| `{ config, ... }:` | Reads other config (e.g., `config.sops.secrets`) |
-| `{ pkgs, ... }:` | Needs packages |
-| `{ lib, ... }:` | Uses lib functions (`mkIf`, `mkOption`) |
-
-### Formatting
-- **Indentation**: 2 spaces, NO tabs
-- **Line length**: < 100 chars
-- **Semicolons**: Required after each attribute
-- **Strings**: `"${var}"` for interpolation, `''heredoc''` for multi-line
-- **Lists**: One item per line for 3+ items
-
-### Naming Conventions
-| Type | Convention | Example |
-|------|------------|---------|
-| Variables | camelCase | `enableBluetooth` |
-| Files | kebab-case.nix | `oh-my-posh.nix` |
-| Hostnames/Inputs | kebab-case | `one-piece`, `home-manager` |
-
-### Conditional Configuration
-```nix
-services.foo = lib.mkIf config.programs.bar.enable { ... };
-
-environment.systemPackages = with pkgs; [ required ]
-  ++ lib.optionals config.hardware.nvidia.enable [ nvidia-tools ];
-
-option = lib.mkDefault "value";  # Can be overridden
-option = lib.mkForce "value";    # Cannot be overridden
-```
-
-### Error Handling
-```nix
-assertions = [{
-  assertion = config.services.foo.enable -> config.services.bar.enable;
-  message = "foo requires bar to be enabled";
-}];
-
-warnings = lib.optional (config.old-option != null)
-  "old-option is deprecated, use new-option instead";
-```
-
-## Common Patterns
-
-### Adding a New Aspect
-1. Create `modules/<category>/feature.nix`
-2. Define `flake.modules.nixos.feature` and/or `flake.modules.homeManager.feature`
-3. Add to host's `default.nix`: `inputs.self.modules.nixos.feature`
-4. Validate: `sudo nixos-rebuild build --flake .#one-piece`
-
-### Secrets (sops-nix)
-```nix
-{ config, ... }: {
-  services.foo.credentialsFile = config.sops.secrets.foo.path;
-}
-```
-Secrets: `modules/secrets/secrets.yaml` | Key: `/home/rehan/.config/sops/age/keys.txt`
-
-### Flatpak (nix-flatpak)
-Declarative Flatpak management using nix-flatpak for reproducible application installation.
-
-**Adding new applications**:
-```nix
-services.flatpak.packages = [
-  "com.example.App"        # App ID from Flathub
-  "org.another.Application"
-];
-```
-
-**Configuration** (`modules/services/flatpak.nix`):
-- Repository management: nix-flatpak automatically adds and manages Flathub
-- Auto-updates: Enabled daily via `services.flatpak.update.auto`
-- No manual systemd services needed for repository setup
-
-**Finding app IDs**: Search on [Flathub](https://flathub.org) or use:
-```bash
-flatpak search <app-name>
-flatpak list --app  # List installed apps
-```
-
-**Manual operations** (when needed):
-```bash
-flatpak update                    # Manually trigger updates
-flatpak uninstall --unused        # Clean up unused dependencies
-flatpak repair                    # Repair installation
-```
-
-## Anti-patterns
-
-- **NEVER** change `stateVersion` after initial install
-- **NEVER** use tabs for indentation
-- **NEVER** hardcode paths—use `config.xdg.*` or `pkgs.writeText`
-- **AVOID** `with pkgs;` in large scopes—prefer explicit `pkgs.foo`
-- **AVOID** `rec { }` attribute sets—use `let ... in` instead
-- **DON'T** put hardware config in shared modules—keep in host's `_*.nix`
-
-## Context
-
-- **Host**: `one-piece` | **User**: `rehan` | **System**: `x86_64-linux`
-- **Theme**: Catppuccin Mocha Blue (system-wide)
-- **Rollback**: Select previous generation from GRUB if config breaks
-
-<!-- context7 -->
-Use Context7 MCP to fetch current documentation whenever the user asks about a library, framework, SDK, API, CLI tool, or cloud service -- even well-known ones like React, Next.js, Prisma, Express, Tailwind, Django, or Spring Boot. This includes API syntax, configuration, version migration, library-specific debugging, setup instructions, and CLI tool usage. Use even when you think you know the answer -- your training data may not reflect recent changes. Prefer this over web search for library docs.
-
-Do not use for: refactoring, writing scripts from scratch, debugging business logic, code review, or general programming concepts.
-
-## Steps
-
-1. Always start with `resolve-library-id` using the library name and the user's question, unless the user provides an exact library ID in `/org/project` format
-2. Pick the best match (ID format: `/org/project`) by: exact name match, description relevance, code snippet count, source reputation (High/Medium preferred), and benchmark score (higher is better). If results don't look right, try alternate names or queries (e.g., "next.js" not "nextjs", or rephrase the question). Use version-specific IDs when the user mentions a version
-3. `query-docs` with the selected library ID and the user's full question (not single words)
-4. Answer using the fetched docs
-<!-- context7 -->
+**These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.

@@ -54,279 +54,257 @@ _:
       config = lib.mkIf cfg.enable {
         wayland.windowManager.hyprland = {
           enable = true;
-          # 26.05 flipped default to "lua"; pin to hyprlang until config is migrated.
-          configType = "hyprlang";
+          configType = "lua";
 
-          settings = {
-            # Monitors - auto-detect
-            monitor = [
-              "eDP-1,highres,0x0,1"
-              # "HDMI-A-1,highres,-1920x0,1"
-              "DP-2,highres,-1920x0,1"
-              ",highres,auto,1"
-            ];
+          # Config authored as raw Lua per the upstream example:
+          # https://github.com/hyprwm/Hyprland/blob/main/example/hyprland.lua
+          extraConfig = ''
+            -- Programs
+            local terminal    = "ghostty"
+            local fileManager = terminal .. " -e yazi"
+            local webBrowser  = "brave --allowlisted-extension-id=clngdbkpkpeebahjckkjfobafhncgmne"
+            local webBrowser2 = "librewolf"
+            local cursorTheme = "Catppuccin Mocha Blue"
+            local cursorSize  = "24"
+            local mainMod     = "SUPER"
 
-            # Programs
-            "$terminal" = "ghostty";
-            "$fileManager" = "$terminal -e yazi";
-            "$webBrowser" = "brave --allowlisted-extension-id=clngdbkpkpeebahjckkjfobafhncgmne";
-            "$webBrowser2" = "librewolf";
-            "$cursorTheme" = "Catppuccin Mocha Blue";
-            "$cursorSize" = "24";
+            -- Monitors
+            hl.monitor({ output = "eDP-1", mode = "highres", position = "0x0",     scale = 1 })
+            hl.monitor({ output = "DP-2",  mode = "highres", position = "-1920x0", scale = 1 })
+            hl.monitor({ output = "",      mode = "highres", position = "auto",    scale = 1 })
 
-            # Autostart
-            # Note: kdeconnect is started via kdeconnect.nix (services.kdeconnect.indicator)
-            # Note: DMS handles wallpaper, notifications, and Bluetooth via systemd
-            exec-once = [
-              "hyprctl setcursor $cursorTheme $cursorSize"
-              "sleep 3 && hyprctl reload" # Fallback: re-detect monitors if USB-C DP alt mode was slow
-            ];
+            -- Autostart
+            -- Note: kdeconnect is started via kdeconnect.nix (services.kdeconnect.indicator)
+            -- Note: DMS handles wallpaper, notifications, and Bluetooth via systemd
+            hl.on("hyprland.start", function()
+                hl.exec_cmd("hyprctl setcursor " .. cursorTheme .. " " .. cursorSize)
+                -- Fallback: re-detect monitors if USB-C DP alt mode was slow
+                hl.exec_cmd("sleep 3 && hyprctl reload")
+            end)
 
-            # Environment variables
-            env = [
-              "XCURSOR_SIZE,$cursorSize"
-              "QT_QPA_PLATFORMTHEME,gtk3"
-              "QT_QPA_PLATFORMTHEME_QT6,gtk3"
-            ];
+            -- Environment
+            hl.env("XCURSOR_SIZE", cursorSize)
+            hl.env("QT_QPA_PLATFORMTHEME", "gtk3")
+            hl.env("QT_QPA_PLATFORMTHEME_QT6", "gtk3")
 
-            # General
-            general = {
-              gaps_in = 2;
-              gaps_out = 5;
-              border_size = 1;
-              "col.active_border" = "rgba(33ccffee) rgba(00ff99ee) 45deg";
-              "col.inactive_border" = "rgba(595959aa)";
-              resize_on_border = false;
-              allow_tearing = false;
-              layout = "dwindle";
-            };
+            -- General / decoration / layouts / misc / input
+            hl.config({
+                general = {
+                    gaps_in = 2,
+                    gaps_out = 5,
+                    border_size = 1,
+                    col = {
+                        active_border   = { colors = { "rgba(33ccffee)", "rgba(00ff99ee)" }, angle = 45 },
+                        inactive_border = "rgba(595959aa)",
+                    },
+                    resize_on_border = false,
+                    allow_tearing = false,
+                    layout = "dwindle",
+                },
 
-            # Decoration
-            decoration = {
-              rounding = 4;
-              rounding_power = 2;
-              active_opacity = 1.0;
-              inactive_opacity = 0.95;
+                decoration = {
+                    rounding = 4,
+                    rounding_power = 2,
+                    active_opacity = 1.0,
+                    inactive_opacity = 0.95,
+                    shadow = {
+                        enabled = true,
+                        range = 4,
+                        render_power = 3,
+                        color = "rgba(1a1a1aee)",
+                    },
+                    blur = {
+                        enabled = true,
+                        size = 3,
+                        passes = 1,
+                        vibrancy = 0.1696,
+                    },
+                },
 
-              shadow = {
-                enabled = true;
-                range = 4;
-                render_power = 3;
-                color = "rgba(1a1a1aee)";
-              };
+                animations = { enabled = true },
 
-              blur = {
-                enabled = true;
-                size = 3;
-                passes = 1;
-                vibrancy = 0.1696;
-              };
-            };
+                dwindle = { preserve_split = true },
+                master  = { new_status = "master" },
 
-            # Animations
-            animations = {
-              enabled = "yes, please :)";
+                misc = {
+                    force_default_wallpaper = 0,
+                    disable_hyprland_logo = false,
+                },
 
-              bezier = [
-                "easeOutQuint, 0.23, 1, 0.32, 1"
-                "easeInOutCubic, 0.65, 0.05, 0.36, 1"
-                "linear, 0, 0, 1, 1"
-                "almostLinear, 0.5, 0.5, 0.75, 1"
-                "quick, 0.15, 0, 0.1, 1"
-              ];
+                input = {
+                    kb_layout = "us",
+                    follow_mouse = 1,
+                    sensitivity = 0,
+                    touchpad = {
+                        natural_scroll = true,
+                    },
+                },
+            })
 
-              animation = [
-                "global, 1, 10, default"
-                "border, 1, 5.39, easeOutQuint"
-                "windows, 1, 4.79, easeOutQuint"
-                "windowsIn, 1, 4.1, easeOutQuint, popin 87%"
-                "windowsOut, 1, 1.49, linear, popin 87%"
-                "fadeIn, 1, 1.73, almostLinear"
-                "fadeOut, 1, 1.46, almostLinear"
-                "fade, 1, 3.03, quick"
-                "layers, 1, 3.81, easeOutQuint"
-                "layersIn, 1, 4, easeOutQuint, fade"
-                "layersOut, 1, 1.5, linear, fade"
-                "fadeLayersIn, 1, 1.79, almostLinear"
-                "fadeLayersOut, 1, 1.39, almostLinear"
-                "workspaces, 1, 1.94, almostLinear, fade"
-                "workspacesIn, 1, 1.21, almostLinear, fade"
-                "workspacesOut, 1, 1.94, almostLinear, fade"
-                "zoomFactor, 1, 7, quick"
-              ];
-            };
+            -- Animation curves and animations
+            hl.curve("easeOutQuint",   { type = "bezier", points = { {0.23, 1},    {0.32, 1}  } })
+            hl.curve("easeInOutCubic", { type = "bezier", points = { {0.65, 0.05}, {0.36, 1}  } })
+            hl.curve("linear",         { type = "bezier", points = { {0, 0},       {1, 1}     } })
+            hl.curve("almostLinear",   { type = "bezier", points = { {0.5, 0.5},   {0.75, 1}  } })
+            hl.curve("quick",          { type = "bezier", points = { {0.15, 0},    {0.1, 1}   } })
 
-            # Layouts
-            dwindle = {
-              pseudotile = true;
-              preserve_split = true;
-            };
+            hl.animation({ leaf = "global",        enabled = true, speed = 10,   bezier = "default" })
+            hl.animation({ leaf = "border",        enabled = true, speed = 5.39, bezier = "easeOutQuint" })
+            hl.animation({ leaf = "windows",       enabled = true, speed = 4.79, bezier = "easeOutQuint" })
+            hl.animation({ leaf = "windowsIn",     enabled = true, speed = 4.1,  bezier = "easeOutQuint", style = "popin 87%" })
+            hl.animation({ leaf = "windowsOut",    enabled = true, speed = 1.49, bezier = "linear",       style = "popin 87%" })
+            hl.animation({ leaf = "fadeIn",        enabled = true, speed = 1.73, bezier = "almostLinear" })
+            hl.animation({ leaf = "fadeOut",       enabled = true, speed = 1.46, bezier = "almostLinear" })
+            hl.animation({ leaf = "fade",          enabled = true, speed = 3.03, bezier = "quick" })
+            hl.animation({ leaf = "layers",        enabled = true, speed = 3.81, bezier = "easeOutQuint" })
+            hl.animation({ leaf = "layersIn",      enabled = true, speed = 4,    bezier = "easeOutQuint", style = "fade" })
+            hl.animation({ leaf = "layersOut",     enabled = true, speed = 1.5,  bezier = "linear",       style = "fade" })
+            hl.animation({ leaf = "fadeLayersIn",  enabled = true, speed = 1.79, bezier = "almostLinear" })
+            hl.animation({ leaf = "fadeLayersOut", enabled = true, speed = 1.39, bezier = "almostLinear" })
+            hl.animation({ leaf = "workspaces",    enabled = true, speed = 1.94, bezier = "almostLinear", style = "fade" })
+            hl.animation({ leaf = "workspacesIn",  enabled = true, speed = 1.21, bezier = "almostLinear", style = "fade" })
+            hl.animation({ leaf = "workspacesOut", enabled = true, speed = 1.94, bezier = "almostLinear", style = "fade" })
+            hl.animation({ leaf = "zoomFactor",    enabled = true, speed = 7,    bezier = "quick" })
 
-            master = {
-              new_status = "master";
-            };
+            -- Gestures
+            hl.gesture({ fingers = 3, direction = "horizontal", action = "workspace" })
 
-            # Misc
-            misc = {
-              force_default_wallpaper = 0;
-              disable_hyprland_logo = false;
-            };
+            -- Keybindings
+            hl.bind(mainMod .. " + RETURN",        hl.dsp.exec_cmd(terminal))
+            hl.bind(mainMod .. " + Q",             hl.dsp.window.close())
+            hl.bind(mainMod .. " + M",             hl.dsp.exit())
+            hl.bind(mainMod .. " + E",             hl.dsp.exec_cmd(fileManager))
+            hl.bind(mainMod .. " + SHIFT + E",     hl.dsp.exec_cmd("thunar"))
+            hl.bind(mainMod .. " + V",             hl.dsp.window.float({ action = "toggle" }))
+            hl.bind(mainMod .. " + Space",         hl.dsp.exec_cmd("dms ipc call spotlight open"))
+            hl.bind(mainMod .. " + Print",         hl.dsp.exec_cmd("hyprshot -m region"))
+            hl.bind(mainMod .. " + SHIFT + Print", hl.dsp.exec_cmd("hyprshot -m output"))
+            hl.bind(mainMod .. " + SHIFT + P",     hl.dsp.exec_cmd("hyprpicker"))
+            hl.bind(mainMod .. " + P",             hl.dsp.window.pseudo())
+            hl.bind(mainMod .. " + S",             hl.dsp.layout("togglesplit"))
+            hl.bind(mainMod .. " + B",             hl.dsp.exec_cmd(webBrowser))
+            hl.bind(mainMod .. " + SHIFT + B",     hl.dsp.exec_cmd(webBrowser2))
+            hl.bind(mainMod .. " + T",             hl.dsp.exec_cmd(terminal .. " --title='btop' -e btop"))
+            hl.bind(mainMod .. " + SEMICOLON",     hl.dsp.exec_cmd("dms ipc call lock lock"))
+            hl.bind(mainMod .. " + N",             hl.dsp.exec_cmd("dms ipc call notifications toggle"))
+            hl.bind(mainMod .. " + SHIFT + N",     hl.dsp.exec_cmd("dms ipc call notifications clearAll"))
+            hl.bind(mainMod .. " + A",             hl.dsp.exec_cmd("pavucontrol"))
+            hl.bind(mainMod .. " + SHIFT + A",     hl.dsp.exec_cmd("voxtype record toggle"))
+            hl.bind(mainMod .. " + F",             hl.dsp.window.fullscreen({ action = "toggle" }))
+            hl.bind(mainMod .. " + X",             hl.dsp.exec_cmd("dms ipc call powermenu toggle"))
 
-            # Input
-            input = {
-              kb_layout = "us";
-              follow_mouse = 1;
-              sensitivity = 0;
-              touchpad = {
-                natural_scroll = true;
-              };
-            };
+            -- Cycle between windows in same workspace
+            hl.bind("ALT + Tab",         hl.dsp.window.cycle_next())
+            hl.bind("ALT + Tab",         hl.dsp.window.alter_zorder({ mode = "top" }))
+            hl.bind("ALT + SHIFT + Tab", hl.dsp.window.cycle_next({ next = false }))
+            hl.bind("ALT + SHIFT + Tab", hl.dsp.window.alter_zorder({ mode = "top" }))
 
-            # Gestures
-            gesture = "3, horizontal, workspace";
+            -- DMS clipboard
+            hl.bind(mainMod .. " + SHIFT + V", hl.dsp.exec_cmd("dms ipc call clipboard toggle"))
 
-            # Main modifier
-            "$mainMod" = "SUPER";
+            -- Focus with vim keys
+            hl.bind(mainMod .. " + H", hl.dsp.focus({ direction = "left" }))
+            hl.bind(mainMod .. " + L", hl.dsp.focus({ direction = "right" }))
+            hl.bind(mainMod .. " + K", hl.dsp.focus({ direction = "up" }))
+            hl.bind(mainMod .. " + J", hl.dsp.focus({ direction = "down" }))
 
-            # Keybindings
-            bind = [
-              "$mainMod, RETURN, exec, $terminal"
-              "$mainMod, Q, killactive,"
-              "$mainMod, M, exit,"
-              "$mainMod, E, exec, $fileManager"
-              "$mainMod SHIFT, E, exec, thunar"
-              "$mainMod, V, togglefloating,"
-              "$mainMod, Space, exec, dms ipc call spotlight open"
-              "$mainMod, Print, exec, hyprshot -m region"
-              "$mainMod SHIFT, Print, exec, hyprshot -m output"
-              "$mainMod SHIFT, P, exec, hyprpicker"
-              "$mainMod, P, pseudo,"
-              "$mainMod, S, togglesplit,"
-              "$mainMod, B, exec, $webBrowser"
-              "$mainMod SHIFT, B, exec, $webBrowser2"
-              "$mainMod, T, exec, $terminal --title='btop' -e btop"
-              "$mainMod, SEMICOLON, exec, dms ipc call lock lock"
-              "$mainMod, N, exec, dms ipc call notifications toggle"
-              "$mainMod SHIFT, N, exec, dms ipc call notifications clearAll"
-              "$mainMod, A, exec, pavucontrol"
-              "$mainMod SHIFT, A, exec, voxtype record toggle"
-              "$mainMod, F, fullscreen, -1 toggle"
-              "$mainMod, X, exec, dms ipc call powermenu toggle"
+            -- Workspaces 1-10 (10 mapped to key 0) and move-to-workspace
+            for i = 1, 10 do
+                local key = i % 10
+                hl.bind(mainMod .. " + " .. key,         hl.dsp.focus({ workspace = i }))
+                hl.bind(mainMod .. " + SHIFT + " .. key, hl.dsp.window.move({ workspace = i }))
+            end
 
-              # Cycle between windows in same workspace
-              "ALT, Tab, cyclenext,"
-              "ALT, Tab, alterzorder, top"
-              "ALT SHIFT, Tab, cyclenext, prev"
-              "ALT SHIFT, Tab, alterzorder, top"
+            -- Swap windows with vim keys
+            hl.bind(mainMod .. " + SHIFT + H", hl.dsp.window.swap({ direction = "left" }))
+            hl.bind(mainMod .. " + SHIFT + L", hl.dsp.window.swap({ direction = "right" }))
+            hl.bind(mainMod .. " + SHIFT + K", hl.dsp.window.swap({ direction = "up" }))
+            hl.bind(mainMod .. " + SHIFT + J", hl.dsp.window.swap({ direction = "down" }))
 
-              # DMS clipboard
-              "$mainMod SHIFT, V, exec, dms ipc call clipboard toggle"
+            -- Special workspace (scratchpad)
+            hl.bind(mainMod .. " + W",         hl.dsp.workspace.toggle_special("magic"))
+            hl.bind(mainMod .. " + SHIFT + S", hl.dsp.window.move({ workspace = "special:magic" }))
 
-              # Move focus with vim keys
-              "$mainMod, H, movefocus, l"
-              "$mainMod, L, movefocus, r"
-              "$mainMod, K, movefocus, u"
-              "$mainMod, J, movefocus, d"
+            -- Scroll through workspaces
+            hl.bind(mainMod .. " + mouse_down", hl.dsp.focus({ workspace = "e+1" }))
+            hl.bind(mainMod .. " + mouse_up",   hl.dsp.focus({ workspace = "e-1" }))
 
-              # Switch workspaces
-              "$mainMod, 1, workspace, 1"
-              "$mainMod, 2, workspace, 2"
-              "$mainMod, 3, workspace, 3"
-              "$mainMod, 4, workspace, 4"
-              "$mainMod, 5, workspace, 5"
-              "$mainMod, 6, workspace, 6"
-              "$mainMod, 7, workspace, 7"
-              "$mainMod, 8, workspace, 8"
-              "$mainMod, 9, workspace, 9"
-              "$mainMod, 0, workspace, 10"
+            -- Resize windows
+            hl.bind(mainMod .. " + SHIFT + UP",    hl.dsp.window.resize({ x = 0,   y = -20, relative = true }))
+            hl.bind(mainMod .. " + SHIFT + DOWN",  hl.dsp.window.resize({ x = 0,   y = 20,  relative = true }))
+            hl.bind(mainMod .. " + SHIFT + LEFT",  hl.dsp.window.resize({ x = -20, y = 0,   relative = true }))
+            hl.bind(mainMod .. " + SHIFT + RIGHT", hl.dsp.window.resize({ x = 20,  y = 0,   relative = true }))
 
-              # Move window to workspace
-              "$mainMod SHIFT, 1, movetoworkspace, 1"
-              "$mainMod SHIFT, 2, movetoworkspace, 2"
-              "$mainMod SHIFT, 3, movetoworkspace, 3"
-              "$mainMod SHIFT, 4, movetoworkspace, 4"
-              "$mainMod SHIFT, 5, movetoworkspace, 5"
-              "$mainMod SHIFT, 6, movetoworkspace, 6"
-              "$mainMod SHIFT, 7, movetoworkspace, 7"
-              "$mainMod SHIFT, 8, movetoworkspace, 8"
-              "$mainMod SHIFT, 9, movetoworkspace, 9"
-              "$mainMod SHIFT, 0, movetoworkspace, 10"
+            -- Move workspace to monitor
+            hl.bind(mainMod .. " + Tab",         hl.dsp.workspace.move({ monitor = "+1" }))
+            hl.bind(mainMod .. " + SHIFT + Tab", hl.dsp.workspace.move({ monitor = "-1" }))
 
-              # Swap windows with vim keys
-              "$mainMod SHIFT, H, swapwindow, l"
-              "$mainMod SHIFT, L, swapwindow, r"
-              "$mainMod SHIFT, K, swapwindow, u"
-              "$mainMod SHIFT, J, swapwindow, d"
+            -- Mouse drag/resize
+            hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(),   { mouse = true })
+            hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
 
-              # Special workspace (scratchpad)
-              "$mainMod, W, togglespecialworkspace, magic"
-              "$mainMod SHIFT, S, movetoworkspace, special:magic"
+            -- Lid switch - lock before suspend for better stability
+            hl.bind("switch:Lid Switch", hl.dsp.exec_cmd("loginctl lock-session && sleep 1 && systemctl suspend"), { locked = true })
 
-              # Scroll through workspaces
-              "$mainMod, mouse_down, workspace, e+1"
-              "$mainMod, mouse_up, workspace, e-1"
+            -- Media keys
+            hl.bind("XF86AudioNext",  hl.dsp.exec_cmd("playerctl next"),       { locked = true })
+            hl.bind("XF86AudioPause", hl.dsp.exec_cmd("playerctl play-pause"), { locked = true })
+            hl.bind("XF86AudioPlay",  hl.dsp.exec_cmd("playerctl play-pause"), { locked = true })
+            hl.bind("XF86AudioPrev",  hl.dsp.exec_cmd("playerctl previous"),   { locked = true })
 
-              # Resize windows
-              "$mainMod SHIFT, UP, resizeactive, 0 -20"
-              "$mainMod SHIFT, DOWN, resizeactive, 0 20"
-              "$mainMod SHIFT, LEFT, resizeactive, -20 0"
-              "$mainMod SHIFT, RIGHT, resizeactive, 20 0"
+            -- Volume and brightness (repeating)
+            hl.bind("XF86AudioRaiseVolume",  hl.dsp.exec_cmd("wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+"), { locked = true, repeating = true })
+            hl.bind("XF86AudioLowerVolume",  hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"),       { locked = true, repeating = true })
+            hl.bind("XF86AudioMute",         hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"),      { locked = true, repeating = true })
+            hl.bind("XF86AudioMicMute",      hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"),    { locked = true, repeating = true })
+            hl.bind("XF86MonBrightnessUp",   hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%+"),                   { locked = true, repeating = true })
+            hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%-"),                   { locked = true, repeating = true })
 
-              # Move workspace to monitor
-              "$mainMod, Tab, movecurrentworkspacetomonitor, +1"
-              "$mainMod SHIFT, Tab, movecurrentworkspacetomonitor, -1"
-            ];
+            -- Window rules
+            hl.window_rule({
+                name = "no-border-single-tiled",
+                match = { workspace = "w[t1]" },
+                border_size = 0,
+            })
 
-            # Mouse bindings
-            bindm = [
-              "$mainMod, mouse:272, movewindow"
-              "$mainMod, mouse:273, resizewindow"
-            ];
+            hl.window_rule({
+                name = "suppress-maximize",
+                match = { class = ".*" },
+                suppress_event = "maximize",
+            })
 
-            # Lid switch - lock before suspend for better stability
-            bindl = [
-              ",switch:Lid Switch, exec, loginctl lock-session && sleep 1 && systemctl suspend"
-              ", XF86AudioNext, exec, playerctl next"
-              ", XF86AudioPause, exec, playerctl play-pause"
-              ", XF86AudioPlay, exec, playerctl play-pause"
-              ", XF86AudioPrev, exec, playerctl previous"
-            ];
+            hl.window_rule({
+                name = "fix-xwayland-drags",
+                match = {
+                    class      = "^$",
+                    title      = "^$",
+                    xwayland   = true,
+                    float      = true,
+                    fullscreen = false,
+                    pin        = false,
+                },
+                no_focus = true,
+            })
 
-            # Repeat bindings (volume, brightness)
-            bindel = [
-              ",XF86AudioRaiseVolume, exec, wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+"
-              ",XF86AudioLowerVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"
-              ",XF86AudioMute, exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
-              ",XF86AudioMicMute, exec, wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"
-              ",XF86MonBrightnessUp, exec, brightnessctl -e4 -n2 set 5%+"
-              ",XF86MonBrightnessDown, exec, brightnessctl -e4 -n2 set 5%-"
-            ];
+            hl.window_rule({ match = { class = "^imv$" },  float = true, center = true, size = { "80%", "80%" } })
+            hl.window_rule({ match = { title = "^btop$" }, float = true, center = true, size = { "80%", "80%" } })
+            hl.window_rule({ match = { title = "^nmtui$" },float = true, center = true, size = { "50%", "50%" } })
 
-            # Window rules
-            windowrule = [
-              # No borders on single tiled window in workspace
-              "bordersize 0, onworkspace:w[t1]"
+            hl.window_rule({
+                match = { class = "^brave-nngceckbapebfimnlniiiahkandclblb-Default$" },
+                float = true,
+                move  = { "75%", "10%" },
+            })
 
-              "suppressevent maximize, class:.*"
-              "nofocus,class:^$,title:^$,xwayland:1,floating:1,fullscreen:0,pinned:0"
-              "float, class:^imv$"
-              "center, class:^imv$"
-              "size 80% 80%, class:^imv$"
-              "float, title:^btop$"
-              "center, title:^btop$"
-              "size 80% 80%, title:^btop$"
-              "float, title:^nmtui$"
-              "center, title:^nmtui$"
-              "size 50% 50%, title:^nmtui$"
-              "float, class:^brave-nngceckbapebfimnlniiiahkandclblb-Default$"
-              "move 75% 10%, class:^brave-nngceckbapebfimnlniiiahkandclblb-Default$"
-              "float, class:^xdg-desktop-portal-gtk$"
-              "center, class:^xdg-desktop-portal-gtk$"
-              "float, class:^org.kde.kalk$"
-              "center, class:^org.kde.kalk$"
-              "size 50% 80%, class:^org.kde.kalk$"
-            ];
-          };
+            hl.window_rule({ match = { class = "^xdg-desktop-portal-gtk$" }, float = true, center = true })
+
+            hl.window_rule({
+                match  = { class = "^org.kde.kalk$" },
+                float  = true,
+                center = true,
+                size   = { "50%", "80%" },
+            })
+          '';
         };
       };
     };
