@@ -63,7 +63,7 @@ in
       {
         networking.hostName = "new-hostname";
         time.timeZone = "Asia/Karachi";
-        system.stateVersion = "25.11";
+        system.stateVersion = "26.05";
 
         # Enable features (add/remove as needed for this host)
         features.base.enable = true;

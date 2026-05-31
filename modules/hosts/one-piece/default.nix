@@ -90,7 +90,7 @@ in
       # ════════════════════════════════════════════════════════════════════
       {
         time.timeZone = "Asia/Karachi";
-        system.stateVersion = "25.11";
+        system.stateVersion = "26.05";
         features.sops.enable = true;
         features.context7.enable = true;
         features.catppuccin.enable = true;
