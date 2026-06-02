@@ -3,7 +3,12 @@ _:
 
 {
   flake.modules.homeManager.tmux =
-    { config, lib, pkgs, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
     let
       cfg = config.features.tmux;
       tokyo-night = pkgs.tmuxPlugins.mkTmuxPlugin {
@@ -21,78 +26,83 @@ _:
       options.features.tmux.enable = lib.mkEnableOption "tmux terminal multiplexer";
 
       config = lib.mkIf cfg.enable {
-      programs.tmux = {
-        enable = true;
+        programs.tmux = {
+          enable = true;
 
-        aggressiveResize = true;
-        baseIndex = 1;
-        disableConfirmationPrompt = true;
-        keyMode = "vi";
-        newSession = true;
-        secureSocket = true;
-        shell = "${pkgs.zsh}/bin/zsh";
-        shortcut = "a";
-        terminal = "tmux-256color";
+          aggressiveResize = true;
+          baseIndex = 1;
+          disableConfirmationPrompt = true;
+          keyMode = "vi";
+          newSession = true;
+          secureSocket = true;
+          shell = "${pkgs.zsh}/bin/zsh";
+          shortcut = "a";
+          terminal = "tmux-256color";
 
-        plugins = with pkgs.tmuxPlugins; [
-          tokyo-night
-          yank
-          sensible
-          vim-tmux-navigator
-        ];
+          plugins = with pkgs.tmuxPlugins; [
+            tokyo-night
+            yank
+            sensible
+            vim-tmux-navigator
+          ];
 
-        extraConfig = ''
-          set -as terminal-features ",xterm-256color:RGB"
-          set -g mouse on
+          extraConfig = ''
+            set -as terminal-features ",xterm-256color:RGB"
+            set -g mouse on
 
-          unbind C-b
-          set -g prefix C-Space
-          bind C-Space send-prefix
+            # image.nvim: allow Kitty graphics protocol to pass through tmux
+            set -gq allow-passthrough on
+            set -g visual-activity off
+            set-option -g focus-events on
 
-          # Vim style pane selection
-          bind h select-pane -L
-          bind j select-pane -D
-          bind k select-pane -U
-          bind l select-pane -R
+            unbind C-b
+            set -g prefix C-Space
+            bind C-Space send-prefix
 
-          # Start windows and panes at 1, not 0
-          set -g base-index 1
-          set -g pane-base-index 1
-          set-window-option -g pane-base-index 1
-          set-option -g renumber-windows on
+            # Vim style pane selection
+            bind h select-pane -L
+            bind j select-pane -D
+            bind k select-pane -U
+            bind l select-pane -R
 
-          # Use Alt-arrow keys without prefix key to switch panes
-          bind -n M-Left select-pane -L
-          bind -n M-Right select-pane -R
-          bind -n M-Up select-pane -U
-          bind -n M-Down select-pane -D
+            # Start windows and panes at 1, not 0
+            set -g base-index 1
+            set -g pane-base-index 1
+            set-window-option -g pane-base-index 1
+            set-option -g renumber-windows on
 
-          # Shift arrow to switch windows
-          bind -n S-Left  previous-window
-          bind -n S-Right next-window
+            # Use Alt-arrow keys without prefix key to switch panes
+            bind -n M-Left select-pane -L
+            bind -n M-Right select-pane -R
+            bind -n M-Up select-pane -U
+            bind -n M-Down select-pane -D
 
-          # Shift Alt vim keys to switch windows
-          bind -n M-H previous-window
-          bind -n M-L next-window
+            # Shift arrow to switch windows
+            bind -n S-Left  previous-window
+            bind -n S-Right next-window
 
-          set -g @tokyo-night-tmux_window_id_style hsquare
-          set -g @tokyo-night-tmux_show_datetime 0
+            # Shift Alt vim keys to switch windows
+            bind -n M-H previous-window
+            bind -n M-L next-window
 
-          run-shell ${tokyo-night}/share/tmux-plugins/tokyo-night/tokyo-night.tmux
+            set -g @tokyo-night-tmux_window_id_style hsquare
+            set -g @tokyo-night-tmux_show_datetime 0
 
-          # set vi-mode
-          set-window-option -g mode-keys vi
+            run-shell ${tokyo-night}/share/tmux-plugins/tokyo-night/tokyo-night.tmux
 
-          # keybindings
-          bind-key -T copy-mode-vi v send-keys -X begin-selection
-          bind-key -T copy-mode-vi C-v send-keys -X rectangle-toggle
-          bind-key -T copy-mode-vi y send-keys -X copy-selection-and-cancel
+            # set vi-mode
+            set-window-option -g mode-keys vi
 
-          bind '"' split-window -v -c "#{pane_current_path}"
-          bind % split-window -h -c "#{pane_current_path}"
-          bind c new-window -c "#{pane_current_path}"
-        '';
-      };
+            # keybindings
+            bind-key -T copy-mode-vi v send-keys -X begin-selection
+            bind-key -T copy-mode-vi C-v send-keys -X rectangle-toggle
+            bind-key -T copy-mode-vi y send-keys -X copy-selection-and-cancel
+
+            bind '"' split-window -v -c "#{pane_current_path}"
+            bind % split-window -h -c "#{pane_current_path}"
+            bind c new-window -c "#{pane_current_path}"
+          '';
+        };
       };
     };
 }
