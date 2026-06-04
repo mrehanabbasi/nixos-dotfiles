@@ -46,6 +46,7 @@ in
             # CLI tools
             inputs.self.modules.homeManager.zsh
             inputs.self.modules.homeManager.tmux
+            inputs.self.modules.homeManager.sesh
             inputs.self.modules.homeManager.git
             inputs.self.modules.homeManager.lazygit
             inputs.self.modules.homeManager.neovim
@@ -137,6 +138,7 @@ in
           features.zsh.enable = true;
           features.neovim.enable = true;
           features.tmux.enable = true;
+          features.sesh.enable = true;
           features.hyprland.enable = true;
           features.kdeconnect.enable = true;
           features.git.enable = true;

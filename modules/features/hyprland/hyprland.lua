@@ -25,6 +25,7 @@ hl.on("hyprland.start", function()
   hl.exec_cmd("sleep 3 && hyprctl reload")
   hl.exec_cmd("proton-mail")
   hl.exec_cmd("fastmail")
+  hl.exec_cmd("ghostty -e nixos-session")
 end)
 
 -- Environment
