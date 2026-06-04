@@ -89,6 +89,8 @@ in
             # Communication
             inputs.self.modules.homeManager.communication
             inputs.self.modules.homeManager.discord
+            inputs.self.modules.homeManager.protonmail-desktop
+            inputs.self.modules.homeManager.fastmail-desktop
 
             # Creative tools
             inputs.self.modules.homeManager.unity
@@ -102,6 +104,8 @@ in
           features.catppuccin.enable = true;
           features.communication.enable = true;
           features.discord.enable = true;
+          features.protonmail-desktop.enable = true;
+          features.fastmail-desktop.enable = true;
           features.notesnook.enable = true;
           features.bitwarden.enable = true;
           features.unity.enable = true;

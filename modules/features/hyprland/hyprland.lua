@@ -23,6 +23,8 @@ hl.on("hyprland.start", function()
   hl.exec_cmd("hyprctl setcursor " .. cursorTheme .. " " .. cursorSize)
   -- Fallback: re-detect monitors if USB-C DP alt mode was slow
   hl.exec_cmd("sleep 3 && hyprctl reload")
+  hl.exec_cmd("proton-mail")
+  hl.exec_cmd("fastmail")
 end)
 
 -- Environment
@@ -115,7 +117,6 @@ hl.gesture({ fingers = 3, direction = "horizontal", action = "workspace" })
 -- Keybindings
 hl.bind(mainMod .. " + RETURN", hl.dsp.exec_cmd(terminal))
 hl.bind(mainMod .. " + Q", hl.dsp.window.close())
-hl.bind(mainMod .. " + M", hl.dsp.exit())
 hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager))
 hl.bind(mainMod .. " + SHIFT + E", hl.dsp.exec_cmd("thunar"))
 hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))
@@ -168,6 +169,9 @@ hl.bind(mainMod .. " + SHIFT + J", hl.dsp.window.swap({ direction = "down" }))
 hl.bind(mainMod .. " + W", hl.dsp.workspace.toggle_special("magic"))
 hl.bind(mainMod .. " + SHIFT + S", hl.dsp.window.move({ workspace = "special:magic" }))
 
+-- Email special workspace (Proton Mail + Fastmail)
+hl.bind(mainMod .. " + M", hl.dsp.workspace.toggle_special("email"))
+
 -- Scroll through workspaces
 hl.bind(mainMod .. " + mouse_down", hl.dsp.focus({ workspace = "e+1" }))
 hl.bind(mainMod .. " + mouse_up", hl.dsp.focus({ workspace = "e-1" }))
@@ -207,12 +211,22 @@ hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURC
 hl.bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%+"), { locked = true, repeating = true })
 hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%-"), { locked = true, repeating = true })
 
+-- Workspace rules
+hl.workspace_rule({
+  workspace = "special:email",
+  on_created_empty = "[silent] proton-mail; [silent] fastmail",
+  persistent = true,
+})
+
 -- Window rules
 hl.window_rule({
   name = "no-border-single-tiled",
   match = { workspace = "w[t1]" },
   border_size = 0,
 })
+
+hl.window_rule({ match = { class = "^proton-mail$" }, workspace = "special:email silent" })
+hl.window_rule({ match = { class = "^com-fastmail-fastmail$" }, workspace = "special:email silent" })
 
 hl.window_rule({
   name = "suppress-maximize",
