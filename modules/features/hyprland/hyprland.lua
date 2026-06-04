@@ -25,7 +25,7 @@ hl.on("hyprland.start", function()
   hl.exec_cmd("sleep 3 && hyprctl reload")
   hl.exec_cmd("proton-mail")
   hl.exec_cmd("fastmail")
-  hl.exec_cmd("ghostty -e nixos-session")
+  hl.exec_cmd("ghostty --class=nixos-session -e nixos-session")
 end)
 
 -- Environment
@@ -228,6 +228,7 @@ hl.window_rule({
 
 hl.window_rule({ match = { class = "^proton-mail$" }, workspace = "special:email silent" })
 hl.window_rule({ match = { class = "^com-fastmail-fastmail$" }, workspace = "special:email silent" })
+hl.window_rule({ match = { class = "^nixos-session$" }, workspace = "1 silent" })
 
 hl.window_rule({
   name = "suppress-maximize",
