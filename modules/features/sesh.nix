@@ -35,7 +35,13 @@ _:
           name = "nixos"
           path = "${repoPath}"
           startup_command = "nvim ."
-          windows = ["term", "term"]
+          windows = ["zsh", "misc"]
+
+          [[window]]
+          name = "zsh"
+
+          [[window]]
+          name = "misc"
         '';
       };
     };
