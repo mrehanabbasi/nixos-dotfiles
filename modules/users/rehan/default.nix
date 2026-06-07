@@ -84,6 +84,7 @@ in
             inputs.self.modules.homeManager.gpg
             inputs.self.modules.homeManager.opencode
             inputs.self.modules.homeManager.claude
+            inputs.self.modules.homeManager.codex
             inputs.self.modules.homeManager.gemini-cli
             inputs.self.modules.homeManager.pre-commit
 
@@ -117,6 +118,7 @@ in
           features.eza.enable = true;
           features.fastfetch.enable = true;
           features.fzf.enable = true;
+          features.codex.enable = true;
           features."gemini-cli".enable = true;
           features.ghostty.enable = true;
           features."handlr-regex".enable = true;
