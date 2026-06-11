@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+sign_setting="$(git config commit.gpgSign 2>/dev/null)"
+if [[ "$sign_setting" != "true" ]]; then
+  echo "ERROR: GPG commit signing is required and cannot be disabled." >&2
+  exit 1
+fi
