@@ -98,6 +98,8 @@ _:
             bind-key -T copy-mode-vi C-v send-keys -X rectangle-toggle
             bind-key -T copy-mode-vi y send-keys -X copy-selection-and-cancel
 
+            bind-key -n C-l send-keys C-l \; clear-history
+
             bind '"' split-window -v -c "#{pane_current_path}"
             bind % split-window -h -c "#{pane_current_path}"
             bind c new-window -c "#{pane_current_path}"

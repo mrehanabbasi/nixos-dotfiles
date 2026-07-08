@@ -3,7 +3,12 @@ _:
 
 {
   flake.modules.nixos.ghostty =
-    { config, lib, pkgs, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
     let
       cfg = config.features.ghostty;
     in
@@ -49,7 +54,9 @@ _:
 
             cursor-style = "block";
             background-opacity = 0.95;
-            term = "xterm-256color";
+            term = "xterm-ghostty";
+
+            shell-integration-features = "ssh-env,ssh-terminfo";
 
             # Keybindings
             keybind = [
