@@ -216,41 +216,6 @@
         "type": "indirect"
       }
     },
-    "nixpkgs_2": {
-      "locked": {
-        "lastModified": 1773909469,
-        "narHash": "sha256-vglVrLfHjFIzIdV9A27Ugul6rh3I1qHbbitGW7dk420=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "7149c06513f335be57f26fcbbbe34afda923882b",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "ref": "nixpkgs-unstable",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
-    "opencode": {
-      "inputs": {
-        "nixpkgs": "nixpkgs_2"
-      },
-      "locked": {
-        "lastModified": 1774455702,
-        "narHash": "sha256-Vpu8GsQQO/nGwYO+ZFRCK8DvcU9PiraqPRFZbvvuid8=",
-        "owner": "anomalyco",
-        "repo": "opencode",
-        "rev": "77fc88c8ade8e5a620ebbe1197f3a572d29ae91a",
-        "type": "github"
-      },
-      "original": {
-        "owner": "anomalyco",
-        "ref": "latest",
-        "repo": "opencode",
-        "type": "github"
-      }
-    },
     "pia": {
       "inputs": {
         "flake-utils": "flake-utils",
@@ -305,7 +270,6 @@
         "nix-flatpak": "nix-flatpak",
         "nixpkgs": "nixpkgs",
         "nixpkgs-unstable": "nixpkgs-unstable",
-        "opencode": "opencode",
         "pia": "pia",
         "sops-nix": "sops-nix",
         "voxtype": "voxtype"

@@ -21,11 +21,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    opencode = {
-      url = "github:anomalyco/opencode?ref=latest";
-      # Don't follow nixpkgs - opencode needs newer bun (^1.3.11) than stable provides
-    };
-
     pia = {
       url = "github:mrehanabbasi/pia.nix";
       inputs.nixpkgs.follows = "nixpkgs";

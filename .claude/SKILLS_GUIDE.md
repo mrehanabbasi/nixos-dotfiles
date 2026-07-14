@@ -56,8 +56,8 @@ This guide helps you choose the right skill or slash command for your task to op
 
 ┌─────────────── AFTER CHANGES ───────────────────────┐
 │                                                      │
-│  Build and apply:                                   │
-│  └─ /rebuild            Build and switch config     │
+│  Validate build:                                    │
+│  └─ /rebuild            Eval and dry-run build      │
 │                         (nixos-builder skill)       │
 │                                                      │
 │  Quality check:                                     │
@@ -97,7 +97,7 @@ This guide helps you choose the right skill or slash command for your task to op
 2. **Plan the change**: `/plan-changes` - Create implementation plan
 3. **Make edits**: Edit files directly or use nixos-builder
 4. **Pre-build validation**: `/pre-commit` - Catch syntax errors early
-5. **Build**: `/rebuild` - Apply changes
+5. **Validate build**: `/rebuild` - Eval and dry-run the target config
 6. **Post-build audit**: `/review-audit` - Check quality
 7. **Commit**: `/commit` - Generate commit message
 
@@ -118,12 +118,12 @@ This guide helps you choose the right skill or slash command for your task to op
 
 ---
 
-### Building/Rebuilding NixOS Config
+### Validating NixOS Config
 
 **Token-optimized flow:**
 
 1. **Pre-flight check**: `/pre-commit` - Validate before building
-2. **Build**: `/rebuild` - Apply configuration
+2. **Validate build**: `/rebuild` - Eval and dry-run the target config
 3. **If fails**: Fix errors, repeat from step 1
 4. **If succeeds**: `/commit` - Commit changes
 
@@ -151,7 +151,7 @@ This guide helps you choose the right skill or slash command for your task to op
 | **pre-commit-check** | fork | Can auto-suggest | Before rebuild/commit | Saves 4-6K |
 | **diagnose** | fork | Can auto-suggest | System issues | Saves 3-5K |
 | **emergency-rollback** | fork | Manual only | Failed builds | Safety feature |
-| **nixos-builder** | main | Manual | Apply changes | N/A (execution) |
+| **nixos-builder** | main | Manual | Edit and validate changes | N/A (execution) |
 | **nixos-planner** | fork | Manual | Plan changes | Saves 3-5K |
 | **audit-agent** | fork | Manual | Quality checks | Saves 4-6K |
 | **docs-assistant** | fork | Auto on docs | Documentation | Saves 3-5K |
@@ -244,7 +244,7 @@ Each delegation saves 3-6K tokens by using specialized skills.
 /plan-changes    # Plan implementation
 # ... make edits ...
 /pre-commit      # Validate before building
-/rebuild         # Apply changes
+/rebuild         # Validate target config
 /review-audit    # Quality check
 /commit          # Generate commit message
 ```
@@ -253,7 +253,7 @@ Each delegation saves 3-6K tokens by using specialized skills.
 ```bash
 # ... make edit ...
 /pre-commit      # Validate
-/rebuild         # Apply
+/rebuild         # Validate
 /commit          # Commit
 ```
 

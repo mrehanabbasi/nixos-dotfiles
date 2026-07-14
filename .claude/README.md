@@ -28,7 +28,7 @@ This directory contains Claude Code compatible configuration, mirroring the open
 │   ├── nixos-rebuild/         # NixOS rebuild commands
 │   └── flake-update/          # Flake update guidance
 └── commands/                  # Slash commands
-    ├── rebuild.md             # /rebuild - Build and switch config
+    ├── rebuild.md             # /rebuild - Validate config build
     ├── commit.md              # /commit - Generate commit message
     ├── update.md              # /update - Update flake inputs
     ├── plan-changes.md        # /plan-changes - Plan config changes
@@ -73,7 +73,7 @@ This setup maintains compatibility with opencode while providing Claude Code sup
 Located in `.claude/agents/` - these can use webfetch, edit files, read code, and figure out solutions:
 
 **Primary Execution:**
-- **nixos-builder**: Build and apply NixOS changes (can research, edit multiple files, iterate on failures)
+- **nixos-builder**: Edit and validate NixOS changes without switching the system
 - **nixos-planner**: Plan complex changes (can explore options, analyze requirements, suggest alternatives)
 
 **Specialized Analysis:**
@@ -116,7 +116,7 @@ See `SKILLS_GUIDE.md` for detailed decision tree and `AGENTS.md` for agent vs sk
 **Core Workflow:**
 ```bash
 /pre-commit       # Validate before building (catches errors early) 🆕
-/rebuild          # Rebuild and switch NixOS config
+/rebuild          # Validate NixOS config build
 /commit           # Generate conventional commit message
 ```
 
@@ -139,7 +139,7 @@ See `SKILLS_GUIDE.md` for detailed decision tree and `AGENTS.md` for agent vs sk
 1. `/pre-commit` - Validate current state
 2. Make your edits
 3. `/pre-commit` - Catch syntax errors before building
-4. `/rebuild` - Apply changes
+4. `/rebuild` - Validate the target config
 5. `/review-audit` - Quality check (optional)
 6. `/commit` - Generate commit message
 

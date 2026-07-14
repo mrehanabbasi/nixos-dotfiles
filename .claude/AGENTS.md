@@ -27,7 +27,7 @@ See `/home/rehan/nixos-dotfiles/CLAUDE.md` for complete repository guidelines.
 
 Located in `.claude/agents/`, these components can autonomously research, iterate, and make complex decisions:
 
-- **nixos-builder** - Research solutions, edit multiple files, iterate on build failures
+- **nixos-builder** - Research solutions, edit focused modules, validate target configs
 - **nixos-planner** - Explore options, analyze requirements, suggest alternatives
 - **audit-agent** - Explore codebase, identify patterns, infer best practices
 - **docs-assistant** - Understand context, research documentation standards
@@ -89,7 +89,7 @@ This section explains when to use built-in Claude Code agents vs the project's a
 - ✅ Execution is straightforward (run command, validate, return result)
 - ✅ One-pass operation (no iteration needed)
 - ✅ Lower token cost than agent spawning overhead
-- **Examples**: Format check, run rebuild, system diagnostics, code audit
+- **Examples**: Format check, target eval, system diagnostics, code audit
 - **Token efficiency**: Fork skills are CHEAPER than agents for straightforward tasks
 
 ### Use an Agent (via Task tool) ONLY When:
@@ -136,7 +136,7 @@ These autonomous agents may use built-in Claude Code agents via the **Task tool*
 **May delegate to**: `general-purpose` agent for researching implementation approaches
 
 ### nixos-builder
-**Primary capability**: Execute NixOS rebuild with error handling and iteration
+**Primary capability**: Edit focused modules and validate the target config with error handling
 **May delegate to**: Research solutions for build failures, dependency issues
 
 ---
@@ -316,14 +316,12 @@ flatpak uninstall --unused        # Clean up unused dependencies
 flatpak repair                    # Repair installation
 ```
 
-**Module location**: `/home/rehan/nixos-dotfiles/modules/services/flatpak.nix`
-
 ---
 
 ## When NOT to Use Agents
 
 **Avoid agents for**:
-- ❌ Simple commands (`nixos-rebuild switch`)
+- ❌ Simple commands
 - ❌ Single-file edits
 - ❌ Straightforward validations
 - ❌ Reference lookups (use skills with `nixos-rebuild`, `flake-update` instead)
@@ -337,7 +335,7 @@ flatpak repair                    # Repair installation
 | Task Type | Use | Example |
 |-----------|-----|---------|
 | Validate syntax | ✅ Skill (`pre-commit-check`) | `/pre-commit` |
-| Rebuild config | 🤖 Agent (`nixos-builder`) | `/rebuild` |
+| Validate config build | 🤖 Agent (`nixos-builder`) | `/rebuild` |
 | Quick diagnostics | ✅ Skill (`diagnose`) | `/diagnose` |
 | Find pattern in codebase | 🤖 Agent (`Explore`) | "Find all Hyprland keybindings" |
 | Research new feature | 🤖 Agent (`general-purpose`) | "How to add GPU passthrough?" |
@@ -373,7 +371,7 @@ flatpak repair                    # Repair installation
 ## Recommendation for Your Workflow
 
 **Current setup is optimal for token efficiency**:
-- ✅ **Fork context agents and skills handle 95% of tasks** (validate, build, diagnose, rollback, audit)
+- ✅ **Fork context agents and skills handle 95% of tasks** (validate, diagnose, rollback, audit)
 - ✅ **Fork-context components are 3-5x cheaper** than built-in agent spawning
 - ✅ **Only use built-in agents for truly exploratory work** (research, unknown debugging)
 
@@ -386,7 +384,7 @@ flatpak repair                    # Repair installation
 - ❌ **NOT for validation** - Use `/pre-commit` (invokes pre-commit-check skill)
 - ❌ **NOT for diagnostics** - Use `/diagnose` (invokes diagnose skill)
 - ❌ **NOT for audits** - Use `/review-audit` (invokes audit-agent)
-- ❌ **NOT for rebuilds** - Use `/rebuild` (invokes nixos-builder agent)
+- ❌ **NOT for config validation** - Use `/rebuild` (invokes nixos-builder agent)
 - ✅ **YES for research** - "How does GPU passthrough work?"
 - ✅ **YES for exploration** - "Find all instances of X in unfamiliar codebase"
 - ✅ **YES for complex debugging** - "Why does this crash only on specific hardware?"
