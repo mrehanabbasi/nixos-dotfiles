@@ -53,6 +53,8 @@ _:
               lol = "log --graph --decorate --pretty=oneline --abbrev-commit";
               lola = "log --graph --decorate --pretty=oneline --abbrev-commit --all";
               st = "status";
+              sw = "switch";
+              wt = "worktree";
             };
           };
         };

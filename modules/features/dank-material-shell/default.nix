@@ -52,7 +52,7 @@
           enableCalendarEvents = true;
           enableClipboardPaste = true;
 
-          dgop.package = inputs.dgop.packages.${pkgs.system}.default;
+          dgop.package = inputs.dgop.packages.${pkgs.stdenv.hostPlatform.system}.default;
 
           # Main settings
           settings = {
