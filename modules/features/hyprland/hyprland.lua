@@ -11,18 +11,73 @@ local cursorTheme = "Catppuccin Mocha Blue"
 local cursorSize  = "24"
 local mainMod     = "SUPER"
 
--- Monitors
-hl.monitor({ output = "eDP-1", mode = "highres", position = "0x0", scale = 1 })
-hl.monitor({ output = "DP-2", mode = "highres", position = "-1920x0", scale = 1 })
+-- Monitors (dynamic; `hyprctl keyword` is unusable under the Lua parser, so
+-- layout is applied with hl.monitor() from Lua on startup and on hotplug).
+--
+-- Externals are identified by model rather than connector, so they keep working
+-- no matter which port they land on. Models come from the monitor description —
+-- list them with: hyprctl monitors all | grep description
+local INTERNAL        = "eDP-1"
+local PRIMARY_MODEL   = "DELL SE2422H" -- default display
+local SECONDARY_MODEL = "DELL U2424HE" -- extends to the LEFT of primary
+local INTERNAL_WIDTH  = 1920           -- fallback; eDP-1 is absent while disabled
+
+local function find_by_model(monitors, model)
+  for _, m in ipairs(monitors) do
+    if m.description and string.find(m.description, model, 1, true) then
+      return m
+    end
+  end
+  return nil
+end
+
+-- Returns primary, secondary, internal for the currently connected set
+local function detect_monitors()
+  local monitors = hl.get_monitors() or {}
+  local internal
+  for _, m in ipairs(monitors) do
+    if m.name == INTERNAL then internal = m end
+  end
+  return find_by_model(monitors, PRIMARY_MODEL), find_by_model(monitors, SECONDARY_MODEL), internal
+end
+
+local function configure_monitors()
+  local primary, secondary, internal = detect_monitors()
+
+  if primary and secondary then
+    -- Both externals: laptop panel off, secondary left of primary
+    hl.monitor({ output = INTERNAL, disabled = true })
+    hl.monitor({ output = secondary.name, mode = "highres", position = "0x0", scale = 1 })
+    hl.monitor({ output = primary.name, mode = "highres", position = secondary.width .. "x0", scale = 1 })
+  elseif primary or secondary then
+    -- Single external: eDP-1 stays primary, external extends to its right
+    local ext = primary or secondary
+    hl.monitor({ output = INTERNAL, mode = "highres", position = "0x0", scale = 1 })
+    hl.monitor({
+      output = ext.name,
+      mode = "highres",
+      position = (internal and internal.width or INTERNAL_WIDTH) .. "x0",
+      scale = 1,
+    })
+  else
+    hl.monitor({ output = INTERNAL, mode = "highres", position = "0x0", scale = 1 })
+  end
+end
+
 hl.monitor({ output = "", mode = "highres", position = "auto", scale = 1 })
+configure_monitors()
+
+hl.on("monitor.added", function(_) configure_monitors() end)
+hl.on("monitor.removed", function(_) configure_monitors() end)
 
 -- Autostart
 -- Note: kdeconnect is started via kdeconnect.nix (services.kdeconnect.indicator)
 -- Note: DMS handles wallpaper, notifications, and Bluetooth via systemd
 hl.on("hyprland.start", function()
   hl.exec_cmd("hyprctl setcursor " .. cursorTheme .. " " .. cursorSize)
+  configure_monitors()
   -- Fallback: re-detect monitors if USB-C DP alt mode was slow
-  hl.exec_cmd("sleep 3 && hyprctl reload")
+  hl.timer(configure_monitors, { timeout = 3000, type = "oneshot" })
   hl.exec_cmd("proton-mail")
   hl.exec_cmd("fastmail")
   hl.exec_cmd("ghostty --class=nixos-session -e nixos-session")
@@ -191,8 +246,13 @@ hl.bind(mainMod .. " + SHIFT + Tab", hl.dsp.workspace.move({ monitor = "-1" }))
 hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(), { mouse = true })
 hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
 
--- Lid switch - lock before suspend for better stability
-hl.bind("switch:Lid Switch", hl.dsp.exec_cmd("loginctl lock-session && sleep 1 && systemctl suspend"), { locked = true })
+-- Lid switch - skip suspend when a known external monitor is connected
+hl.bind("switch:Lid Switch", function()
+  local primary, secondary = detect_monitors()
+  if not (primary or secondary) then
+    hl.exec_cmd("bash -c 'loginctl lock-session && sleep 1 && systemctl suspend'")
+  end
+end, { locked = true })
 
 -- Media keys
 hl.bind("XF86AudioNext", hl.dsp.exec_cmd("playerctl next"), { locked = true })
