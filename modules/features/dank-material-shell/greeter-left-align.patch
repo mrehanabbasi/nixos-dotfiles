@@ -1,6 +1,6 @@
 --- a/Modules/Greetd/GreeterContent.qml
 +++ b/Modules/Greetd/GreeterContent.qml
-@@ -718,15 +718,7 @@
+@@ -854,15 +854,7 @@
          asynchronous: false
          cache: true
          visible: source !== ""
@@ -14,46 +14,34 @@
 -            blurMultiplier: 1
 -        }
 +        layer.enabled: false
-
+ 
          Behavior on opacity {
              NumberAnimation {
-@@ -753,7 +745,8 @@
-
-         Item {
-             id: clockContainer
+@@ -897,7 +889,8 @@
+         Column {
+             id: greeterMainColumn
+ 
 -            anchors.horizontalCenter: parent.horizontalCenter
 +            anchors.left: parent.left
 +            anchors.leftMargin: 80
-             anchors.bottom: parent.verticalCenter
-             anchors.bottomMargin: 60
-             width: parent.width
-@@ -761,7 +754,8 @@
-
-             Row {
-                 id: clockText
+             anchors.verticalCenter: parent.verticalCenter
+             spacing: Theme.spacingM
+             width: 380
+@@ -911,7 +904,7 @@
+                 Row {
+                     id: clockText
+ 
+-                    anchors.horizontalCenter: parent.horizontalCenter
++                    anchors.left: parent.left
+                     anchors.top: parent.top
+                     spacing: 0
+ 
+@@ -1023,7 +1016,7 @@
+             StyledText {
+                 id: dateText
+ 
 -                anchors.horizontalCenter: parent.horizontalCenter
 +                anchors.left: parent.left
-+                anchors.leftMargin: 0
-                 anchors.top: parent.top
-                 spacing: 0
-
-@@ -872,7 +866,8 @@
-
-         StyledText {
-             id: dateText
--            anchors.horizontalCenter: parent.horizontalCenter
-+            anchors.left: parent.left
-+            anchors.leftMargin: 80
-             anchors.top: clockContainer.bottom
-             anchors.topMargin: 4
-             text: {
-@@ -884,7 +879,8 @@
-         }
-
-         Item {
--            anchors.horizontalCenter: parent.horizontalCenter
-+            anchors.left: parent.left
-+            anchors.leftMargin: 80
-             anchors.top: dateText.bottom
-             anchors.topMargin: Theme.spacingL
-             width: 380
+                 text: systemClock.date.toLocaleDateString(I18n.locale(), GreetdSettings.getEffectiveLockDateFormat())
+                 font.pixelSize: Theme.fontSizeXLarge
+                 color: "white"

@@ -1,15 +1,20 @@
 --- a/Modules/Lock/LockScreenContent.qml
 +++ b/Modules/Lock/LockScreenContent.qml
-@@ -195,7 +195,7 @@
+@@ -241,12 +241,7 @@
+         id: wallpaperBackground
          anchors.fill: parent
-         source: {
-             var currentWallpaper = SessionData.getMonitorWallpaper(screenName);
--            return (currentWallpaper && !currentWallpaper.startsWith("#")) ? encodeFileUrl(currentWallpaper) : "";
-+            return "@LOCK_WALLPAPER@";
-         }
-         fillMode: Theme.getFillMode(SessionData.getMonitorWallpaperFillMode(screenName))
-         smooth: true
-@@ -207,8 +207,8 @@
+ 
+-        readonly property string wallpaperSource: {
+-            if (root.hasCustomWallpaper)
+-                return root.encodeFileUrl(SettingsData.lockScreenWallpaperPath);
+-            var w = SessionData.getMonitorWallpaper(screenName);
+-            return (w && !w.startsWith("#")) ? encodeFileUrl(w) : "";
+-        }
++        readonly property string wallpaperSource: "@LOCK_WALLPAPER@"
+         readonly property string fillModeName: {
+             if (SettingsData.lockScreenWallpaperFillMode !== "")
+                 return SettingsData.lockScreenWallpaperFillMode;
+@@ -262,8 +257,8 @@
          layer.effect: MultiEffect {
              autoPaddingEnabled: false
              blurEnabled: true
@@ -19,4 +24,4 @@
 +            blurMax: 10
              blurMultiplier: 1
          }
-
+ 
