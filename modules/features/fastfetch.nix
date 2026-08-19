@@ -3,9 +3,69 @@ _:
 
 {
   flake.modules.homeManager.fastfetch =
-    { config, lib, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
     let
       cfg = config.features.fastfetch;
+
+      # fastfetch's own terminal/terminalfont detection walks the parent process
+      # tree, which dead-ends at the detached tmux server ("Unknown terminal:
+      # tmux: server"). Resolve the real terminal through the tmux client
+      # instead, then read the font out of that terminal's live config.
+      terminalFont = pkgs.writeShellApplication {
+        name = "fastfetch-terminal-font";
+        runtimeInputs = with pkgs; [
+          coreutils
+          gawk
+          gnused
+          tmux
+        ];
+        text = ''
+          resolve_terminal() {
+            local pid=$1 comm depth=0
+            while [[ -r /proc/$pid/status && $depth -lt 12 ]]; do
+              comm=$(< "/proc/$pid/comm")
+              case $comm in
+                *ghostty*) echo ghostty; return 0 ;;
+              esac
+              pid=$(awk '/^PPid:/{print $2}' "/proc/$pid/status")
+              [[ -n $pid && $pid -gt 1 ]] || return 1
+              depth=$((depth + 1))
+            done
+            return 1
+          }
+
+          start=$PPID
+          if [[ -n ''${TMUX:-} ]]; then
+            start=$(tmux display-message -p '#{client_pid}' 2>/dev/null) || start=$PPID
+          fi
+
+          if ! term=$(resolve_terminal "$start"); then
+            echo unknown
+            exit 0
+          fi
+
+          case $term in
+            ghostty)
+              cfg="''${XDG_CONFIG_HOME:-$HOME/.config}/ghostty/config"
+              if [[ ! -r $cfg ]]; then
+                echo ghostty
+                exit 0
+              fi
+              family=$(sed -n 's/^font-family[[:space:]]*=[[:space:]]*//p' "$cfg" | head -n 1)
+              size=$(sed -n 's/^font-size[[:space:]]*=[[:space:]]*//p' "$cfg" | head -n 1)
+              printf '%s (%spt)\n' "''${family:-default}" "''${size:-?}"
+              ;;
+            *)
+              echo "$term"
+              ;;
+          esac
+        '';
+      };
     in
     {
       options.features.fastfetch.enable = lib.mkEnableOption "fastfetch system information display";
@@ -14,17 +74,19 @@ _:
           enable = true;
           settings = {
             logo = {
-              type = "file";
+              # type = "file";
               color = {
                 "1" = "blue";
               };
+              height = 15;
+              width = 15;
               padding = {
-                top = 3;
+                top = 1;
               };
             };
 
             display = {
-              separator = "    ";
+              separator = " ➜  ";
             };
 
             modules = [
@@ -35,33 +97,55 @@ _:
               "break"
               {
                 type = "os";
-                key = "  ";
+                key = " DISTRO";
                 keyColor = "blue";
               }
               {
                 type = "kernel";
-                key = "  ";
+                key = " ├  ";
                 keyColor = "white";
               }
               {
                 type = "packages";
-                key = "  ";
+                key = " ├ 󰏖 ";
                 keyColor = "yellow";
               }
               {
+                type = "shell";
+                key = " └  ";
+                keyColor = "yellow";
+              }
+              "break"
+              {
                 type = "wm";
-                key = "  󰨇";
+                key = " DE/WM";
+                keyColor = "blue";
+              }
+              {
+                type = "wmtheme";
+                key = " ├ 󰉼 ";
+                keyColor = "blue";
+              }
+              {
+                type = "icons";
+                key = " ├ 󰀻 ";
+                keyColor = "blue";
+              }
+              {
+                type = "cursor";
+                key = " ├  ";
                 keyColor = "blue";
               }
               {
                 type = "terminal";
-                key = "  ";
+                key = " ├  ";
                 keyColor = "magenta";
               }
               {
-                type = "shell";
-                key = "  ";
-                keyColor = "yellow";
+                type = "command";
+                text = lib.getExe terminalFont;
+                key = " └  ";
+                keyColor = "magenta";
               }
               "break"
               {
@@ -71,28 +155,37 @@ _:
               "break"
               {
                 type = "host";
-                key = "  ";
+                format = "{2}";
+                key = "󰌢 SYSTEM";
                 keyColor = "bright_blue";
               }
               {
                 type = "cpu";
-                key = "  ";
+                format = "{1} ({3}) @ {7} GHz";
+                key = " ├  ";
                 keyColor = "bright_green";
               }
               {
                 type = "gpu";
-                key = "  󱤓";
+                format = "{2}";
+                key = " ├ 󰢮 ";
                 keyColor = "red";
               }
               {
                 type = "memory";
-                key = "  󰍛";
+                key = " ├  ";
                 keyColor = "bright_yellow";
               }
               {
                 type = "disk";
-                key = "  ";
+                key = " ├ 󰋊 ";
                 keyColor = "bright_cyan";
+              }
+              {
+                type = "display";
+                key = " └  ";
+                compactType = "original-with-refresh-rate";
+                keyColor = "cyan";
               }
               "break"
               {
