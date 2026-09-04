@@ -67,8 +67,28 @@ end
 hl.monitor({ output = "", mode = "highres", position = "auto", scale = 1 })
 configure_monitors()
 
-hl.on("monitor.added", function(_) configure_monitors() end)
-hl.on("monitor.removed", function(_) configure_monitors() end)
+-- Debounce disconnects: DP monitors often drop the link on sleep/standby,
+-- firing a real monitor.removed even though nothing was unplugged. Wait a
+-- few seconds before reflowing so a quick sleep/wake doesn't relayout;
+-- a genuine unplug still lands after the delay.
+local REMOVAL_DEBOUNCE_MS = 8000
+local pending_removal_timer = nil
+
+hl.on("monitor.added", function(_)
+  if pending_removal_timer then
+    pending_removal_timer:set_enabled(false)
+    pending_removal_timer = nil
+  end
+  configure_monitors()
+end)
+
+hl.on("monitor.removed", function(_)
+  if pending_removal_timer then pending_removal_timer:set_enabled(false) end
+  pending_removal_timer = hl.timer(function()
+    pending_removal_timer = nil
+    configure_monitors()
+  end, { timeout = REMOVAL_DEBOUNCE_MS, type = "oneshot" })
+end)
 
 -- Autostart
 -- Note: kdeconnect is started via kdeconnect.nix (services.kdeconnect.indicator)
@@ -184,7 +204,7 @@ hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())
 hl.bind(mainMod .. " + S", hl.dsp.layout("togglesplit"))
 hl.bind(mainMod .. " + B", hl.dsp.exec_cmd(webBrowser))
 hl.bind(mainMod .. " + SHIFT + B", hl.dsp.exec_cmd(webBrowser2))
-hl.bind(mainMod .. " + T", hl.dsp.exec_cmd(terminal .. " --title='btop' -e btop"))
+hl.bind(mainMod .. " + T", hl.dsp.exec_cmd(terminal .. " --title='btop' --window-width=140 --window-height=35 -e btop"))
 hl.bind(mainMod .. " + SEMICOLON", hl.dsp.exec_cmd("dms ipc call lock lock"))
 hl.bind(mainMod .. " + N", hl.dsp.exec_cmd("dms ipc call notifications toggle"))
 hl.bind(mainMod .. " + SHIFT + N", hl.dsp.exec_cmd("dms ipc call notifications clearAll"))

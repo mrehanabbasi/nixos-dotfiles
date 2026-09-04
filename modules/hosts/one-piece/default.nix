@@ -70,6 +70,7 @@ in
       inputs.self.modules.nixos.gamemode
       inputs.self.modules.nixos.wine
       inputs.self.modules.nixos."davinci-resolve"
+      inputs.self.modules.nixos.ollama
 
       # ════════════════════════════════════════════════════════════════════
       # LAYER 8: Host-specific hardware
@@ -116,6 +117,7 @@ in
         features."vm-audio".enable = true;
         features.wine.enable = true;
         features."davinci-resolve".enable = true;
+        features.ollama.enable = true;
         features.zsh.enable = true;
         features.neovim.enable = true;
         features.hyprland.enable = true;

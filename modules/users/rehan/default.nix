@@ -69,9 +69,11 @@ in
             inputs.self.modules.homeManager.zathura
             inputs.self.modules.homeManager.kdenlive
             inputs.self.modules.homeManager.voxtype
+            inputs.self.modules.homeManager.gimp
 
             # Productivity
             inputs.self.modules.homeManager.notesnook
+            inputs.self.modules.homeManager.obsidian
             inputs.self.modules.homeManager.kdeconnect
             inputs.self.modules.homeManager.bitwarden
 
@@ -80,6 +82,7 @@ in
 
             # Development
             inputs.self.modules.homeManager.context7
+            inputs.self.modules.homeManager.cliproxyapi
             inputs.self.modules.homeManager.go
             inputs.self.modules.homeManager.gpg
             inputs.self.modules.homeManager.opencode
@@ -110,6 +113,7 @@ in
           features.protonmail-desktop.enable = true;
           features.fastmail-desktop.enable = true;
           features.notesnook.enable = true;
+          features.obsidian.enable = true;
           features.bitwarden.enable = true;
           features.unity.enable = true;
           features.blender.enable = true;
@@ -125,6 +129,7 @@ in
           features.ghostty.enable = true;
           features."handlr-regex".enable = true;
           features.kdenlive.enable = true;
+          features.gimp.enable = true;
           features.lazygit.enable = true;
           features.librewolf.enable = true;
           features."mime-apps".enable = true;
@@ -137,6 +142,7 @@ in
           features.zathura.enable = true;
           features.zoxide.enable = true;
           features.context7.enable = true;
+          features.cliproxyapi.enable = true;
           features.go.enable = true;
           features."oh-my-posh".enable = true;
           features.zsh.enable = true;

@@ -3,7 +3,12 @@ _:
 
 {
   flake.modules.homeManager.doppler =
-    { config, lib, pkgs, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
     let
       cfg = config.features.doppler;
     in
@@ -19,11 +24,23 @@ _:
           _doppler_prev_project=""
 
           _doppler_load() {
+            # Only check doppler under ~/github (any nested subdirectory)
+            if [[ "$PWD" != "$HOME/github" && "$PWD" != "$HOME/github/"* ]]; then
+              if [[ ''${#_doppler_loaded_vars[@]} -gt 0 ]]; then
+                for _var in "''${_doppler_loaded_vars[@]}"; do
+                  unset "$_var"
+                done
+                _doppler_loaded_vars=()
+                _doppler_prev_project=""
+              fi
+              return
+            fi
+
             local current_project
-            current_project=$(doppler configure get project --plain 2>/dev/null)
+            current_project=$(timeout 2s doppler configure get project --plain 2>/dev/null)
 
             if [[ -z "$current_project" ]]; then
-              # Not a doppler-enabled directory; unload previously loaded vars
+              # Not a doppler-enabled directory (or doppler unreachable); unload previously loaded vars
               if [[ ''${#_doppler_loaded_vars[@]} -gt 0 ]]; then
                 for _var in "''${_doppler_loaded_vars[@]}"; do
                   unset "$_var"
@@ -50,7 +67,7 @@ _:
             _doppler_prev_project="$current_project"
 
             local secrets_output
-            secrets_output=$(doppler secrets download --no-file --format env 2>/dev/null)
+            secrets_output=$(timeout 2s doppler secrets download --no-file --format env 2>/dev/null)
             if [[ -z "$secrets_output" ]]; then
               return
             fi
