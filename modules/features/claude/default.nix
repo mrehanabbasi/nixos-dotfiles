@@ -99,6 +99,7 @@ _:
             };
 
             permissions = {
+              defaultMode = "auto";
               allow = [
                 "Edit"
                 "Glob"
