@@ -20,51 +20,42 @@ SUBTEXT1="\033[38;2;186;194;222m"
 SUBTEXT0="\033[38;2;166;173;200m"
 RESET="\033[0m"
 
+# Not a Catppuccin swatch: a darker red than RED (#f38ba8) so the context bar
+# has a distinct step past the point where long-context recall degrades.
+DARK_RED="\033[38;2;155;33;58m"
+
 # Helper function: Get color based on utilization percentage
 get_usage_color() {
-    local utilization="$1"
-    [ -z "$utilization" ] || [ "$utilization" = "-1" ] && echo "$SUBTEXT0" && return
+    local percentage="$1"
+    [ -z "$percentage" ] && echo "$SUBTEXT0" && return
 
-    local percentage=$(awk "BEGIN {printf \"%.0f\", $utilization}")
-
-    if [ $percentage -le 50 ]; then
+    if [ "$percentage" -le 50 ]; then
         echo "$GREEN"
-    elif [ $percentage -le 75 ]; then
+    elif [ "$percentage" -le 75 ]; then
         echo "$YELLOW"
-    elif [ $percentage -le 90 ]; then
+    elif [ "$percentage" -le 90 ]; then
         echo "$PEACH"
     else
         echo "$RED"
     fi
 }
 
-# Helper function: Format utilization as percentage string
-format_percentage() {
-    local utilization="$1"
-    [ -z "$utilization" ] || [ "$utilization" = "-1" ] && echo "0" && return
-    awk "BEGIN {printf \"%.0f\", $utilization}"
-}
-
-# Helper function: Format reset timestamp with smart zero-skipping
+# Helper function: Format a rate-limit reset time (Unix epoch seconds).
+# type is "relative" (countdown) or "weekly" (countdown same day, date otherwise).
 format_reset_time() {
-    local timestamp="$1"
-    local type="$2"  # "relative" or "weekly"
+    local target_seconds="$1"
+    local type="$2"
 
-    [ -z "$timestamp" ] || [ "$timestamp" = "null" ] && echo "" && return
-
-    local now_seconds=$(date +%s)
-    local target_seconds=$(date -d "$timestamp" +%s 2>/dev/null)
     [ -z "$target_seconds" ] && echo "" && return
 
+    local now_seconds=$(date +%s)
     local diff=$((target_seconds - now_seconds))
     [ $diff -lt 0 ] && echo "" && return
 
-    # For weekly type, check if same day as today
+    # For weekly type, fall back to a countdown when the reset lands today
     if [ "$type" = "weekly" ]; then
         local today=$(date +%Y-%m-%d)
-        local target_day=$(date -d "$timestamp" +%Y-%m-%d 2>/dev/null)
-
-        # If same day, treat as relative
+        local target_day=$(date -d "@$target_seconds" +%Y-%m-%d 2>/dev/null)
         if [ "$today" = "$target_day" ]; then
             type="relative"
         fi
@@ -83,7 +74,6 @@ format_reset_time() {
             local minutes=$((diff / 60))
             local seconds=$((diff % 60))
 
-            # Skip zero seconds
             if [ $seconds -eq 0 ]; then
                 echo "${minutes}m"
             else
@@ -96,13 +86,11 @@ format_reset_time() {
         local hours=$((diff / 3600))
         local minutes=$(( (diff % 3600) / 60 ))
 
-        # Skip hours if zero - only show minutes
         if [ $hours -eq 0 ]; then
             echo "${minutes}m"
             return
         fi
 
-        # Show hours, skip zero minutes when >= 5 minutes
         if [ $minutes -eq 0 ]; then
             echo "${hours}h"
         else
@@ -112,8 +100,8 @@ format_reset_time() {
     fi
 
     # Weekly absolute date format (different day)
-    local day=$(date -d "$timestamp" +%-d 2>/dev/null)
-    local month=$(date -d "$timestamp" +%b 2>/dev/null)
+    local day=$(date -d "@$target_seconds" +%-d 2>/dev/null)
+    local month=$(date -d "@$target_seconds" +%b 2>/dev/null)
 
     # Generate ordinal suffix
     local suffix="th"
@@ -126,149 +114,42 @@ format_reset_time() {
     echo "${day}${suffix} ${month}"
 }
 
-# Helper function: Fetch usage data from Anthropic API with caching
-fetch_usage_data() {
-    local credentials_file="$HOME/.claude/.credentials.json"
-    local cache_file="$HOME/.cache/claude/usage-cache.json"
-    local lock_file="$HOME/.cache/claude/usage.lock"
-    local cache_duration=180  # seconds; community floor — <180 risks rate_limit_error
-    local error_backoff=300   # seconds; extra cooldown after rate_limit_error
-
-    # Reset global variables
-    session_usage="-1"
-    weekly_usage="-1"
-    session_resets_at=""
-    weekly_resets_at=""
-    extra_cost="0"
-    session_stale=0
-    weekly_stale=0
-
-    # Check if credentials exist
-    [ ! -f "$credentials_file" ] && return
-
-    # Check cache validity. Skip API when:
-    #   - cache age under cache_duration (180s), OR
-    #   - we are inside an error_backoff window from a previous rate_limit_error
-    local use_cache=0
-    local now=$(date +%s)
-    if [ -f "$cache_file" ]; then
-        local cache_timestamp=$(jq -r '.timestamp // 0' "$cache_file" 2>/dev/null)
-        local next_retry_at=$(jq -r '.next_retry_at // 0' "$cache_file" 2>/dev/null)
-        local cache_age=$((now - cache_timestamp))
-        local has_data=$(jq 'has("five_hour")' "$cache_file" 2>/dev/null)
-
-        if [ "$has_data" = "true" ] && { [ $cache_age -lt $cache_duration ] || [ $now -lt $next_retry_at ]; }; then
-            use_cache=1
-        fi
-    fi
-
-    # Use cached data if valid
-    if [ $use_cache -eq 1 ]; then
-        session_usage=$(jq -r '.five_hour.utilization // -1' "$cache_file" 2>/dev/null)
-        weekly_usage=$(jq -r '.seven_day.utilization // -1' "$cache_file" 2>/dev/null)
-        session_resets_at=$(jq -r '.five_hour.resets_at // ""' "$cache_file" 2>/dev/null)
-        weekly_resets_at=$(jq -r '.seven_day.resets_at // ""' "$cache_file" 2>/dev/null)
-        extra_cost=$(jq -r '.extra_usage.used_credits // 0' "$cache_file" 2>/dev/null || echo "0")
-        return
-    fi
-
-    # Extract OAuth token (nested under claudeAiOauth with camelCase field name)
-    local access_token=$(jq -r '.claudeAiOauth.accessToken // ""' "$credentials_file" 2>/dev/null)
-    [ -z "$access_token" ] && return
-
-    mkdir -p "$(dirname "$cache_file")"
-
-    # Inter-window mutex: if another Claude window is mid-fetch, skip this round
-    # and fall back to whatever cache we have. flock fd 9 → released on function exit.
-    exec 9>"$lock_file"
-    if ! flock -n 9; then
-        if [ -f "$cache_file" ] && [ "$(jq 'has("five_hour")' "$cache_file" 2>/dev/null)" = "true" ]; then
-            session_usage=$(jq -r '.five_hour.utilization // -1' "$cache_file" 2>/dev/null)
-            weekly_usage=$(jq -r '.seven_day.utilization // -1' "$cache_file" 2>/dev/null)
-            session_resets_at=$(jq -r '.five_hour.resets_at // ""' "$cache_file" 2>/dev/null)
-            weekly_resets_at=$(jq -r '.seven_day.resets_at // ""' "$cache_file" 2>/dev/null)
-            extra_cost=$(jq -r '.extra_usage.used_credits // 0' "$cache_file" 2>/dev/null || echo "0")
-        fi
-        return
-    fi
-
-    # Fetch from API with timeout
-    local api_response=$(curl -s --max-time 2 \
-        -H "Authorization: Bearer $access_token" \
-        -H "anthropic-beta: oauth-2025-04-20" \
-        "https://api.anthropic.com/api/oauth/usage" 2>/dev/null)
-
-    # Check if API call returned valid data
-    local has_error=$(echo "$api_response" | jq -r '.error // empty' 2>/dev/null)
-    if [ -n "$api_response" ] && [ -z "$has_error" ]; then
-        # Valid response — extract and cache. Clear any prior next_retry_at.
-        session_usage=$(echo "$api_response" | jq -r '.five_hour.utilization // -1' 2>/dev/null)
-        weekly_usage=$(echo "$api_response" | jq -r '.seven_day.utilization // -1' 2>/dev/null)
-        session_resets_at=$(echo "$api_response" | jq -r '.five_hour.resets_at // ""' 2>/dev/null)
-        weekly_resets_at=$(echo "$api_response" | jq -r '.seven_day.resets_at // ""' 2>/dev/null)
-        extra_cost=$(echo "$api_response" | jq -r '.extra_usage.used_credits // 0' 2>/dev/null || echo "0")
-        echo "$api_response" | jq --arg ts "$now" '. + {timestamp: ($ts | tonumber), next_retry_at: 0}' > "$cache_file" 2>/dev/null
-    else
-        # API error (likely rate_limit_error) — preserve stale data, set next_retry_at
-        # so subsequent statusline renders skip the API for error_backoff seconds.
-        local retry_at=$((now + error_backoff))
-        if [ -f "$cache_file" ] && [ "$(jq 'has("five_hour")' "$cache_file" 2>/dev/null)" = "true" ]; then
-            session_usage=$(jq -r '.five_hour.utilization // -1' "$cache_file" 2>/dev/null)
-            weekly_usage=$(jq -r '.seven_day.utilization // -1' "$cache_file" 2>/dev/null)
-            session_resets_at=$(jq -r '.five_hour.resets_at // ""' "$cache_file" 2>/dev/null)
-            weekly_resets_at=$(jq -r '.seven_day.resets_at // ""' "$cache_file" 2>/dev/null)
-            extra_cost=$(jq -r '.extra_usage.used_credits // 0' "$cache_file" 2>/dev/null || echo "0")
-            jq --arg r "$retry_at" '.next_retry_at = ($r | tonumber)' "$cache_file" > "${cache_file}.tmp" 2>/dev/null && mv "${cache_file}.tmp" "$cache_file" 2>/dev/null
-        else
-            # No valid stale data — write minimal backoff entry
-            printf '{"timestamp":%s,"next_retry_at":%s}\n' "$now" "$retry_at" > "$cache_file" 2>/dev/null
-        fi
-    fi
-}
-
-# If cached resets_at is in the past (API unreachable, window rolled over while
-# rate-limited), advance the timestamp by window size and zero the utilization.
-# Keeps the second line meaningful even after long rate-limit streaks.
-roll_forward_if_stale() {
-    local now=$(date +%s)
-    local target
-
-    # five_hour window: 5h = 18000s
-    if [ -n "$session_resets_at" ] && [ "$session_resets_at" != "null" ]; then
-        target=$(date -d "$session_resets_at" +%s 2>/dev/null)
-        if [ -n "$target" ] && [ "$target" -lt "$now" ]; then
-            session_usage="0"
-            session_stale=1
-            while [ -n "$target" ] && [ "$target" -lt "$now" ]; do
-                target=$((target + 18000))
-            done
-            session_resets_at=$(date -u -d "@$target" +"%Y-%m-%dT%H:%M:%S+00:00" 2>/dev/null)
-        fi
-    fi
-
-    # seven_day window: 7d = 604800s
-    if [ -n "$weekly_resets_at" ] && [ "$weekly_resets_at" != "null" ]; then
-        target=$(date -d "$weekly_resets_at" +%s 2>/dev/null)
-        if [ -n "$target" ] && [ "$target" -lt "$now" ]; then
-            weekly_usage="0"
-            weekly_stale=1
-            while [ -n "$target" ] && [ "$target" -lt "$now" ]; do
-                target=$((target + 604800))
-            done
-            weekly_resets_at=$(date -u -d "@$target" +"%Y-%m-%dT%H:%M:%S+00:00" 2>/dev/null)
-        fi
-    fi
-}
-
 # Read JSON input from stdin
 input=$(cat)
 
-# Extract values
-model_name=$(echo "$input" | jq -r '.model.display_name')
-model_short=$(echo "$model_name" | sed 's/^Claude //' | tr ' ' '-' | tr '[:upper:]' '[:lower:]')
-project_dir=$(echo "$input" | jq -r '.workspace.project_dir')
-transcript_path=$(echo "$input" | jq -r '.transcript_path')
-output_style=$(echo "$input" | jq -r '.output_style.name // "default"')
+# Extract everything we need in one jq pass. Fields that may be absent or null
+# (context_window before the first API call, rate_limits for non-subscribers)
+# fall back to empty strings and are handled by the callers below.
+# Fields are joined on U+001F rather than @tsv: `read` treats tab as IFS
+# whitespace and collapses the runs of empty fields that absent rate_limits
+# produce, shifting every value after them.
+IFS=$'\037' read -r model_id model_name project_dir transcript_path output_style \
+    ctx_size ctx_used_pct ctx_input_tokens \
+    session_pct session_resets_at weekly_pct weekly_resets_at <<< "$(
+    echo "$input" | jq -r '[
+        .model.id // "",
+        .model.display_name // "",
+        .workspace.project_dir // "",
+        .transcript_path // "",
+        .output_style.name // "default",
+        (.context_window.context_window_size // 200000),
+        (.context_window.used_percentage // 0 | floor),
+        (.context_window.total_input_tokens // 0),
+        (.rate_limits.five_hour.used_percentage // "" | if . == "" then "" else floor end),
+        (.rate_limits.five_hour.resets_at // ""),
+        (.rate_limits.seven_day.used_percentage // "" | if . == "" then "" else floor end),
+        (.rate_limits.seven_day.resets_at // "")
+    ] | map(tostring) | join("")'
+)"
+
+# Prefer model.id — it carries the version that display_name drops ("Opus" vs
+# "claude-opus-5"). Strip the vendor prefix and any trailing release date so
+# "claude-haiku-4-5-20251001" renders as "haiku-4-5".
+if [ -n "$model_id" ]; then
+    model_short=$(echo "$model_id" | sed -e 's/^claude-//' -e 's/-[0-9]\{8\}$//')
+else
+    model_short=$(echo "$model_name" | sed 's/^Claude //' | tr ' ' '-' | tr '[:upper:]' '[:lower:]')
+fi
 
 # Get project folder name
 project_name=$(basename "$project_dir")
@@ -294,81 +175,112 @@ else
     git_info=""
 fi
 
-# Calculate context usage from transcript
-if [ -f "$transcript_path" ]; then
-    # Count tokens from actual usage fields in transcript JSONL
-    token_count=$(tr -d '\000-\010\013\014\016-\037' < "$transcript_path" | jq -s '[.[].message.usage | select(.) | (.input_tokens // 0) + (.output_tokens // 0)] | add // 0')
+# Context usage. context_window comes straight from Claude Code, so the window
+# size tracks whatever the active model actually has (200K, 1M with extended
+# context, etc.) instead of a hardcoded table.
+percentage=$ctx_used_pct
+[ "$percentage" -gt 100 ] && percentage=100
 
-    # Context limits per model
-    case "$model_name" in
-      *haiku*) max_tokens=200000 ;;
-      *sonnet*) max_tokens=200000 ;;
-      *opus*) max_tokens=200000 ;;
-      *) max_tokens=200000 ;;
-    esac
+# Create progress bar (20 characters wide)
+bar_width=20
+filled=$((percentage * bar_width / 100))
+empty=$((bar_width - filled))
 
-    # Calculate percentage
-    percentage=$((token_count * 100 / max_tokens))
-    [ $percentage -gt 100 ] && percentage=100
-
-    # Create progress bar (20 characters wide)
-    bar_width=20
-    filled=$((percentage * bar_width / 100))
-    empty=$((bar_width - filled))
-
-    # Choose color based on percentage (remaining context)
-    # Green when plenty left, red when running out
-    remaining=$((100 - percentage))
-    if [ $remaining -gt 50 ]; then
-        bar_color="$GREEN"
-        context_color="$GREEN"
-    elif [ $remaining -gt 25 ]; then
-        bar_color="$YELLOW"
-        context_color="$YELLOW"
-    elif [ $remaining -gt 10 ]; then
-        bar_color="$PEACH"
-        context_color="$PEACH"
-    else
-        bar_color="$RED"
-        context_color="$RED"
-    fi
-
-    # Build progress bar with block characters
-    bar="${SUBTEXT0}[${bar_color}"
-    for ((i=0; i<filled; i++)); do bar+="█"; done
-    printf -v bar "%s${SUBTEXT0}" "$bar"
-    for ((i=0; i<empty; i++)); do bar+="░"; done
-    bar+="]${RESET}"
-
-    # Format token count (e.g., 5.2K, 120K)
-    if [ $token_count -ge 1000 ]; then
-        tokens_display="$(awk "BEGIN {printf \"%.1f\", $token_count/1000}")K"
-    else
-        tokens_display="${token_count}"
-    fi
-
-    max_display="$(awk "BEGIN {printf \"%.0f\", $max_tokens/1000}")K"
-
-    context_info="$bar ${context_color}${tokens_display}${SUBTEXT0}/${SUBTEXT1}${max_display}${RESET} ${SUBTEXT0}(${context_color}${percentage}%${SUBTEXT0})${RESET}"
+# Color by context *used*, on thresholds tuned to recall degradation rather
+# than to running out of room: attention thins out long before the window
+# fills, so warn early. 40% starts the warning band, 50% is the point to think
+# about compacting, 75%+ is the zone to get out of. Applies to this segment
+# only — the Session/Weekly windows keep get_usage_color's own scale.
+if [ "$percentage" -lt 40 ]; then
+    bar_color="$GREEN"
+elif [ "$percentage" -lt 50 ]; then
+    bar_color="$YELLOW"
+elif [ "$percentage" -lt 75 ]; then
+    bar_color="$RED"
 else
-    context_info="${SUBTEXT0}[${SUBTEXT0}░░░░░░░░░░░░░░░░░░░░]${RESET} ${GREEN}0K${SUBTEXT0}/${SUBTEXT1}200K${RESET} ${SUBTEXT0}(${GREEN}0%${SUBTEXT0})${RESET}"
+    bar_color="$DARK_RED"
+fi
+context_color="$bar_color"
+
+# Build progress bar with block characters
+bar="${SUBTEXT0}[${bar_color}"
+for ((i=0; i<filled; i++)); do bar+="█"; done
+printf -v bar "%s${SUBTEXT0}" "$bar"
+for ((i=0; i<empty; i++)); do bar+="░"; done
+bar+="]${RESET}"
+
+# Format token counts (e.g., 5.2K, 120K, 1.0M)
+format_tokens() {
+    local n="$1"
+    if [ "$n" -ge 1000000 ]; then
+        awk "BEGIN {printf \"%.1fM\", $n/1000000}"
+    elif [ "$n" -ge 1000 ]; then
+        awk "BEGIN {printf \"%.0fK\", $n/1000}"
+    else
+        echo "$n"
+    fi
+}
+
+tokens_display=$(format_tokens "$ctx_input_tokens")
+max_display=$(format_tokens "$ctx_size")
+
+context_info="$bar ${context_color}${tokens_display}${SUBTEXT0}/${SUBTEXT1}${max_display}${RESET} ${SUBTEXT0}(${context_color}${percentage}%${SUBTEXT0})${RESET}"
+
+# Single transcript pass: cumulative token total (for burn rate) plus the
+# per-model distribution. Both need the same scan, so do it once.
+cumulative_tokens=0
+model_dist=""
+if [ -f "$transcript_path" ] && command -v jq >/dev/null 2>&1; then
+    transcript_data=$(tr -d '\000-\010\013\014\016-\037' < "$transcript_path" | jq -rs '
+        map(select(.message.usage != null)) as $all |
+        ([$all[] | (.message.usage.input_tokens // 0) + (.message.usage.output_tokens // 0)] | add // 0) as $total_tokens |
+        ($all | map(select(.message.model != null)) | group_by(.message.model) |
+            map({
+                model: .[0].message.model,
+                tokens: (map((.message.usage.input_tokens // 0) + (.message.usage.output_tokens // 0)) | add)
+            })
+        ) as $groups |
+        ($groups | map(.tokens) | add // 0) as $grouped_total |
+        ($total_tokens | tostring) + "\t" +
+        (if ($groups | length) <= 1 or $grouped_total == 0 then ""
+         else
+            $groups |
+            sort_by(-.tokens) |
+            map(
+                (.tokens * 100 / $grouped_total | floor | tostring) + "% " +
+                (if .tokens >= 1000 then (.tokens / 1000 * 10 | floor / 10 | tostring) + "K" else (.tokens | tostring) end) +
+                " tok " + (.model | ltrimstr("claude-"))
+            ) |
+            "Models: " + join(" | ")
+         end)
+    ' 2>/dev/null || echo "")
+    if [ -n "$transcript_data" ]; then
+        IFS=$'\t' read -r cumulative_tokens model_dist <<< "$transcript_data"
+    fi
+fi
+[ -z "$cumulative_tokens" ] && cumulative_tokens=0
+
+model_dist_info=""
+if [ -n "$model_dist" ]; then
+    model_dist_info=$(echo "$model_dist" | sed \
+        -e "s|Models: |${TEAL}Models:${RESET} |" \
+        -e "s| | ${SUBTEXT0}|${RESET} |g")
 fi
 
-# Calculate burn rate (Option G)
+# Burn rate: cumulative tokens consumed per minute, sampled between renders
 burn_rate_info=""
 burn_rate_file="$HOME/.cache/claude/burn-rate.json"
-if [ "$token_count" -gt 0 ] 2>/dev/null; then
+if [ "$cumulative_tokens" -gt 0 ] 2>/dev/null; then
     now=$(date +%s)
     if [ -f "$burn_rate_file" ]; then
         prev_time=$(jq -r '.timestamp // 0' "$burn_rate_file" 2>/dev/null || echo 0)
         prev_tokens=$(jq -r '.tokens // 0' "$burn_rate_file" 2>/dev/null || echo 0)
         delta_time=$(( now - prev_time ))
-        delta_tokens=$(( token_count - prev_tokens ))
+        delta_tokens=$(( cumulative_tokens - prev_tokens ))
         if [ "$delta_time" -gt 10 ] && [ "$delta_tokens" -gt 0 ]; then
-            # tokens per minute
             burn_per_min=$(( delta_tokens * 60 / delta_time ))
             if [ "$burn_per_min" -ge 1000 ]; then
-                burn_display="$(echo "scale=1; $burn_per_min / 1000" | bc)K tok/min"
+                burn_display="$(awk "BEGIN {printf \"%.1f\", $burn_per_min/1000}")K tok/min"
             else
                 burn_display="${burn_per_min} tok/min"
             fi
@@ -384,147 +296,52 @@ if [ "$token_count" -gt 0 ] 2>/dev/null; then
     fi
     # Update state file
     mkdir -p "$(dirname "$burn_rate_file")"
-    printf '{"timestamp":%s,"tokens":%s}\n' "$now" "$token_count" > "$burn_rate_file"
+    printf '{"timestamp":%s,"tokens":%s}\n' "$now" "$cumulative_tokens" > "$burn_rate_file"
 fi
 
-# Predictions (Option F) — requires burn_per_min from Option G
-predictions_info=""
-if [ -n "$burn_rate_info" ] && [ "${burn_per_min:-0}" -gt 0 ]; then
-    # Context ETA
-    tokens_remaining=$(( max_tokens - token_count ))
-    if [ "$tokens_remaining" -gt 0 ]; then
-        mins_to_ctx_full=$(( tokens_remaining / burn_per_min ))
-        if [ "$mins_to_ctx_full" -ge 60 ]; then
-            ctx_eta="~$(( mins_to_ctx_full / 60 ))h $(( mins_to_ctx_full % 60 ))m"
-        else
-            ctx_eta="~${mins_to_ctx_full}m"
-        fi
-        predictions_info="${TEAL}Predictions: ctx full ${ctx_eta}${RESET}"
-    fi
-
-    # Session cap ETA (only if session usage available)
-    if [ "$session_usage" != "-1" ] && [ -n "$session_resets_at" ]; then
-        # session_usage is 0-100 percentage; estimate remaining tokens in session
-        # Claude Pro session limit ~ 90000 tokens per 5h window (approximate)
-        session_limit_tokens=90000
-        session_used_tokens=$(( session_limit_tokens * session_usage / 100 ))
-        session_remaining_tokens=$(( session_limit_tokens - session_used_tokens ))
-        if [ "$session_remaining_tokens" -gt 0 ]; then
-            mins_to_session_cap=$(( session_remaining_tokens / burn_per_min ))
-            if [ "$mins_to_session_cap" -ge 60 ]; then
-                session_eta="~$(( mins_to_session_cap / 60 ))h $(( mins_to_session_cap % 60 ))m"
-            else
-                session_eta="~${mins_to_session_cap}m"
-            fi
-            predictions_info="${predictions_info} ${SUBTEXT0}|${RESET} ${TEAL}session cap ${session_eta}${RESET}"
-        fi
-    fi
-fi
-
-# Fetch usage data from Anthropic API (Step 2)
-fetch_usage_data
-roll_forward_if_stale
-
-# Build usage display string (Step 3)
+# Subscription rate limits, straight from the statusline payload. Present only
+# for Claude.ai Pro/Max, and only after the first API response of the session;
+# Claude Code drops a window once its resets_at passes.
 usage_info=""
-if [ "$session_usage" != "-1" ] && [ "$weekly_usage" != "-1" ]; then
-    # Format session with relative time. Stale (rolled-forward) data shows "--"
-    # in neutral color since real utilization is unknown until API recovers.
-    if [ "$session_stale" = "1" ]; then
-        session_pct="--"
-        session_color="$SUBTEXT0"
-    else
-        session_pct=$(format_percentage "$session_usage")
-        session_color=$(get_usage_color "$session_usage")
-    fi
-    session_time=$(format_reset_time "$session_resets_at" "relative")
+if [ -n "$session_pct" ] || [ -n "$weekly_pct" ]; then
+    segments=()
 
-    # Calculate absolute reset time for session (12-hour format)
-    session_absolute_time=""
-    if [ -n "$session_resets_at" ] && [ "$session_resets_at" != "null" ]; then
-        session_absolute_time=$(date -d "$session_resets_at" +"%I:%M%P" 2>/dev/null | sed 's/^0//')
-    fi
-
-    # Format weekly with smart same-day detection
-    if [ "$weekly_stale" = "1" ]; then
-        weekly_pct="--"
-        weekly_color="$SUBTEXT0"
-    else
-        weekly_pct=$(format_percentage "$weekly_usage")
-        weekly_color=$(get_usage_color "$weekly_usage")
-    fi
-    weekly_time=$(format_reset_time "$weekly_resets_at" "weekly")
-
-    # Calculate absolute reset time for weekly (12-hour format) - same as session logic
-    weekly_absolute_time=""
-    if [ -n "$weekly_resets_at" ] && [ "$weekly_resets_at" != "null" ]; then
-        # Check if weekly reset is on the same day (same logic as format_reset_time)
-        today_weekly=$(date +%Y-%m-%d)
-        target_day_weekly=$(date -d "$weekly_resets_at" +%Y-%m-%d 2>/dev/null)
-        if [ "$today_weekly" = "$target_day_weekly" ]; then
-            weekly_absolute_time=$(date -d "$weekly_resets_at" +"%I:%M%P" 2>/dev/null | sed 's/^0//')
+    if [ -n "$session_pct" ]; then
+        session_color=$(get_usage_color "$session_pct")
+        session_time=$(format_reset_time "$session_resets_at" "relative")
+        session_reset_text=""
+        if [ -n "$session_time" ]; then
+            session_absolute_time=$(date -d "@$session_resets_at" +"%I:%M%P" 2>/dev/null | sed 's/^0//')
+            session_reset_text=" ${SUBTEXT0}(resets in ${session_time}"
+            [ -n "$session_absolute_time" ] && session_reset_text="${session_reset_text} - ${session_absolute_time}"
+            session_reset_text="${session_reset_text})${RESET}"
         fi
+        segments+=("${SUBTEXT1}Session:${RESET} ${session_color}${session_pct}%${RESET}${session_reset_text}")
     fi
 
-    # Build the output string with appropriate "resets in/on" prefix
-    if [ -n "$session_time" ] && [ -n "$weekly_time" ]; then
-        # Determine "in" vs "on" for weekly based on whether it's a date format
-        weekly_prefix="in"
-        if [[ "$weekly_time" =~ ^[0-9]+[a-z]+[[:space:]][A-Z][a-z]+$ ]]; then
-            # Matches date format like "21st Sep"
-            weekly_prefix="on"
+    if [ -n "$weekly_pct" ]; then
+        weekly_color=$(get_usage_color "$weekly_pct")
+        weekly_time=$(format_reset_time "$weekly_resets_at" "weekly")
+        weekly_reset_text=""
+        if [ -n "$weekly_time" ]; then
+            # "on 21st Sep" for a future day, "in 3h 10m" for a countdown
+            weekly_prefix="in"
+            weekly_absolute_time=""
+            if [[ "$weekly_time" =~ ^[0-9]+[a-z]+[[:space:]][A-Z][a-z]+$ ]]; then
+                weekly_prefix="on"
+            else
+                weekly_absolute_time=$(date -d "@$weekly_resets_at" +"%I:%M%P" 2>/dev/null | sed 's/^0//')
+            fi
+            weekly_reset_text=" ${SUBTEXT0}(resets ${weekly_prefix} ${weekly_time}"
+            [ -n "$weekly_absolute_time" ] && weekly_reset_text="${weekly_reset_text} - ${weekly_absolute_time}"
+            weekly_reset_text="${weekly_reset_text})${RESET}"
         fi
-
-        # Build session string with absolute time if available
-        session_reset_text="resets in ${session_time}"
-        if [ -n "$session_absolute_time" ]; then
-            session_reset_text="resets in ${session_time} - ${session_absolute_time}"
-        fi
-
-        # Build weekly string with absolute time if available (same day only)
-        weekly_reset_text="resets ${weekly_prefix} ${weekly_time}"
-        if [ -n "$weekly_absolute_time" ]; then
-            weekly_reset_text="resets ${weekly_prefix} ${weekly_time} - ${weekly_absolute_time}"
-        fi
-
-        usage_info="${SUBTEXT1}Session:${RESET} ${session_color}${session_pct}%${RESET} ${SUBTEXT0}(${session_reset_text})${RESET} ${SUBTEXT0}|${RESET} ${SUBTEXT1}Weekly:${RESET} ${weekly_color}${weekly_pct}%${RESET} ${SUBTEXT0}(${weekly_reset_text})${RESET}"
+        segments+=("${SUBTEXT1}Weekly:${RESET} ${weekly_color}${weekly_pct}%${RESET}${weekly_reset_text}")
     fi
-fi
 
-# Append extra cost if non-zero
-if [ -n "$extra_cost" ] && [ "$extra_cost" != "0" ] && [ "$extra_cost" != "null" ]; then
-    usage_info="${usage_info} | ${RED}Extra Usage: \$$(awk "BEGIN {printf \"%.2f\", $extra_cost/100}")${RESET}"
-fi
-
-# Calculate model distribution from transcript (Option C)
-model_dist_info=""
-if [ -f "$transcript_path" ] && command -v jq >/dev/null 2>&1; then
-    model_dist=$(tr -d '\000-\010\013\014\016-\037' < "$transcript_path" | jq -rs '
-        map(select(.message.model != null and .message.usage != null)) |
-        group_by(.message.model) |
-        map({
-            model: .[0].message.model,
-            tokens: (map((.message.usage.input_tokens // 0) + (.message.usage.output_tokens // 0)) | add)
-        }) |
-        . as $groups |
-        (map(.tokens) | add) as $total |
-        if ($groups | length) <= 1 or $total == 0 then ""
-        else
-            $groups |
-            sort_by(-.tokens) |
-            map(
-                (.tokens * 100 / $total | floor | tostring) + "% " +
-                (if .tokens >= 1000 then (.tokens / 1000 * 10 | floor / 10 | tostring) + "K" else (.tokens | tostring) end) +
-                " tok " + (.model | ltrimstr("claude-"))
-            ) |
-            "Models: " + join(" | ")
-        end
-    ' 2>/dev/null || echo "")
-    if [ -n "$model_dist" ]; then
-        colored_dist=$(echo "$model_dist" | sed \
-            -e "s|Models: |${TEAL}Models:${RESET} |" \
-            -e "s| | ${SUBTEXT0}|${RESET} |g")
-        model_dist_info="$colored_dist"
+    usage_info="${segments[0]}"
+    if [ "${#segments[@]}" -gt 1 ]; then
+        usage_info="${segments[0]} ${SUBTEXT0}|${RESET} ${segments[1]}"
     fi
 fi
 
@@ -557,22 +374,17 @@ fi
 
 output="$output ${SUBTEXT0}|${RESET} ${LAVENDER}${project_name}${RESET}"
 
-# Add usage limits on separate line if available (Step 4)
+# Add usage limits on separate line if available
 if [ -n "$usage_info" ]; then
     output="$output\n$usage_info"
 fi
 
-# Add burn rate line if available (Option G)
+# Add burn rate line if available
 if [ -n "$burn_rate_info" ]; then
     output="$output\n$burn_rate_info"
 fi
 
-# Add predictions line if available (Option F)
-if [ -n "$predictions_info" ]; then
-    output="$output\n$predictions_info"
-fi
-
-# Add model distribution line if multiple models were used (Option C)
+# Add model distribution line if multiple models were used
 if [ -n "$model_dist_info" ]; then
     output="$output\n$model_dist_info"
 fi
