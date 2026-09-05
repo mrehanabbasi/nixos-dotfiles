@@ -44,7 +44,7 @@ _:
         """
 
         PARAMETER temperature 0
-        PARAMETER num_ctx 4096
+        PARAMETER num_ctx 1024
       '';
     in
     {
@@ -57,10 +57,14 @@ _:
 
           environmentVariables = {
             # This laptop runs nvidia powerManagement.finegrained (see
-            # one-piece/gpu.nix), so the dGPU powers off when idle. Unload the
-            # model quickly after a dictation burst instead of pinning the GPU
-            # awake; s1-mini is 462 MB, so reloading it is sub-second.
-            OLLAMA_KEEP_ALIVE = "2m";
+            # one-piece/gpu.nix), so the dGPU powers off when idle. Reloading
+            # s1-mini after unload isn't actually sub-second in practice - GPU
+            # wake + reload adds a couple seconds to the first dictation after
+            # a gap - so keep it warm across a longer idle window instead.
+            OLLAMA_KEEP_ALIVE = "10m";
+
+            # Flash attention: faster attention kernel, no accuracy cost.
+            OLLAMA_FLASH_ATTENTION = "1";
           };
         };
 
