@@ -199,10 +199,6 @@
                   "focusedWindow"
                 ];
                 centerWidgets = [
-                  {
-                    id = "voxtype-status";
-                    enabled = true;
-                  }
                   "music"
                   {
                     id = "clock";
@@ -288,11 +284,7 @@
               enable = true;
             };
 
-            # Custom voxtype status widget
-            voxtype-status = {
-              enable = true;
-              src = ./voxtype-widget;
-            };
+            # The voxtypeActivityOverlay plugin is configured by the voxtype module.
           };
         };
 
@@ -358,6 +350,11 @@
             if ${pkgs.systemd}/bin/systemctl --user is-active --quiet dms.service; then
               old_hash=$(cat "${markerFile}" 2>/dev/null || echo "")
               if [ "$old_hash" != "${configHash}" ]; then
+                # Plugins are loaded through a stable ~/.config path, and every
+                # store file carries the same epoch mtime, so Qt's QML disk cache
+                # sees "same URL, same timestamp" and serves a stale compile of
+                # the previous plugin version. Drop it before restarting.
+                rm -rf "${config.xdg.cacheHome}/quickshell/qmlcache"
                 ${pkgs.systemd}/bin/systemctl --user restart dms.service
               fi
             fi

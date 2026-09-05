@@ -1,0 +1,134 @@
+--- a/DmsVoxtypeActivityOverlay.qml	2026-09-05 09:55:41.186577194 +0500
++++ b/DmsVoxtypeActivityOverlay.qml	2026-09-05 11:11:54.824089912 +0500
+@@ -26,6 +26,7 @@
+     property real transcriptOpacityValue: (pluginData.transcriptOpacity || 96) / 100.0
+     property string transcriptCapturePath: stateDir + "/activity-overlay-last.txt"
+     property bool isRecording: false
++    property bool isTranscribing: currentState === "transcribing"
+     property bool transcriptVisible: false
+     property string transcriptText: ""
+     property var barValues: Array.from({ length: 12 }, () => 0)
+@@ -212,7 +213,7 @@
+     // it works on any screen width without hardcoding pixels.
+     PanelWindow {
+         id: overlay
+-        visible: root.isRecording || (root.showTranscriptText && root.transcriptVisible)
++        visible: root.isRecording || root.isTranscribing || (root.showTranscriptText && root.transcriptVisible)
+         mask: Region {
+             item: cancelButton
+         }
+@@ -282,12 +283,18 @@
+             anchors.horizontalCenter: parent.horizontalCenter
+             anchors.bottom: parent.bottom
+             anchors.bottomMargin: 12
+-            width: root.showCancelButton ? 216 : 176
+-            height: 48
++            width: root.isTranscribing
++                ? 106
++                : ((root.showCancelButton && root.isRecording) ? 96 : 72)
++            height: 24
+             radius: height / 2
+ 
++            Behavior on width {
++                NumberAnimation { duration: 180; easing.type: Easing.InOutQuad }
++            }
++
+             // Animate in/out - opacity on Item is valid
+-            opacity: root.isRecording ? root.pillOpacityValue : 0.0
++            opacity: (root.isRecording || root.isTranscribing) ? root.pillOpacityValue : 0.0
+             Behavior on opacity {
+                 NumberAnimation { duration: 220; easing.type: Easing.InOutQuad }
+             }
+@@ -298,18 +305,21 @@
+ 
+             Row {
+                 anchors.centerIn: parent
+-                spacing: 8
++                spacing: 5
+ 
++                // Sized to exactly fit the 12 bars, so no dead gap opens up
++                // between the visualizer and the cancel button. Widened while
++                // transcribing so the label inside is not clipped.
+                 Item {
+-                    width: 144
+-                    height: 36
++                    width: root.isTranscribing ? 84 : 48
++                    height: 16
+                     anchors.verticalCenter: parent.verticalCenter
+                     clip: true
+ 
+                     Row {
+                         anchors.centerIn: parent
+-                        spacing: 4
+-                        visible: root.visualizerMode !== "waveform"
++                        spacing: 2
++                        visible: !root.isTranscribing && root.visualizerMode !== "waveform"
+ 
+                         Repeater {
+                             model: 12
+@@ -322,9 +332,9 @@
+                                     ? Math.min(1.0, (root.barValues[index] / 100.0) * root.visualizerGain)
+                                     : 0.0
+ 
+-                                width: 4
+-                                height: 6 + level * 26
+-                                radius: 2
++                                width: 2
++                                height: 2 + level * 12
++                                radius: 1
+                                 anchors.verticalCenter: parent.verticalCenter
+ 
+                                 color: Qt.rgba(
+@@ -341,9 +351,27 @@
+                         }
+                     }
+ 
++                    // Transcribing has no live mic input to visualize, so the
++                    // bars are replaced by a pulsing label for that phase.
++                    Text {
++                        anchors.centerIn: parent
++                        visible: root.isTranscribing
++                        text: "Transcribing…"
++                        color: Theme.primary
++                        font.pixelSize: 10
++                        font.weight: Font.Medium
++
++                        SequentialAnimation on opacity {
++                            running: root.isTranscribing
++                            loops: Animation.Infinite
++                            NumberAnimation { from: 1.0; to: 0.45; duration: 700; easing.type: Easing.InOutQuad }
++                            NumberAnimation { from: 0.45; to: 1.0; duration: 700; easing.type: Easing.InOutQuad }
++                        }
++                    }
++
+                     Item {
+                         anchors.fill: parent
+-                        visible: root.visualizerMode === "waveform"
++                        visible: !root.isTranscribing && root.visualizerMode === "waveform"
+ 
+                         Repeater {
+                             model: 26
+@@ -352,10 +380,10 @@
+                                 required property int index
+                                 property real level: root.waveformSamples[index] || 0
+ 
+-                                x: parent.width - width - (25 - index + root.waveformScrollProgress) * 5.5
+-                                width: 3
+-                                height: Math.max(4, level * 32)
+-                                radius: 1.5
++                                x: parent.width - width - (25 - index + root.waveformScrollProgress) * 1.85
++                                width: 1
++                                height: Math.max(2, level * 13)
++                                radius: 0.5
+                                 anchors.verticalCenter: parent.verticalCenter
+                                 color: Theme.primary
+                             }
+@@ -367,7 +395,7 @@
+                     id: cancelButton
+                     visible: root.showCancelButton && root.isRecording
+                     anchors.verticalCenter: parent.verticalCenter
+-                    buttonSize: 32
++                    buttonSize: 20
+                     iconName: "close"
+                     iconColor: Theme.error
+                     tooltipText: "Cancel recording"
