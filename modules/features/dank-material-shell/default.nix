@@ -212,6 +212,7 @@
                   "weather"
                 ];
                 rightWidgets = [
+                  "idleInhibitor"
                   "systemTray"
                   {
                     id = "dankKDEConnect";
