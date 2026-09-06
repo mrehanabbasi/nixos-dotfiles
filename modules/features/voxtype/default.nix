@@ -144,6 +144,11 @@
                   # loop ("increase the limit increase the limit ..."), and context
                   # window optimisation is the documented trigger. Keep it off.
                   context_window_optimization = false;
+
+                  # ~10% faster inference, ~75% less VRAM, on the Vulkan backend.
+                  # No accuracy tradeoff - unlike context_window_optimization
+                  # above, this isn't linked to the phrase-repetition bug.
+                  flash_attention = true;
                 };
 
                 # Whisper hallucinates on silence ("Thank you.", "Thanks for
