@@ -37,6 +37,23 @@ _:
           playerctl
         ];
 
+        # Portals: the hyprland backend only implements Screenshot/ScreenCast/
+        # GlobalShortcuts, and gtk.portal is marked UseIn=gnome, so FileChooser
+        # has no implementation under XDG_CURRENT_DESKTOP=Hyprland. Apps using
+        # native (portal) file dialogs - e.g. OnlyOffice "Save as" - fail with
+        # org.freedesktop.portal.FileChooser errors without this.
+        xdg.portal = {
+          enable = true;
+          extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+          config.hyprland = {
+            default = [
+              "hyprland"
+              "gtk"
+            ];
+            "org.freedesktop.impl.portal.FileChooser" = [ "gtk" ];
+          };
+        };
+
         # Note: gvfs.enable is in thunar.nix
         services.upower.enable = true;
       };
