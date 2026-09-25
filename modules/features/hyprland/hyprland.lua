@@ -253,7 +253,7 @@ bind(mainMod .. " + SEMICOLON", hl.dsp.exec_cmd(lockCmd), "Lock session")
 bind(mainMod .. " + Q", hl.dsp.window.close(), "Close window")
 bind(mainMod .. " + F", hl.dsp.window.fullscreen({ action = "toggle" }), "Toggle fullscreen")
 bind(mainMod .. " + SHIFT + Space", hl.dsp.window.float({ action = "toggle" }), "Toggle floating")
-bind(mainMod .. " + P", hl.dsp.window.pin(), "Pin window (floating, all workspaces)")
+bind(mainMod .. " + O", hl.dsp.window.pin(), "Pin window on top (floating, all workspaces)")
 bind(mainMod .. " + C", hl.dsp.window.center(), "Centre floating window")
 bind(mainMod .. " + S", hl.dsp.layout("togglesplit"), "Toggle dwindle split direction")
 bind(mainMod .. " + SHIFT + C", hl.dsp.exec_cmd("hyprctl reload"), "Reload Hyprland config")
@@ -265,14 +265,17 @@ bind(mainMod .. " + COMMA", hl.dsp.group.prev(), "Group: previous tab")
 bind(mainMod .. " + PERIOD", hl.dsp.group.next(), "Group: next tab")
 
 -- Screenshots
+-- Keyed on P rather than Print so nothing here depends on the Print key
+-- existing - the custom keyboard layout may drop it entirely.
+--
 -- hyprshot saves to disk *and* copies to the clipboard unless --clipboard-only.
 -- --freeze pins the screen while a region is selected.
-bind("Print", hl.dsp.exec_cmd("hyprshot -m output"), "Screenshot: current workspace")
-bind(mainMod .. " + Print", hl.dsp.exec_cmd("hyprshot -z -m region"), "Screenshot: select region")
-bind(mainMod .. " + SHIFT + Print", hl.dsp.exec_cmd("hyprshot -z -m region --clipboard-only"),
+bind(mainMod .. " + P", hl.dsp.exec_cmd("hyprshot -z -m region"), "Screenshot: select region")
+bind(mainMod .. " + SHIFT + P", hl.dsp.exec_cmd("hyprshot -z -m region --clipboard-only"),
   "Screenshot: region to clipboard only")
-bind(mainMod .. " + CTRL + Print", hl.dsp.exec_cmd("hyprshot -z -m window"), "Screenshot: pick a window")
-bind(mainMod .. " + SHIFT + P", hl.dsp.exec_cmd("hyprpicker"), "Pick colour under cursor")
+bind(mainMod .. " + CTRL + P", hl.dsp.exec_cmd("hyprshot -m output"), "Screenshot: current workspace")
+bind(mainMod .. " + ALT + P", hl.dsp.exec_cmd("hyprshot -z -m window"), "Screenshot: pick a window")
+bind(mainMod .. " + I", hl.dsp.exec_cmd("hyprpicker"), "Inspect: pick colour under cursor")
 
 -- Window focus (vim keys)
 bind(mainMod .. " + H", hl.dsp.focus({ direction = "left" }), "Focus left")
