@@ -11,6 +11,10 @@ local cursorTheme = "Catppuccin Mocha Blue"
 local cursorSize  = "24"
 local mainMod     = "SUPER"
 
+-- Single source of truth for locking. DMS owns lock and idle on this host
+-- (see dank-material-shell/default.nix); hypridle/hyprlock are not in the path.
+local lockCmd     = "dms ipc call lock lock"
+
 -- Monitors (dynamic; `hyprctl keyword` is unusable under the Lua parser, so
 -- layout is applied with hl.monitor() from Lua on startup and on hotplug).
 --
@@ -118,9 +122,18 @@ hl.config({
       active_border   = { colors = { "rgba(33ccffee)", "rgba(00ff99ee)" }, angle = 45 },
       inactive_border = "rgba(595959aa)",
     },
-    resize_on_border = false,
+    -- Mouse edge-drag resize. border_size is 1px, so the grab area has to be
+    -- extended or the border is unhittable in practice.
+    resize_on_border = true,
+    extend_border_grab_area = 15,
     allow_tearing = false,
     layout = "dwindle",
+  },
+
+  binds      = {
+    -- SUPER+Tab returns to the previous workspace; re-pressing a workspace key
+    -- you are already on also bounces back.
+    workspace_back_and_forth = true,
   },
 
   decoration = {
@@ -190,107 +203,192 @@ hl.animation({ leaf = "zoomFactor", enabled = true, speed = 7, bezier = "quick" 
 -- Gestures
 hl.gesture({ fingers = 3, direction = "horizontal", action = "workspace" })
 
+-- ===========================================================================
 -- Keybindings
-hl.bind(mainMod .. " + RETURN", hl.dsp.exec_cmd(terminal))
-hl.bind(mainMod .. " + Q", hl.dsp.window.close())
-hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager))
-hl.bind(mainMod .. " + SHIFT + E", hl.dsp.exec_cmd("thunar"))
-hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))
-hl.bind(mainMod .. " + Space", hl.dsp.exec_cmd("dms ipc call spotlight open"))
-hl.bind(mainMod .. " + Print", hl.dsp.exec_cmd("hyprshot -m region"))
-hl.bind(mainMod .. " + SHIFT + Print", hl.dsp.exec_cmd("hyprshot -m output"))
-hl.bind(mainMod .. " + SHIFT + P", hl.dsp.exec_cmd("hyprpicker"))
-hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())
-hl.bind(mainMod .. " + S", hl.dsp.layout("togglesplit"))
-hl.bind(mainMod .. " + B", hl.dsp.exec_cmd(webBrowser))
-hl.bind(mainMod .. " + SHIFT + B", hl.dsp.exec_cmd(webBrowser2))
-hl.bind(mainMod .. " + T", hl.dsp.exec_cmd(terminal .. " --title='btop' --window-width=140 --window-height=35 -e btop"))
-hl.bind(mainMod .. " + SEMICOLON", hl.dsp.exec_cmd("dms ipc call lock lock"))
-hl.bind(mainMod .. " + N", hl.dsp.exec_cmd("dms ipc call notifications toggle"))
-hl.bind(mainMod .. " + SHIFT + N", hl.dsp.exec_cmd("dms ipc call notifications clearAll"))
-hl.bind(mainMod .. " + A", hl.dsp.exec_cmd("pavucontrol"))
-hl.bind(mainMod .. " + SHIFT + A", hl.dsp.exec_cmd("voxtype record toggle"))
-hl.bind(mainMod .. " + F", hl.dsp.window.fullscreen({ action = "toggle" }))
-hl.bind(mainMod .. " + X", hl.dsp.exec_cmd("dms ipc call powermenu toggle"))
+--
+-- Modifier grammar for directional keys (h/j/k/l):
+--   SUPER              focus window
+--   SUPER + SHIFT      swap window
+--   SUPER + CTRL       focus monitor          (h/l only)
+--   SUPER + CTRL+SHIFT move window to monitor (h/l only)
+--   SUPER + ALT        move workspace to monitor (h/l only)
+-- SHIFT consistently means "bring the window along".
+--
+-- Every bind carries a description so `hyprctl binds -j` can render a cheatsheet.
+-- ===========================================================================
 
--- Cycle between windows in same workspace
-hl.bind("ALT + Tab", hl.dsp.window.cycle_next())
-hl.bind("ALT + Tab", hl.dsp.window.alter_zorder({ mode = "top" }))
-hl.bind("ALT + SHIFT + Tab", hl.dsp.window.cycle_next({ next = false }))
-hl.bind("ALT + SHIFT + Tab", hl.dsp.window.alter_zorder({ mode = "top" }))
+local RESIZE_STEP = 40 -- px per press for the quick-nudge binds and resize mode
+local RESIZE_FINE = 10 -- px per press when holding SHIFT inside resize mode
 
--- DMS clipboard
-hl.bind(mainMod .. " + SHIFT + V", hl.dsp.exec_cmd("dms ipc call clipboard toggle"))
-
--- Focus with vim keys
-hl.bind(mainMod .. " + H", hl.dsp.focus({ direction = "left" }))
-hl.bind(mainMod .. " + L", hl.dsp.focus({ direction = "right" }))
-hl.bind(mainMod .. " + K", hl.dsp.focus({ direction = "up" }))
-hl.bind(mainMod .. " + J", hl.dsp.focus({ direction = "down" }))
-
--- Workspaces 1-10 (10 mapped to key 0) and move-to-workspace
-for i = 1, 10 do
-  local key = i % 10
-  hl.bind(mainMod .. " + " .. key, hl.dsp.focus({ workspace = i }))
-  hl.bind(mainMod .. " + SHIFT + " .. key, hl.dsp.window.move({ workspace = i }))
+local function bind(keys, dispatcher, desc, opts)
+  opts = opts or {}
+  opts.description = desc
+  return hl.bind(keys, dispatcher, opts)
 end
 
--- Swap windows with vim keys
-hl.bind(mainMod .. " + SHIFT + H", hl.dsp.window.swap({ direction = "left" }))
-hl.bind(mainMod .. " + SHIFT + L", hl.dsp.window.swap({ direction = "right" }))
-hl.bind(mainMod .. " + SHIFT + K", hl.dsp.window.swap({ direction = "up" }))
-hl.bind(mainMod .. " + SHIFT + J", hl.dsp.window.swap({ direction = "down" }))
+-- Applications
+bind(mainMod .. " + RETURN", hl.dsp.exec_cmd(terminal), "Terminal")
+bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager), "File manager (yazi)")
+bind(mainMod .. " + SHIFT + E", hl.dsp.exec_cmd("thunar"), "File manager (Thunar)")
+bind(mainMod .. " + B", hl.dsp.exec_cmd(webBrowser), "Browser (Brave)")
+bind(mainMod .. " + SHIFT + B", hl.dsp.exec_cmd(webBrowser2), "Browser (LibreWolf)")
+bind(mainMod .. " + T",
+  hl.dsp.exec_cmd(terminal .. " --title='btop' --window-width=140 --window-height=35 -e btop"),
+  "System monitor (btop)")
+bind(mainMod .. " + A", hl.dsp.exec_cmd("pavucontrol"), "Audio mixer")
+bind(mainMod .. " + D", hl.dsp.exec_cmd("voxtype record toggle"), "Dictation: toggle recording")
 
--- Special workspace (scratchpad)
-hl.bind(mainMod .. " + W", hl.dsp.workspace.toggle_special("magic"))
-hl.bind(mainMod .. " + SHIFT + S", hl.dsp.window.move({ workspace = "special:magic" }))
+-- Shell (DMS)
+bind(mainMod .. " + Space", hl.dsp.exec_cmd("dms ipc call spotlight open"), "App launcher")
+bind(mainMod .. " + V", hl.dsp.exec_cmd("dms ipc call clipboard toggle"), "Clipboard history")
+bind(mainMod .. " + N", hl.dsp.exec_cmd("dms ipc call notifications toggle"), "Notification centre")
+bind(mainMod .. " + SHIFT + N", hl.dsp.exec_cmd("dms ipc call notifications clearAll"), "Clear notifications")
+bind(mainMod .. " + X", hl.dsp.exec_cmd("dms ipc call powermenu toggle"), "Power menu")
+-- SUPER+? - '?' is SHIFT+/, so the chord is bound on the slash key.
+-- Reads `hyprctl binds -j`, so it always reflects what is actually loaded.
+bind(mainMod .. " + SHIFT + SLASH", hl.dsp.exec_cmd("hypr-cheatsheet"), "Show keyboard shortcuts")
+bind(mainMod .. " + SEMICOLON", hl.dsp.exec_cmd(lockCmd), "Lock session")
 
--- Email special workspace (Proton Mail + Fastmail)
-hl.bind(mainMod .. " + M", hl.dsp.workspace.toggle_special("email"))
+-- Window state
+bind(mainMod .. " + Q", hl.dsp.window.close(), "Close window")
+bind(mainMod .. " + F", hl.dsp.window.fullscreen({ action = "toggle" }), "Toggle fullscreen")
+bind(mainMod .. " + SHIFT + Space", hl.dsp.window.float({ action = "toggle" }), "Toggle floating")
+bind(mainMod .. " + P", hl.dsp.window.pin(), "Pin window (floating, all workspaces)")
+bind(mainMod .. " + C", hl.dsp.window.center(), "Centre floating window")
+bind(mainMod .. " + S", hl.dsp.layout("togglesplit"), "Toggle dwindle split direction")
+bind(mainMod .. " + SHIFT + C", hl.dsp.exec_cmd("hyprctl reload"), "Reload Hyprland config")
 
--- Scroll through workspaces
-hl.bind(mainMod .. " + mouse_down", hl.dsp.focus({ workspace = "e+1" }))
-hl.bind(mainMod .. " + mouse_up", hl.dsp.focus({ workspace = "e-1" }))
+-- Groups (tabbed windows)
+bind(mainMod .. " + G", hl.dsp.group.toggle(), "Toggle group (tab windows together)")
+bind(mainMod .. " + SHIFT + G", hl.dsp.group.lock({ action = "toggle" }), "Lock/unlock group")
+bind(mainMod .. " + COMMA", hl.dsp.group.prev(), "Group: previous tab")
+bind(mainMod .. " + PERIOD", hl.dsp.group.next(), "Group: next tab")
 
--- Resize windows
-hl.bind(mainMod .. " + SHIFT + UP", hl.dsp.window.resize({ x = 0, y = -20, relative = true }))
-hl.bind(mainMod .. " + SHIFT + DOWN", hl.dsp.window.resize({ x = 0, y = 20, relative = true }))
-hl.bind(mainMod .. " + SHIFT + LEFT", hl.dsp.window.resize({ x = -20, y = 0, relative = true }))
-hl.bind(mainMod .. " + SHIFT + RIGHT", hl.dsp.window.resize({ x = 20, y = 0, relative = true }))
+-- Screenshots
+-- hyprshot saves to disk *and* copies to the clipboard unless --clipboard-only.
+-- --freeze pins the screen while a region is selected.
+bind("Print", hl.dsp.exec_cmd("hyprshot -m output"), "Screenshot: current workspace")
+bind(mainMod .. " + Print", hl.dsp.exec_cmd("hyprshot -z -m region"), "Screenshot: select region")
+bind(mainMod .. " + SHIFT + Print", hl.dsp.exec_cmd("hyprshot -z -m region --clipboard-only"),
+  "Screenshot: region to clipboard only")
+bind(mainMod .. " + CTRL + Print", hl.dsp.exec_cmd("hyprshot -z -m window"), "Screenshot: pick a window")
+bind(mainMod .. " + SHIFT + P", hl.dsp.exec_cmd("hyprpicker"), "Pick colour under cursor")
 
--- Move workspace to monitor
-hl.bind(mainMod .. " + Tab", hl.dsp.workspace.move({ monitor = "+1" }))
-hl.bind(mainMod .. " + SHIFT + Tab", hl.dsp.workspace.move({ monitor = "-1" }))
+-- Window focus (vim keys)
+bind(mainMod .. " + H", hl.dsp.focus({ direction = "left" }), "Focus left")
+bind(mainMod .. " + L", hl.dsp.focus({ direction = "right" }), "Focus right")
+bind(mainMod .. " + K", hl.dsp.focus({ direction = "up" }), "Focus up")
+bind(mainMod .. " + J", hl.dsp.focus({ direction = "down" }), "Focus down")
+
+-- Swap windows (vim keys)
+bind(mainMod .. " + SHIFT + H", hl.dsp.window.swap({ direction = "left" }), "Swap window left")
+bind(mainMod .. " + SHIFT + L", hl.dsp.window.swap({ direction = "right" }), "Swap window right")
+bind(mainMod .. " + SHIFT + K", hl.dsp.window.swap({ direction = "up" }), "Swap window up")
+bind(mainMod .. " + SHIFT + J", hl.dsp.window.swap({ direction = "down" }), "Swap window down")
+
+-- Cycle windows within the workspace
+bind("ALT + Tab", hl.dsp.window.cycle_next(), "Cycle windows")
+hl.bind("ALT + Tab", hl.dsp.window.alter_zorder({ mode = "top" }))
+bind("ALT + SHIFT + Tab", hl.dsp.window.cycle_next({ next = false }), "Cycle windows (reverse)")
+hl.bind("ALT + SHIFT + Tab", hl.dsp.window.alter_zorder({ mode = "top" }))
+
+-- Monitors
+bind(mainMod .. " + CTRL + H", hl.dsp.focus({ monitor = "-1" }), "Focus monitor left")
+bind(mainMod .. " + CTRL + L", hl.dsp.focus({ monitor = "+1" }), "Focus monitor right")
+bind(mainMod .. " + CTRL + SHIFT + H", hl.dsp.window.move({ monitor = "-1" }), "Move window to monitor left")
+bind(mainMod .. " + CTRL + SHIFT + L", hl.dsp.window.move({ monitor = "+1" }), "Move window to monitor right")
+bind(mainMod .. " + ALT + H", hl.dsp.workspace.move({ monitor = "-1" }), "Move workspace to monitor left")
+bind(mainMod .. " + ALT + L", hl.dsp.workspace.move({ monitor = "+1" }), "Move workspace to monitor right")
+
+-- Workspaces 1-10 (10 mapped to key 0)
+for i = 1, 10 do
+  local key = i % 10
+  bind(mainMod .. " + " .. key, hl.dsp.focus({ workspace = i }), "Go to workspace " .. i)
+  bind(mainMod .. " + SHIFT + " .. key, hl.dsp.window.move({ workspace = i }), "Move window to workspace " .. i)
+  bind(mainMod .. " + CTRL + " .. key, hl.dsp.window.move({ workspace = i, silent = true }),
+    "Move window to workspace " .. i .. " (stay here)")
+end
+
+-- Workspace navigation
+bind(mainMod .. " + Tab", hl.dsp.focus({ workspace = "previous" }), "Previous workspace (back and forth)")
+bind(mainMod .. " + BRACKETLEFT", hl.dsp.focus({ workspace = "e-1" }), "Workspace back")
+bind(mainMod .. " + BRACKETRIGHT", hl.dsp.focus({ workspace = "e+1" }), "Workspace forward")
+bind(mainMod .. " + mouse_down", hl.dsp.focus({ workspace = "e+1" }), "Workspace forward (scroll)")
+bind(mainMod .. " + mouse_up", hl.dsp.focus({ workspace = "e-1" }), "Workspace back (scroll)")
+
+-- Special workspaces
+bind(mainMod .. " + W", hl.dsp.workspace.toggle_special("magic"), "Toggle scratchpad")
+bind(mainMod .. " + SHIFT + W", hl.dsp.window.move({ workspace = "special:magic" }), "Move window to scratchpad")
+bind(mainMod .. " + M", hl.dsp.workspace.toggle_special("email"), "Toggle email workspace")
+
+-- Resize: quick nudge. `repeating` is what makes this usable - without it every
+-- step costs a discrete keypress.
+bind(mainMod .. " + SHIFT + UP", hl.dsp.window.resize({ x = 0, y = -RESIZE_STEP, relative = true }),
+  "Shrink window vertically", { repeating = true })
+bind(mainMod .. " + SHIFT + DOWN", hl.dsp.window.resize({ x = 0, y = RESIZE_STEP, relative = true }),
+  "Grow window vertically", { repeating = true })
+bind(mainMod .. " + SHIFT + LEFT", hl.dsp.window.resize({ x = -RESIZE_STEP, y = 0, relative = true }),
+  "Shrink window horizontally", { repeating = true })
+bind(mainMod .. " + SHIFT + RIGHT", hl.dsp.window.resize({ x = RESIZE_STEP, y = 0, relative = true }),
+  "Grow window horizontally", { repeating = true })
+
+-- Resize mode: SUPER+R enters, hjkl/arrows resize freely, SHIFT for fine steps,
+-- Escape/Return/SUPER+R leaves. Resizing is a mode, not a series of keypresses.
+local RESIZE_DIRS = {
+  H = { -1, 0 }, L = { 1, 0 }, K = { 0, -1 }, J = { 0, 1 },
+  LEFT = { -1, 0 }, RIGHT = { 1, 0 }, UP = { 0, -1 }, DOWN = { 0, 1 },
+}
+
+hl.define_submap("resize", function()
+  for key, d in pairs(RESIZE_DIRS) do
+    hl.bind(key,
+      hl.dsp.window.resize({ x = d[1] * RESIZE_STEP, y = d[2] * RESIZE_STEP, relative = true }),
+      { repeating = true })
+    hl.bind("SHIFT + " .. key,
+      hl.dsp.window.resize({ x = d[1] * RESIZE_FINE, y = d[2] * RESIZE_FINE, relative = true }),
+      { repeating = true })
+  end
+  hl.bind("Escape", hl.dsp.submap("reset"))
+  hl.bind("RETURN", hl.dsp.submap("reset"))
+  hl.bind(mainMod .. " + R", hl.dsp.submap("reset"))
+end)
+
+bind(mainMod .. " + R", hl.dsp.submap("resize"), "Resize mode (hjkl/arrows, Esc to exit)")
 
 -- Mouse drag/resize
-hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(), { mouse = true })
-hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
+bind(mainMod .. " + mouse:272", hl.dsp.window.drag(), "Drag window", { mouse = true })
+bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), "Resize window with mouse", { mouse = true })
 
--- Lid switch - skip suspend when a known external monitor is connected
+-- Lid switch - skip suspend when a known external monitor is connected.
+-- Uses the same locker as SUPER+SEMICOLON; DMS owns lock and idle on this host.
 hl.bind("switch:Lid Switch", function()
   local primary, secondary = detect_monitors()
   if not (primary or secondary) then
-    hl.exec_cmd("bash -c 'loginctl lock-session && sleep 1 && systemctl suspend'")
+    hl.exec_cmd(lockCmd)
+    hl.timer(function() hl.exec_cmd("systemctl suspend") end, { timeout = 1000, type = "oneshot" })
   end
 end, { locked = true })
 
 -- Media keys
-hl.bind("XF86AudioNext", hl.dsp.exec_cmd("playerctl next"), { locked = true })
-hl.bind("XF86AudioPause", hl.dsp.exec_cmd("playerctl play-pause"), { locked = true })
-hl.bind("XF86AudioPlay", hl.dsp.exec_cmd("playerctl play-pause"), { locked = true })
-hl.bind("XF86AudioPrev", hl.dsp.exec_cmd("playerctl previous"), { locked = true })
+bind("XF86AudioNext", hl.dsp.exec_cmd("playerctl next"), "Next track", { locked = true })
+bind("XF86AudioPause", hl.dsp.exec_cmd("playerctl play-pause"), "Play/pause", { locked = true })
+bind("XF86AudioPlay", hl.dsp.exec_cmd("playerctl play-pause"), "Play/pause", { locked = true })
+bind("XF86AudioPrev", hl.dsp.exec_cmd("playerctl previous"), "Previous track", { locked = true })
 
--- Volume and brightness (repeating)
-hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+"),
-  { locked = true, repeating = true })
-hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"),
-  { locked = true, repeating = true })
-hl.bind("XF86AudioMute", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"),
-  { locked = true, repeating = true })
-hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"),
-  { locked = true, repeating = true })
-hl.bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%+"), { locked = true, repeating = true })
-hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%-"), { locked = true, repeating = true })
+-- Volume and brightness. Only the continuous controls repeat - a toggle that
+-- repeats just flaps its own state while the key is held.
+bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+"),
+  "Volume up", { locked = true, repeating = true })
+bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"),
+  "Volume down", { locked = true, repeating = true })
+bind("XF86AudioMute", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"),
+  "Mute output", { locked = true })
+bind("XF86AudioMicMute", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"),
+  "Mute microphone", { locked = true })
+bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%+"),
+  "Brightness up", { locked = true, repeating = true })
+bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%-"),
+  "Brightness down", { locked = true, repeating = true })
 
 -- Workspace rules
 hl.workspace_rule({

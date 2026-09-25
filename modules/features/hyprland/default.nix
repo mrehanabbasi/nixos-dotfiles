@@ -22,16 +22,28 @@ _:
           xwayland.enable = true;
         };
 
-        programs.hyprlock.enable = true;
-        services.hypridle.enable = true;
+        # DMS owns idle and lock on this host (see dank-material-shell), so
+        # hypridle is not wanted: it fought DMS for the idle inhibitor and
+        # core-dumped on every boot until it hit systemd's restart limit.
+        #
+        # programs.hyprlock.enable is deliberately NOT used - that module hard-sets
+        # services.hypridle.enable = true with no mkDefault, so enabling it forces
+        # hypridle back on. Installing the package and declaring its PAM service
+        # by hand gives the same working escape-hatch locker without the coupling.
 
         security.polkit.enable = true;
         security.pam.services.hyprlock = { };
+
+        # DMS's lock screen authenticates against /etc/pam.d/dankshell. Without
+        # this it falls back to a stack it generates into ~/.local/state, which
+        # pins nix store paths and goes stale across rebuilds.
+        security.pam.services.dankshell = { };
 
         environment.systemPackages = with pkgs; [
           hyprpaper
           hyprshot
           hyprpicker
+          hyprlock # manual fallback locker; see the hypridle note above
           # Runtime deps for Hyprland keybindings
           brightnessctl
           playerctl

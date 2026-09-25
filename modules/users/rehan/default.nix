@@ -40,6 +40,7 @@ in
 
             # Desktop
             inputs.self.modules.homeManager.hyprland
+            inputs.self.modules.homeManager.hypr-cheatsheet
             inputs.self.modules.homeManager.vm-audio
             inputs.self.modules.homeManager.dank-material-shell
 
@@ -150,6 +151,7 @@ in
           features.tmux.enable = true;
           features.sesh.enable = true;
           features.hyprland.enable = true;
+          features."hypr-cheatsheet".enable = true;
           features.kdeconnect.enable = true;
           features.git.enable = true;
           features.gpg.enable = true;
