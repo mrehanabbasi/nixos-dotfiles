@@ -16,37 +16,40 @@ _:
           enable = true;
 
           settings = {
+            # Yazi expands %s (all selected paths) itself - it does not pass the
+            # files as shell positional args, so "$0"/"$@" expand to nothing and
+            # every opener fails.
             opener = {
               imv_image = [
                 {
-                  run = ''imv "$0"'';
+                  run = "imv %s";
                   desc = "imv Image Viewer";
-                  block = false;
+                  orphan = true;
                   for = "unix";
                 }
               ];
 
               mpv_video = [
                 {
-                  run = ''mpv "$0"'';
+                  run = "mpv %s";
                   desc = "mpv Video Player";
-                  block = false;
+                  orphan = true;
                   for = "unix";
                 }
               ];
 
               zathura_pdf = [
                 {
-                  run = ''zathura "$0"'';
+                  run = "zathura %s";
                   desc = "Zathura PDF Reader";
-                  block = false;
+                  orphan = true;
                   for = "unix";
                 }
               ];
 
               nvim_code = [
                 {
-                  run = ''nvim "$0"'';
+                  run = "nvim %s";
                   desc = "Neovim Code Editor";
                   block = true;
                   for = "unix";
@@ -55,7 +58,7 @@ _:
 
               edit = [
                 {
-                  run = ''nvim "$@"'';
+                  run = "nvim %s";
                   desc = "Neovim";
                   block = true;
                 }
@@ -63,7 +66,7 @@ _:
 
               extract = [
                 {
-                  run = ''ya pub extract --list "$@"'';
+                  run = "ya pub extract --list %s";
                   desc = "Extract here";
                 }
               ];
