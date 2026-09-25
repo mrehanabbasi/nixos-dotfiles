@@ -405,7 +405,7 @@ hl.window_rule({
 })
 
 hl.window_rule({ match = { class = "^proton-mail$" }, workspace = "special:email silent" })
-hl.window_rule({ match = { class = "^com-fastmail-fastmail$" }, workspace = "special:email silent" })
+hl.window_rule({ match = { class = "^com\\.fastmail\\.Fastmail$" }, workspace = "special:email silent" })
 hl.window_rule({ match = { class = "^nixos-session$" }, workspace = "1 silent" })
 
 hl.window_rule({
