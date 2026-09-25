@@ -90,6 +90,7 @@ in
             inputs.self.modules.homeManager.claude
             inputs.self.modules.homeManager.codex
             inputs.self.modules.homeManager.gemini-cli
+            inputs.self.modules.homeManager.chatgpt
             inputs.self.modules.homeManager.polar
             inputs.self.modules.homeManager.pre-commit
 
@@ -126,6 +127,7 @@ in
           features.fzf.enable = true;
           features.codex.enable = true;
           features."gemini-cli".enable = true;
+          features.chatgpt.enable = true;
           features.polar.enable = true;
           features.ghostty.enable = true;
           features."handlr-regex".enable = true;
