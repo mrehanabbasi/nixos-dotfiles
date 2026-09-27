@@ -4,6 +4,10 @@ _:
 
 {
   flake.modules.nixos.one-piece-network = _: {
+    # Guests sit on libvirt's default NAT network. Features that need to reach
+    # a VM scope themselves to this interface rather than to an address.
+    host.vmBridge = "virbr0";
+
     networking = {
       hostName = "one-piece";
 
@@ -14,12 +18,6 @@ _:
 
       # iwd disabled in favor of wpa_supplicant for WiFi 7 MLO support
       wireless.iwd.enable = false;
-
-      firewall = {
-        # VTube Studio phone app
-        allowedTCPPorts = [ 25565 ];
-        allowedUDPPorts = [ 25565 ];
-      };
     };
   };
 }

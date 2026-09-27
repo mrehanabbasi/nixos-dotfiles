@@ -17,9 +17,10 @@ _:
           efi.canTouchEfiVariables = true;
         };
 
-        # Use default kernel (6.12 LTS) - linuxPackages_latest (6.19) fixes USB-C DP
-        # alt mode but has unstable MLO (Multi-Link Operation) in ath12k causing
-        # firmware timeouts and kernel panics on suspend. Revisit when upstream lands.
+        # boot.kernelPackages is deliberately left at the nixpkgs default here.
+        # A host that needs a different kernel for its own hardware sets it in
+        # its own hardware module, so one machine's chipset quirk cannot pin
+        # the kernel for the whole fleet.
       };
     };
 }

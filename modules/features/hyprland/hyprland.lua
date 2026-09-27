@@ -18,13 +18,20 @@ local lockCmd     = "dms ipc call lock lock"
 -- Monitors (dynamic; `hyprctl keyword` is unusable under the Lua parser, so
 -- layout is applied with hl.monitor() from Lua on startup and on hotplug).
 --
+-- The panel name, monitor models and lid behaviour are host facts, so they are
+-- injected from Nix as the DISPLAY_CONFIG global (see default.nix, option
+-- features.hyprland.displays). The fallbacks below keep this file valid on its
+-- own, and give a host that declares nothing a plain auto-arranged layout.
+--
 -- Externals are identified by model rather than connector, so they keep working
 -- no matter which port they land on. Models come from the monitor description —
 -- list them with: hyprctl monitors all | grep description
-local INTERNAL        = "eDP-1"
-local PRIMARY_MODEL   = "DELL SE2422H" -- default display
-local SECONDARY_MODEL = "DELL U2424HE" -- extends to the LEFT of primary
-local INTERNAL_WIDTH  = 1920           -- fallback; eDP-1 is absent while disabled
+local DISPLAY             = rawget(_G, "DISPLAY_CONFIG") or {}
+local INTERNAL            = DISPLAY.internal                 -- nil when the host has no built-in panel
+local EXTERNAL_MODELS     = DISPLAY.external_models or {}    -- ordered left to right
+local INTERNAL_WIDTH      = DISPLAY.internal_width or 1920   -- fallback; the panel is absent while disabled
+local DISABLE_INTERNAL_AT = DISPLAY.disable_internal_at or 2 -- externals needed before the panel goes dark
+local LID_SWITCH          = DISPLAY.lid_switch or false
 
 local function find_by_model(monitors, model)
   for _, m in ipairs(monitors) do
@@ -35,36 +42,42 @@ local function find_by_model(monitors, model)
   return nil
 end
 
--- Returns primary, secondary, internal for the currently connected set
+-- Returns the connected externals, in the configured left-to-right order, plus
+-- the internal panel if this host has one and it is currently attached.
 local function detect_monitors()
   local monitors = hl.get_monitors() or {}
   local internal
-  for _, m in ipairs(monitors) do
-    if m.name == INTERNAL then internal = m end
+  if INTERNAL then
+    for _, m in ipairs(monitors) do
+      if m.name == INTERNAL then internal = m end
+    end
   end
-  return find_by_model(monitors, PRIMARY_MODEL), find_by_model(monitors, SECONDARY_MODEL), internal
+  local externals = {}
+  for _, model in ipairs(EXTERNAL_MODELS) do
+    local m = find_by_model(monitors, model)
+    if m then externals[#externals + 1] = m end
+  end
+  return externals, internal
 end
 
 local function configure_monitors()
-  local primary, secondary, internal = detect_monitors()
+  local externals, internal = detect_monitors()
+  local x = 0
 
-  if primary and secondary then
-    -- Both externals: laptop panel off, secondary left of primary
-    hl.monitor({ output = INTERNAL, disabled = true })
-    hl.monitor({ output = secondary.name, mode = "highres", position = "0x0", scale = 1 })
-    hl.monitor({ output = primary.name, mode = "highres", position = secondary.width .. "x0", scale = 1 })
-  elseif primary or secondary then
-    -- Single external: eDP-1 stays primary, external extends to its right
-    local ext = primary or secondary
-    hl.monitor({ output = INTERNAL, mode = "highres", position = "0x0", scale = 1 })
-    hl.monitor({
-      output = ext.name,
-      mode = "highres",
-      position = (internal and internal.width or INTERNAL_WIDTH) .. "x0",
-      scale = 1,
-    })
-  else
-    hl.monitor({ output = INTERNAL, mode = "highres", position = "0x0", scale = 1 })
+  if INTERNAL then
+    if #externals >= DISABLE_INTERNAL_AT then
+      -- Enough externals to stand on their own: the built-in panel goes dark.
+      hl.monitor({ output = INTERNAL, disabled = true })
+    else
+      hl.monitor({ output = INTERNAL, mode = "highres", position = "0x0", scale = 1 })
+      x = internal and internal.width or INTERNAL_WIDTH
+    end
+  end
+
+  -- Externals tile rightwards from wherever the panel left off.
+  for _, m in ipairs(externals) do
+    hl.monitor({ output = m.name, mode = "highres", position = x .. "x0", scale = 1 })
+    x = x + m.width
   end
 end
 
@@ -364,13 +377,16 @@ bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), "Resize window with mous
 
 -- Lid switch - skip suspend when a known external monitor is connected.
 -- Uses the same locker as SUPER+SEMICOLON; DMS owns lock and idle on this host.
-hl.bind("switch:Lid Switch", function()
-  local primary, secondary = detect_monitors()
-  if not (primary or secondary) then
-    hl.exec_cmd(lockCmd)
-    hl.timer(function() hl.exec_cmd("systemctl suspend") end, { timeout = 1000, type = "oneshot" })
-  end
-end, { locked = true })
+-- Only bound on hosts that declare a lid (features.hyprland.displays.lidSwitch).
+if LID_SWITCH then
+  hl.bind("switch:Lid Switch", function()
+    local externals = detect_monitors()
+    if #externals == 0 then
+      hl.exec_cmd(lockCmd)
+      hl.timer(function() hl.exec_cmd("systemctl suspend") end, { timeout = 1000, type = "oneshot" })
+    end
+  end, { locked = true })
+end
 
 -- Media keys
 bind("XF86AudioNext", hl.dsp.exec_cmd("playerctl next"), "Next track", { locked = true })

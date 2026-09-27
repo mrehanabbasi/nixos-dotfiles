@@ -2,11 +2,10 @@
 _:
 
 {
+  # Option-only aspect: the NixOS side declares the toggle so a host can set it,
+  # while everything GPG actually does lives in the Home Manager aspect below.
   flake.modules.nixos.gpg =
-    { config, lib, ... }:
-    let
-      cfg = config.features.gpg;
-    in
+    { lib, ... }:
     {
       options.features.gpg.enable = lib.mkEnableOption "GPG key management";
     };

@@ -1,10 +1,16 @@
 # Blender 3D creation suite
-# On hybrid AMD+NVIDIA: launch with `nvidia-offload blender` for GPU rendering
+# On a hybrid-GPU host, launch through that host's offload wrapper (e.g.
+# `nvidia-offload blender`) to render on the discrete GPU.
 _:
 
 {
   flake.modules.homeManager.blender =
-    { config, lib, pkgs, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
     let
       cfg = config.features.blender;
     in

@@ -4,7 +4,7 @@ _:
 
 {
   flake.modules.nixos.one-piece-gpu =
-    { config, ... }:
+    { config, pkgs, ... }:
     {
       hardware = {
         nvidia = {
@@ -33,6 +33,10 @@ _:
         graphics = {
           enable = true;
           enable32Bit = true;
+
+          # OpenCL for the AMD iGPU path (DaVinci Resolve and friends). The
+          # NVIDIA side gets its ICD from the proprietary driver above.
+          extraPackages = [ pkgs.mesa.opencl ];
         };
 
         # For Qualcomm WiFi 7 card support
@@ -42,13 +46,15 @@ _:
       # NVIDIA video driver
       services.xserver.videoDrivers = [ "nvidia" ];
 
-      # Wayland environment variable for Ozone-based apps
-      environment.sessionVariables.NIXOS_OZONE_WL = "1";
-
       # Kernel parameters for NVIDIA suspend/resume stability
       boot.kernelParams = [
         "nvidia.NVreg_PreserveVideoMemoryAllocations=1"
         "nvidia.NVreg_TemporaryFilePath=/var/tmp"
       ];
+
+      # `nvidia-offload` exists because enableOffloadCmd is set above. Published
+      # as a machine fact so apps that benefit from the discrete GPU can offer a
+      # launcher, without this module having to know which apps those are.
+      host.gpu.offloadCommand = "nvidia-offload";
     };
 }

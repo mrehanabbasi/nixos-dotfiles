@@ -1,10 +1,11 @@
 # Ollama - local LLM server, used here for VoxType dictation cleanup
 # (removing filler words / self-corrections from rambling dictation).
 #
-# GPU accel via Vulkan, not CUDA. Vulkan is vendor-neutral and the NVIDIA
-# proprietary driver implements it fully, so this runs on the RTX 4050 -
-# but ollama-vulkan is in the binary cache (~44 MiB fetch, zero builds),
-# whereas ollama-cuda is unfree and must compile locally for hours.
+# GPU accel via Vulkan, not CUDA/ROCm. Vulkan is vendor-neutral - AMD, Intel
+# and the NVIDIA proprietary driver all implement it - so one package covers
+# every GPU, and ollama-vulkan is in the binary cache (~44 MiB fetch, zero
+# builds) whereas ollama-cuda is unfree and must compile locally for hours.
+# Overridable: services.ollama.package is set with mkDefault.
 _:
 
 {
@@ -53,15 +54,16 @@ _:
       config = lib.mkIf cfg.enable {
         services.ollama = {
           enable = true;
-          package = pkgs.ollama-vulkan;
+          package = lib.mkDefault pkgs.ollama-vulkan;
 
           environmentVariables = {
-            # This laptop runs nvidia powerManagement.finegrained (see
-            # one-piece/gpu.nix), so the dGPU powers off when idle. Reloading
-            # s1-mini after unload isn't actually sub-second in practice - GPU
-            # wake + reload adds a couple seconds to the first dictation after
-            # a gap - so keep it warm across a longer idle window instead.
-            OLLAMA_KEEP_ALIVE = "10m";
+            # Long keep-alive because a GPU that runtime-suspends while idle
+            # (anything with finegrained power management) makes the reload
+            # after an unload cost GPU wake + model load - a couple of seconds
+            # on the first dictation after a gap, not the sub-second the
+            # default assumes. Keeping the model warm is cheaper; harmless on
+            # hosts whose GPU never powers down.
+            OLLAMA_KEEP_ALIVE = lib.mkDefault "10m";
 
             # Flash attention: faster attention kernel, no accuracy cost.
             OLLAMA_FLASH_ATTENTION = "1";

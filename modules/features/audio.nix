@@ -3,12 +3,49 @@ _:
 
 {
   flake.modules.nixos.audio =
-    { config, lib, pkgs, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
     let
       cfg = config.features.audio;
     in
     {
-      options.features.audio.enable = lib.mkEnableOption "audio configuration with Pipewire";
+      options.features.audio = {
+        enable = lib.mkEnableOption "audio configuration with Pipewire";
+
+        # Off by default: which interface carries VM audio is a host fact, and
+        # enabling this punches a hole in the firewall. Hosts that stream audio
+        # out of a VM turn it on; see also features.vm-audio.
+        pulseNetwork = {
+          enable = lib.mkEnableOption "PulseAudio TCP server, for streaming audio to/from VMs";
+
+          interfaces = lib.mkOption {
+            type = lib.types.listOf lib.types.str;
+            default = lib.optional (config.host.vmBridge != null) config.host.vmBridge;
+            defaultText = lib.literalExpression "[ config.host.vmBridge ]";
+            example = [ "virbr0" ];
+            description = ''
+              Interfaces the PulseAudio port is reachable on, named rather than
+              addressed so nothing has to know a bridge's subnet. Defaults to
+              the bridge the host declared its VMs sit on.
+
+              PipeWire's pulse server has no per-interface bind, so it listens
+              on every address and the firewall does the scoping: the port is
+              opened only on these interfaces. Leaving the list empty means the
+              server runs but is unreachable from outside the host.
+            '';
+          };
+
+          port = lib.mkOption {
+            type = lib.types.port;
+            default = 4713;
+            description = "TCP port for the PulseAudio server.";
+          };
+        };
+      };
       config = lib.mkIf cfg.enable {
         # Audio control tools
         environment.systemPackages = with pkgs; [
@@ -50,18 +87,25 @@ _:
           ];
 
           # Configure PulseAudio server to listen on network for VM audio streaming
-          extraConfig.pipewire-pulse."50-network" = {
-            "pulse.properties" = {
-              "server.address" = [
-                "unix:native"
-                "tcp:192.168.122.1:4713"
-              ];
+          extraConfig.pipewire-pulse = lib.optionalAttrs cfg.pulseNetwork.enable {
+            "50-network" = {
+              "pulse.properties" = {
+                "server.address" = [
+                  "unix:native"
+                  "tcp:${toString cfg.pulseNetwork.port}"
+                ];
+              };
             };
           };
         };
 
-        # Open firewall for PulseAudio TCP
-        networking.firewall.allowedTCPPorts = [ 4713 ];
+        # Reachability is scoped per interface rather than opened host-wide,
+        # since the server itself binds to every address.
+        networking.firewall.interfaces = lib.optionalAttrs cfg.pulseNetwork.enable (
+          lib.genAttrs cfg.pulseNetwork.interfaces (_: {
+            allowedTCPPorts = [ cfg.pulseNetwork.port ];
+          })
+        );
       };
     };
 }

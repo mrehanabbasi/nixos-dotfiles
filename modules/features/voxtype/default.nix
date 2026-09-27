@@ -119,17 +119,21 @@
               # this avoids the onnx-cuda source build entirely.
               engine = "whisper";
 
-              # Vulkan backend - vendor-neutral API that NVIDIA's driver implements,
-              # so this runs on the RTX 4050. In the binary cache, unlike CUDA.
-              package = inputs.voxtype.packages.${pkgs.stdenv.hostPlatform.system}.vulkan;
+              # Vulkan backend - vendor-neutral API that AMD, Intel and the
+              # NVIDIA proprietary driver all implement, so one package covers
+              # every GPU. In the binary cache, unlike CUDA. mkDefault so a
+              # host with no GPU (or one needing a different backend) can swap
+              # it without mkForce.
+              package = lib.mkDefault inputs.voxtype.packages.${pkgs.stdenv.hostPlatform.system}.vulkan;
 
               # Fetched declaratively by the voxtype HM module (whisper models only),
               # so there is no manual `voxtype setup model` step.
               # Full large-v3 over large-v3-turbo deliberately: turbo distils the
               # decoder from 32 layers to 4, and the decoder is what disambiguates
               # acoustically unclear audio from context - exactly what accented
-              # speech depends on. ~3.1 GB, fits the 4050's 6 GB fine.
-              model.name = "large-v3";
+              # speech depends on. Costs ~3.1 GB of VRAM, so mkDefault: a host
+              # with a smaller GPU drops to large-v3-turbo or a -q5 quant.
+              model.name = lib.mkDefault "large-v3";
 
               service.enable = true;
               settings = {

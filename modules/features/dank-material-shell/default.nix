@@ -8,10 +8,16 @@
       config,
       lib,
       pkgs,
+      osConfig ? null,
       ...
     }:
     let
       cfg = config.features."dank-material-shell";
+      hasBattery = cfg.formFactor == "laptop";
+
+      # Machine facts from the NixOS side (see modules/system/host.nix). Absent
+      # under standalone Home Manager, where the option default takes over.
+      host = if osConfig == null then { } else osConfig.host or { };
     in
     {
       imports = [
@@ -19,8 +25,27 @@
         inputs.dms-plugin-registry.homeModules.default
       ];
 
-      options.features."dank-material-shell".enable =
-        lib.mkEnableOption "DankMaterialShell desktop shell";
+      options.features."dank-material-shell" = {
+        enable = lib.mkEnableOption "DankMaterialShell desktop shell";
+
+        formFactor = lib.mkOption {
+          type = lib.types.enum [
+            "desktop"
+            "laptop"
+          ];
+          default = host.formFactor or "desktop";
+          defaultText = lib.literalExpression "osConfig.host.formFactor";
+          description = ''
+            Whether this machine runs on a battery. Laptops get the battery bar
+            widget, the low/critical alert thresholds, and the separate
+            on-battery idle timeouts; desktops get none of those, since a
+            battery readout there is dead UI and the on-battery timeouts never
+            fire anyway.
+
+            Follows the host's declared form factor by default.
+          '';
+        };
+      };
 
       config = lib.mkIf cfg.enable {
         programs.dank-material-shell = {
@@ -88,7 +113,7 @@
             showWorkspaceSwitcher = true;
             showFocusedWindow = true;
             showClock = true;
-            showBattery = true;
+            showBattery = hasBattery;
             showSystemTray = true;
             showNotificationButton = true;
             showCpuUsage = true;
@@ -127,15 +152,6 @@
             acMonitorTimeout = 600; # 10 min DPMS on AC
             acLockTimeout = 300; # 5 min lock on AC
             acSuspendTimeout = 0; # No suspend on AC
-
-            batteryMonitorTimeout = 420; # 7 min DPMS on battery
-            batteryLockTimeout = 180; # 3 min lock on battery
-            batterySuspendTimeout = 600; # 10 min suspend on battery
-
-            # Battery alerts are built into DMS now (the dankBatteryAlerts
-            # plugin was dropped from the registry).
-            batteryLowThreshold = 30;
-            batteryCriticalThreshold = 15;
 
             lockBeforeSuspend = true;
             loginctlLockIntegration = true;
@@ -216,7 +232,9 @@
                   "clipboard"
                   "cpuUsage"
                   "memUsage"
-                  "battery"
+                ]
+                ++ lib.optional hasBattery "battery"
+                ++ [
                   "controlCenterButton"
                   "notificationButton"
                   {
@@ -227,6 +245,18 @@
                 noBackground = false; # Background for widgets
               }
             ];
+          }
+          // lib.optionalAttrs hasBattery {
+            # Battery-only power management. On a desktop these never fire, and
+            # the alert thresholds have nothing to read.
+            batteryMonitorTimeout = 420; # 7 min DPMS on battery
+            batteryLockTimeout = 180; # 3 min lock on battery
+            batterySuspendTimeout = 600; # 10 min suspend on battery
+
+            # Battery alerts are built into DMS now (the dankBatteryAlerts
+            # plugin was dropped from the registry).
+            batteryLowThreshold = 30;
+            batteryCriticalThreshold = 15;
           };
 
           # Clipboard settings

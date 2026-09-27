@@ -19,6 +19,7 @@ in
       # ════════════════════════════════════════════════════════════════════
       # LAYER 2: Base system (no dependencies)
       # ════════════════════════════════════════════════════════════════════
+      inputs.self.modules.nixos.host
       inputs.self.modules.nixos.base
       inputs.self.modules.nixos.boot
       inputs.self.modules.nixos.networking
@@ -71,15 +72,18 @@ in
       inputs.self.modules.nixos.wine
       inputs.self.modules.nixos."davinci-resolve"
       inputs.self.modules.nixos.ollama
+      inputs.self.modules.nixos.kanata
+      inputs.self.modules.nixos."vtube-studio"
 
       # ════════════════════════════════════════════════════════════════════
       # LAYER 8: Host-specific hardware
       # ════════════════════════════════════════════════════════════════════
       inputs.self.modules.nixos.one-piece-hardware
       inputs.self.modules.nixos.one-piece-gpu
+      inputs.self.modules.nixos.one-piece-display
       inputs.self.modules.nixos.one-piece-network
       inputs.self.modules.nixos.one-piece-bluetooth
-      inputs.self.modules.nixos.one-piece-kanata
+      inputs.self.modules.nixos.one-piece-input
 
       # ════════════════════════════════════════════════════════════════════
       # LAYER 9: User (composes Home Manager)
@@ -92,38 +96,47 @@ in
       {
         time.timeZone = "Asia/Karachi";
         system.stateVersion = "26.05";
-        features.sops.enable = true;
-        features.context7.enable = true;
-        features.catppuccin.enable = true;
-        features.base.enable = true;
-        features.boot.enable = true;
-        features.fonts.enable = true;
-        features.networking.enable = true;
-        features.virtualisation.enable = true;
-        features.audio.enable = true;
-        features.appimage.enable = true;
-        features.brave.enable = true;
-        features."core-packages".enable = true;
-        features."core-services".enable = true;
-        features.flatpak.enable = true;
-        features.gamemode.enable = true;
-        features.ghostty.enable = true;
-        features.localsend.enable = true;
-        features."obs-studio".enable = true;
-        features.pia.enable = true;
-        features.steam.enable = true;
-        features.tailscale.enable = true;
-        features.thunar.enable = true;
-        features."vm-audio".enable = true;
-        features.wine.enable = true;
-        features."davinci-resolve".enable = true;
-        features.ollama.enable = true;
-        features.zsh.enable = true;
-        features.neovim.enable = true;
-        features.hyprland.enable = true;
-        features.kdeconnect.enable = true;
-        features.gpg.enable = true;
-        features."dms-greeter".enable = true;
+        features = {
+          sops.enable = true;
+          context7.enable = true;
+          catppuccin.enable = true;
+          base.enable = true;
+          boot.enable = true;
+          fonts.enable = true;
+          networking.enable = true;
+          virtualisation.enable = true;
+          audio = {
+            enable = true;
+            # Guest VMs reach the host's PipeWire over TCP; the interface it is
+            # exposed on comes from host.vmBridge.
+            pulseNetwork.enable = true;
+          };
+          appimage.enable = true;
+          brave.enable = true;
+          "core-packages".enable = true;
+          "core-services".enable = true;
+          flatpak.enable = true;
+          gamemode.enable = true;
+          ghostty.enable = true;
+          localsend.enable = true;
+          "obs-studio".enable = true;
+          pia.enable = true;
+          steam.enable = true;
+          tailscale.enable = true;
+          thunar.enable = true;
+          "vm-audio".enable = true;
+          wine.enable = true;
+          "davinci-resolve".enable = true;
+          ollama.enable = true;
+          kanata.enable = true;
+          "vtube-studio".enable = true;
+          zsh.enable = true;
+          neovim.enable = true;
+          hyprland.enable = true;
+          kdeconnect.enable = true;
+          gpg.enable = true;
+          "dms-greeter".enable = true;
+        };
       }
     ];
   };

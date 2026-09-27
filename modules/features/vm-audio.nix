@@ -4,7 +4,12 @@ _:
 
 {
   flake.modules.nixos.vm-audio =
-    { config, lib, pkgs, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
     let
       cfg = config.features."vm-audio";
     in
@@ -18,12 +23,37 @@ _:
     };
 
   flake.modules.homeManager.vm-audio =
-    { config, lib, pkgs, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      osConfig ? null,
+      ...
+    }:
     let
       cfg = config.features."vm-audio";
+
+      # Machine facts from the NixOS side (see modules/system/host.nix).
+      host = if osConfig == null then { } else osConfig.host or { };
     in
     {
-      options.features."vm-audio".enable = lib.mkEnableOption "VM audio passthrough via Scream";
+      options.features."vm-audio" = {
+        enable = lib.mkEnableOption "VM audio passthrough via Scream";
+
+        interface = lib.mkOption {
+          type = lib.types.str;
+          default = host.vmBridge or "virbr0";
+          defaultText = lib.literalExpression "osConfig.host.vmBridge";
+          example = "br0";
+          description = ''
+            Network interface the Scream receiver listens on. Follows the
+            bridge the host declared its VMs sit on; libvirt's NAT bridge is
+            the fallback. Point it somewhere real - bound to an interface that
+            does not exist, the unit restart-loops silently.
+          '';
+        };
+      };
+
       config = lib.mkIf cfg.enable {
         # Virtual sink setup via pactl (runs once at login)
         systemd.user.services.scream-sink-setup = {
@@ -62,7 +92,7 @@ _:
 
           Service = {
             Environment = [ "PULSE_SINK=scream_sink" ];
-            ExecStart = "${pkgs.scream}/bin/scream -i virbr0 -o pulse";
+            ExecStart = "${pkgs.scream}/bin/scream -i ${cfg.interface} -o pulse";
             Restart = "on-failure";
             RestartSec = 3;
           };
