@@ -1,0 +1,97 @@
+--- a/DmsVoxtypeActivityOverlay.qml	2026-09-26 21:11:42.676288510 +0500
++++ b/DmsVoxtypeActivityOverlay.qml	2026-09-26 21:12:20.111381059 +0500
+@@ -38,9 +38,13 @@
+     readonly property bool isGenerating: currentState === "transcribing" || waitingForTranscript || pendingGeneration
+     readonly property bool pillActive: isRecording || isGenerating
+     readonly property bool showTrailingSlot: showCancelButton && (isRecording || displayGenerating)
++    // Roughly half-scale pill: upstream sizes it for a 48px-tall bar, which
++    // dwarfs a 2px-gap Hyprland layout. Every dimension below is scaled to
++    // match; the 12 bars at width 2 / spacing 2 span 46px, so the visualizer
++    // slot is 48 and no dead gap opens before the cancel button.
+     readonly property int pillWidth: displayGenerating
+-        ? (showTrailingSlot ? 104 : 64)
+-        : (showTrailingSlot ? 216 : 176)
++        ? (showTrailingSlot ? 70 : 44)
++        : (showTrailingSlot ? 96 : 72)
+ 
+     function resetOverlayState(clearTranscript) {
+         barValues = Array.from({ length: 12 }, () => 0)
+@@ -366,7 +370,7 @@
+             anchors.bottom: parent.bottom
+             anchors.bottomMargin: 12
+             width: root.pillWidth
+-            height: 48
++            height: 24
+             radius: height / 2
+ 
+             Behavior on width {
+@@ -391,11 +395,11 @@
+ 
+             Row {
+                 anchors.centerIn: parent
+-                spacing: 8
++                spacing: 5
+ 
+                 Item {
+-                    width: root.displayGenerating ? 32 : 144
+-                    height: 36
++                    width: root.displayGenerating ? 20 : 48
++                    height: 16
+                     anchors.verticalCenter: parent.verticalCenter
+                     clip: !root.displayGenerating
+ 
+@@ -404,14 +408,14 @@
+                         visible: root.displayGenerating
+                         running: visible
+                         anchors.centerIn: parent
+-                        size: 20
+-                        strokeWidth: 2.25
++                        size: 14
++                        strokeWidth: 1.75
+                         color: Theme.primary
+                     }
+ 
+                     Row {
+                         anchors.centerIn: parent
+-                        spacing: 4
++                        spacing: 2
+                         visible: root.isRecording && !root.displayGenerating && root.visualizerMode !== "waveform"
+ 
+                         Repeater {
+@@ -425,9 +429,9 @@
+                                     ? Math.min(1.0, (root.barValues[index] / 100.0) * root.visualizerGain)
+                                     : 0.0
+ 
+-                                width: 4
+-                                height: 6 + level * 26
+-                                radius: 2
++                                width: 2
++                                height: 2 + level * 12
++                                radius: 1
+                                 anchors.verticalCenter: parent.verticalCenter
+ 
+                                 color: Qt.rgba(
+@@ -455,10 +459,10 @@
+                                 required property int index
+                                 property real level: root.waveformSamples[index] || 0
+ 
+-                                x: parent.width - width - (25 - index + root.waveformScrollProgress) * 5.5
+-                                width: 3
+-                                height: Math.max(4, level * 32)
+-                                radius: 1.5
++                                x: parent.width - width - (25 - index + root.waveformScrollProgress) * 1.85
++                                width: 1
++                                height: Math.max(2, level * 13)
++                                radius: 0.5
+                                 anchors.verticalCenter: parent.verticalCenter
+                                 color: Theme.primary
+                             }
+@@ -470,7 +474,7 @@
+                     id: cancelButton
+                     visible: root.showTrailingSlot
+                     anchors.verticalCenter: parent.verticalCenter
+-                    buttonSize: 32
++                    buttonSize: 20
+                     iconName: "close"
+                     iconColor: Theme.error
+                     tooltipText: root.displayGenerating ? "Cancel transcription" : "Cancel recording"

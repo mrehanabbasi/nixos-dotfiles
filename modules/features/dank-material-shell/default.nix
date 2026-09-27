@@ -52,8 +52,6 @@
           enableCalendarEvents = true;
           enableClipboardPaste = true;
 
-          dgop.package = inputs.dgop.packages.${pkgs.stdenv.hostPlatform.system}.default;
-
           # Main settings
           settings = {
             # Theme - Catppuccin Mocha Blue (via Matugen)
@@ -134,6 +132,11 @@
             batteryLockTimeout = 180; # 3 min lock on battery
             batterySuspendTimeout = 600; # 10 min suspend on battery
 
+            # Battery alerts are built into DMS now (the dankBatteryAlerts
+            # plugin was dropped from the registry).
+            batteryLowThreshold = 30;
+            batteryCriticalThreshold = 15;
+
             lockBeforeSuspend = true;
             loginctlLockIntegration = true;
             fadeToLockEnabled = true;
@@ -179,10 +182,6 @@
             # Wallpaper (replaces hyprpaper)
             wallpaperPath = "${./wallpaper.png}";
             wallpaperFillMode = "Fill";
-
-            # Greeter wallpaper
-            greeterWallpaperPath = "${./login.png}";
-            greeterWallpaperFillMode = "Fill";
 
             # Bar config
             barConfigs = [
@@ -244,14 +243,6 @@
               enable = true;
               settings = {
                 preferredSource = "auto";
-              };
-            };
-
-            dankBatteryAlerts = {
-              enable = true;
-              settings = {
-                warningLevel = 30;
-                criticalLevel = 15;
               };
             };
 
@@ -376,44 +367,49 @@
     in
     {
       imports = [
-        inputs.dms.nixosModules.greeter
+        inputs.dank-greeter.nixosModules.default
       ];
 
       options.features."dms-greeter".enable = lib.mkEnableOption "DMS greeter display manager";
 
       config = lib.mkIf cfg.enable {
-        programs.dank-material-shell.greeter = {
+        programs.dms-greeter = {
           enable = true;
-          package = inputs.dms.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (old: {
-            postInstall = (old.postInstall or "") + ''
-              chmod -R u+w $out/share/quickshell/dms/Modules/Greetd
-              patch -p1 -d $out/share/quickshell/dms < ${./greeter-left-align.patch}
-            '';
-          });
+          # The greeter ships its QML embedded in the Go binary, so the layout
+          # patch has to land on the source tree before postPatch bakes it in.
+          package =
+            inputs.dank-greeter.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs
+              (old: {
+                postPatch = ''
+                  patch -p1 -d quickshell < ${./greeter-left-align.patch}
+                ''
+                + (old.postPatch or "");
+              });
           compositor.name = "hyprland";
           # Skip upstream configFiles: its preStart does `cp $src .` which preserves
           # nix store hash prefix in basename, but greeter expects exact filenames.
           logs.save = true; # Enable logging for debugging
         };
 
-        # Place wallpaper override + settings.json with exact names greeter expects.
-        # Cleans up stale hash-prefixed files left from earlier configFiles experiments.
+        # Place settings.json with the exact name the greeter expects.
+        # Cleans up stale files left from earlier configFiles experiments.
         systemd.services.greetd.preStart = lib.mkAfter ''
           cd /var/lib/dms-greeter
           # Remove any stale hash-prefixed files (from old configFiles experiments)
-          rm -f -- *-session.json *-settings.json *-background.png *-login.png *-greeter_wallpaper_override.jpg
-          cp -f ${./login.png} greeter_wallpaper_override.jpg
+          rm -f -- *-session.json *-settings.json *-background.png *-login.png \
+            *-greeter_wallpaper_override.jpg greeter_wallpaper_override.jpg
           cp -f ${
             pkgs.writeText "greeter-settings.json" (
               builtins.toJSON {
-                greeterWallpaperPath = "${./login.png}";
-                greeterWallpaperFillMode = "Fill";
+                # Greeter now reads the lock screen wallpaper keys, not greeterWallpaper*.
+                lockScreenWallpaperPath = "${./login.png}";
+                lockScreenWallpaperFillMode = "Fill";
                 lockScreenShowProfileImage = false;
               }
             )
           } settings.json
-          chmod 644 settings.json greeter_wallpaper_override.jpg
-          chown greeter: settings.json greeter_wallpaper_override.jpg
+          chmod 644 settings.json
+          chown greeter: settings.json
         '';
 
         # Default session

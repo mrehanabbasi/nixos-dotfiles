@@ -1,6 +1,6 @@
 --- a/Modules/Greetd/GreeterContent.qml
 +++ b/Modules/Greetd/GreeterContent.qml
-@@ -854,15 +854,7 @@
+@@ -806,15 +806,7 @@
          asynchronous: false
          cache: true
          visible: source !== ""
@@ -9,15 +9,15 @@
 -        layer.effect: MultiEffect {
 -            autoPaddingEnabled: false
 -            blurEnabled: true
--            blur: 0.8
--            blurMax: 32
+-            blur: Theme.lockScreenBlur
+-            blurMax: Theme.lockScreenBlurMax
 -            blurMultiplier: 1
 -        }
 +        layer.enabled: false
  
          Behavior on opacity {
              NumberAnimation {
-@@ -897,7 +889,8 @@
+@@ -850,7 +842,8 @@
          Column {
              id: greeterMainColumn
  
@@ -26,8 +26,8 @@
 +            anchors.leftMargin: 80
              anchors.verticalCenter: parent.verticalCenter
              spacing: Theme.spacingM
-             width: 380
-@@ -911,7 +904,7 @@
+             width: Math.min(LockMetrics.passwordRowWidth, parent.width - Theme.spacingXL * 2)
+@@ -864,7 +857,7 @@
                  Row {
                      id: clockText
  
@@ -36,12 +36,12 @@
                      anchors.top: parent.top
                      spacing: 0
  
-@@ -1023,7 +1016,7 @@
+@@ -940,7 +933,7 @@
              StyledText {
                  id: dateText
  
 -                anchors.horizontalCenter: parent.horizontalCenter
 +                anchors.left: parent.left
-                 text: systemClock.date.toLocaleDateString(I18n.locale(), GreetdSettings.getEffectiveLockDateFormat())
+                 text: systemClock.date.toLocaleDateString(I18n.locale(), SettingsData.lockDateFormat !== "" ? SettingsData.lockDateFormat : Locale.LongFormat)
                  font.pixelSize: Theme.fontSizeXLarge
-                 color: "white"
+                 color: Theme.lockScreenContentColor

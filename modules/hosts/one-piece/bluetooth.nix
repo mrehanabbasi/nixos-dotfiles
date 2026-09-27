@@ -1,5 +1,5 @@
 # Bluetooth configuration for one-piece
-# Auto-connect handled by blueman-applet (started in Hyprland)
+# Auto-connect handled by bluez Policy.AutoConnect; GUI via DankMaterialShell
 _:
 
 {

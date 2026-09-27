@@ -60,16 +60,16 @@
         if [ -n "$out" ]; then printf '%s' "$out"; else printf '%s' "$text"; fi
       '';
 
-      # Registry plugin, patched to keep the bottom pill on screen during the
-      # "transcribing" phase (upstream shows it only while recording).
+      # Registry plugin, patched down to roughly half its upstream size: the
+      # stock pill is scaled for a 48px bar and dominates the screen next to a
+      # 2px-gap layout. Transcribing-phase visibility is upstream as of 1.3.0.
       overlayPlugin = pkgs.applyPatches {
         name = "dms-voxtype-activity-overlay-patched";
         src =
           (import "${inputs.dms-plugin-registry}/nix/default.nix" { inherit pkgs; }).voxtypeActivityOverlay;
-        patches = [ ./overlay-transcribing.patch ];
+        patches = [ ./overlay-compact-pill.patch ];
       };
-
-      # Bottom-centre pill: live mic waveform while recording, "Transcribing…" after.
+      # Bottom-centre pill: live mic waveform while recording, spinner after.
       overlayConfig = {
         programs.dank-material-shell.plugins.voxtypeActivityOverlay = {
           enable = true;
