@@ -39,6 +39,10 @@ _:
             "$schema" = "https://json.schemastore.org/claude-code-settings.json";
             alwaysThinkingEnabled = true;
 
+            # Alias, not a pinned ID — resolves to whatever the current Sonnet
+            # release is, so a new Sonnet needs no rebuild here.
+            model = "sonnet";
+
             statusLine = {
               type = "command";
               command = "bash ${statuslineScript}";
