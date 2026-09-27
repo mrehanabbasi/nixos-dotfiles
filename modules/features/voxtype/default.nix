@@ -77,7 +77,7 @@
           settings = {
             visualizerMode = "bars";
             visualizerSensitivity = 180;
-            showCancelButton = true;
+            showCancelButton = false;
             # The transcript bubble needs a capture hook in voxtype's
             # post_process, which is already used for the s1-mini pass.
             showTranscriptText = false;
