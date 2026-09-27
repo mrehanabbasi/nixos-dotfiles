@@ -3,7 +3,12 @@ _:
 
 {
   flake.modules.homeManager.pre-commit =
-    { config, lib, pkgs, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
     let
       cfg = config.features."pre-commit";
     in

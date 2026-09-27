@@ -3,7 +3,12 @@ _:
 
 {
   flake.modules.homeManager.kdenlive =
-    { config, lib, pkgs, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
     let
       cfg = config.features.kdenlive;
     in

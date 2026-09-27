@@ -4,7 +4,12 @@ _:
 
 {
   flake.modules.nixos.core-packages =
-    { config, lib, pkgs, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
     let
       cfg = config.features."core-packages";
     in

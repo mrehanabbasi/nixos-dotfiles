@@ -8,7 +8,8 @@ _:
       cfg = config.features."mime-apps";
     in
     {
-      options.features."mime-apps".enable = lib.mkEnableOption "MIME type associations and default applications";
+      options.features."mime-apps".enable =
+        lib.mkEnableOption "MIME type associations and default applications";
       config = lib.mkIf cfg.enable {
         xdg.desktopEntries.neovimGhostty = {
           name = "Neovim in Ghostty";

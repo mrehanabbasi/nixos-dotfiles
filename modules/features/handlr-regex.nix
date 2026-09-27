@@ -4,7 +4,12 @@ _:
 
 {
   flake.modules.homeManager.handlr-regex =
-    { config, lib, pkgs, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
     let
       cfg = config.features."handlr-regex";
     in

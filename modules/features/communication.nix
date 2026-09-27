@@ -3,7 +3,12 @@ _:
 
 {
   flake.modules.homeManager.communication =
-    { config, lib, pkgs, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
     let
       cfg = config.features.communication;
     in

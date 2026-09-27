@@ -3,7 +3,12 @@ _:
 
 {
   flake.modules.nixos.obs-studio =
-    { config, lib, pkgs, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
     let
       cfg = config.features."obs-studio";
     in

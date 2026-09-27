@@ -3,7 +3,12 @@ _:
 
 {
   flake.modules.homeManager.discord =
-    { config, lib, pkgs, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
     let
       cfg = config.features.discord;
     in

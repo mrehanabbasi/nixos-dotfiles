@@ -4,10 +4,18 @@
 
 {
   flake.modules.homeManager.go =
-    { config, lib, pkgs, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
     let
       cfg = config.features.go;
-      pkgs-unstable = import inputs.nixpkgs-unstable { inherit (pkgs.stdenv.hostPlatform) system; inherit (pkgs) config; };
+      pkgs-unstable = import inputs.nixpkgs-unstable {
+        inherit (pkgs.stdenv.hostPlatform) system;
+        inherit (pkgs) config;
+      };
     in
     {
       options.features.go.enable = lib.mkEnableOption "Go development environment";

@@ -3,7 +3,12 @@ _:
 
 {
   flake.modules.nixos.steam =
-    { config, lib, pkgs, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
     let
       cfg = config.features.steam;
     in

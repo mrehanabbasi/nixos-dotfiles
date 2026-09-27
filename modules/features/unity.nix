@@ -3,7 +3,12 @@ _:
 
 {
   flake.modules.homeManager.unity =
-    { config, lib, pkgs, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
     let
       cfg = config.features.unity;
     in

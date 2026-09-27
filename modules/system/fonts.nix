@@ -4,7 +4,12 @@ _:
 
 {
   flake.modules.nixos.fonts =
-    { config, lib, pkgs, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
     let
       cfg = config.features.fonts;
     in
