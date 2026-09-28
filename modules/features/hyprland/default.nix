@@ -74,6 +74,19 @@ _:
         # Note: gvfs.enable is in thunar.nix
         services.upower.enable = true;
 
+        # Lid policy belongs to Hyprland (switch:Lid Switch in hyprland.lua),
+        # which skips suspend while an external monitor is up. logind's default
+        # HandleLidSwitch=suspend races that binding: on resume this laptop's
+        # ACPI lid re-reports "closed" (the firmware is not SW_LID compliant)
+        # before DRM has re-detected the externals, so logind's docked check
+        # misses and it re-suspends the machine seconds after it woke. Handing
+        # the lid to a single owner removes the race.
+        services.logind.settings.Login = lib.mkIf (config.host.formFactor == "laptop") {
+          HandleLidSwitch = "ignore";
+          HandleLidSwitchDocked = "ignore";
+          HandleLidSwitchExternalPower = "ignore";
+        };
+
         # Ozone-based apps (Electron, Chromium) only pick the Wayland backend
         # when told to. A property of running a Wayland session, not of any
         # particular GPU.

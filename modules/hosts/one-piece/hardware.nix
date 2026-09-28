@@ -15,10 +15,14 @@ _:
         (modulesPath + "/installer/scan/not-detected.nix")
       ];
 
-      # Kernel: stay on the nixpkgs default (6.12 LTS). linuxPackages_latest
-      # (6.19) fixes this machine's USB-C DP alt mode but ships unstable MLO
-      # (Multi-Link Operation) in ath12k, which times out the WiFi firmware and
-      # panics on suspend. Revisit when the ath12k fix lands upstream.
+      # Kernel: left at the nixpkgs default. A newer one is tempting on this
+      # machine - it has been reported to fix the USB-C DP alt mode the far end
+      # keeps failing to enter - but NVIDIA is the binding constraint, not
+      # anything about the kernel itself. 595.71.05 is the only driver release
+      # in this pin and it does not build against 7.x: "implicit declaration of
+      # function 'strncpy'" in nvidia/os-interface.c, which 7.x dropped.
+      # hardware.nvidia.open = true fails on the same file. A driver new enough
+      # to build exists only in nixpkgs-unstable.
       boot = {
         initrd = {
           availableKernelModules = [
