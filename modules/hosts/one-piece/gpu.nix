@@ -39,7 +39,8 @@ _:
           extraPackages = [ pkgs.mesa.opencl ];
         };
 
-        # For Qualcomm WiFi 7 card support
+        # Vendor blobs the hardware in this laptop needs: rtw89 WiFi firmware, AMD
+        # CPU microcode (hardware.nix gates updateMicrocode on this), amdgpu.
         enableRedistributableFirmware = true;
       };
 

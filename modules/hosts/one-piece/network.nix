@@ -1,5 +1,5 @@
 # Network configuration for one-piece
-# Host-specific: hostname, WiFi backend for Qualcomm FastConnect 7800
+# Host-specific: hostname, VM bridge
 _:
 
 {
@@ -8,16 +8,11 @@ _:
     # a VM scope themselves to this interface rather than to an address.
     host.vmBridge = "virbr0";
 
-    networking = {
-      hostName = "one-piece";
-
-      networkmanager = {
-        # Switched to wpa_supplicant for WiFi 7 MLO support with Qualcomm FastConnect 7800
-        wifi.backend = "wpa_supplicant";
-      };
-
-      # iwd disabled in favor of wpa_supplicant for WiFi 7 MLO support
-      wireless.iwd.enable = false;
-    };
+    # WiFi needs no declaration here: the card in this laptop is a Realtek
+    # RTL8852BE (WiFi 6, rtw89_8852be), which the NetworkManager defaults drive
+    # as-is - wpa_supplicant as backend, iwd off. Both were once pinned in this
+    # module to match those same defaults; asserting a default only implies the
+    # host needs something special, so they are gone.
+    networking.hostName = "one-piece";
   };
 }
