@@ -57,7 +57,21 @@
             | ${lib.getExe pkgs.jq} -j '(.response // "") | sub("^\\s+";"") | sub("\\s+$";"")'
         )" || out=""
 
-        if [ -n "$out" ]; then printf '%s' "$out"; else printf '%s' "$text"; fi
+        [ -n "$out" ] || out="$text"
+
+        # Collapse every whitespace run - newlines included - to a single
+        # space. [Structure: prose] means a line break is always an artefact,
+        # and output.mode is "type": voxtype replays the text as keystrokes,
+        # so a stray newline is a literal Enter that submits the chat box or
+        # search bar mid-dictation. Applied to the fallback too, since a raw
+        # whisper transcript can carry segment breaks of its own.
+        # Trimmed with parameter expansion rather than a sed pass, because sed
+        # terminates its last line with a newline - reintroducing exactly what
+        # this is here to remove.
+        out="$(printf '%s' "$out" | ${pkgs.coreutils}/bin/tr -s '[:space:]' ' ')"
+        out="''${out# }"
+        out="''${out% }"
+        printf '%s' "$out"
       '';
 
       # Registry plugin, patched down to roughly half its upstream size: the
