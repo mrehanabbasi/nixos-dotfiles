@@ -17,7 +17,18 @@ _:
 
           # NetworkManager for network management
           # Host-specific wifi.backend configured in host module
-          networkmanager.enable = true;
+          networkmanager = {
+            enable = true;
+
+            # Leave the radio awake. rtw89 (and most drivers) stall an
+            # associated link when power save parks the RX path, which reads as
+            # "WiFi connected, no traffic".
+            wifi.powersave = false;
+
+            # WARN hides roam and connection-switch events, which are exactly
+            # what a silent drop needs to be diagnosed from.
+            logLevel = "INFO";
+          };
 
           # Firewall enabled by default
           # Host-specific ports configured in host module
