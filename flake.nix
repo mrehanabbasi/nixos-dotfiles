@@ -51,6 +51,14 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Per-game Steam settings (launch options, compat tools) as Nix options.
+    # Steam rewrites its own VDF files on exit, so this writes a wrapper script
+    # outside Steam and points the launch options field at it once.
+    steam-config-nix = {
+      url = "github:different-name/steam-config-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
   };
 
   # Custom importTree that imports ALL .nix files (not just default.nix)
